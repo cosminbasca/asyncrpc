@@ -7,6 +7,7 @@ str_version = None
 execfile('msgpackutil/__version__.py')
 
 pip_deps = [
+    'msgpack-python>=0.4.2',
     'numpy>=1.8.0',
     'pandas>=0.13.0',
     'nose>=1.3.0',
