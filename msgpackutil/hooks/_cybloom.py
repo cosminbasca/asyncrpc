@@ -30,5 +30,5 @@ try:
     from cybloom import BloomFilter
 
     HOOKS.register(4, BloomFilterHook)
-finally:
+except ImportError:
     warn("could not find cybloom, BloomFilterHook not registered.")

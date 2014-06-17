@@ -5,5 +5,5 @@ from msgpack import packb, unpackb
 __author__ = 'basca'
 
 dumps = lambda value: packb(value, default=HOOKS.pack)
-loads = lambda value_bytes: unpackb(value_bytes, default=HOOKS.unpack)
+loads = lambda value_bytes: unpackb(value_bytes, object_hook=HOOKS.unpack)
 

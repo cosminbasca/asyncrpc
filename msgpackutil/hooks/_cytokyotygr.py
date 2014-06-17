@@ -50,5 +50,5 @@ try:
 
     HOOKS.register(2, RdfLiteralHook)
     HOOKS.register(3, QueryVarHook)
-finally:
+except ImportError:
     warn("could not find cytokyotygr, RdfLiteral & QueryVar not registered.")
