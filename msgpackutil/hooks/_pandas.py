@@ -19,8 +19,8 @@ class DataFrameHook(Hook):
         # _columns = data_frame.columns
         return {
             _DATA: data_frame.values.tolist(),
-            _COLS: data_frame.columns.tolist(),
-            _INDEX: data_frame.index.tolist()
+            _COLS: data_frame.columns.tolist()
+            # _INDEX: data_frame.index.tolist()
         }
 
 
@@ -33,8 +33,8 @@ class DataFrameHook(Hook):
         data = list(data_frame_dict[_DATA])
         return DataFrame(
             data=data,
-            columns=data_frame_dict[_COLS],
-            index=data_frame_dict[_INDEX]
+            columns=data_frame_dict[_COLS]
+            # index=data_frame_dict[_INDEX]
         ) if data else DataFrame(columns=data_frame_dict[_COLS])
 
 
