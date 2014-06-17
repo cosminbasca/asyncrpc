@@ -1,0 +1,12 @@
+recursive-exclude build *
+recursive-exclude dist *
+exclude *.sh
+exclude *.csv
+exclude *.prof
+exclude *.log
+exclude *.log.*
+exclude *.pdf
+exclude *.xlsx
+exclude dependencies.txt
+recursive-include trushrdf/lib *
+recursive-include trushrdf/test/data *
