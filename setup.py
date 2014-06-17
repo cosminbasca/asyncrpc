@@ -1,7 +1,7 @@
 __author__ = 'Cosmin Basca'
 __email__ = 'basca@ifi.uzh.ch; cosmin.basca@gmail.com'
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 str_version = None
 execfile('msgpackutil/__version__.py')
@@ -24,8 +24,8 @@ setup(
     description='utilitarian module which provides support for serializing and deserializing hooks for msgpack',
     author='Cosmin Basca',
     author_email='basca@ifi.uzh.ch',
-    packages = ["msgpackutil"],
-    package_dir = {"msgpackutil":"msgpackutil"},
+    packages = ["msgpackutil", "msgpackutil/hooks", "msgpackutil/test"],
+    # package_dir = {"msgpackutil":"msgpackutil"},
     include_package_data = True,
     exclude_package_data = {
         'msgpackutil': ['*.log', '*.log.*']
