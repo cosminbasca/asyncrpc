@@ -2,17 +2,19 @@ from pandas import DataFrame, Series
 from unittest import TestCase
 # from msgpack import packb, unpackb
 from msgpackutil import loads, dumps
-from pandas.util.testing import assert_frame_equal
+from pandas.util.testing import assert_frame_equal, assert_series_equal
 
 __author__ = 'basca'
 
-def assertFrameEqual( df1, df2, **kwds ):
-    return assert_frame_equal( df1.sort( axis=1) , df2.sort( axis=1) , check_names = True, **kwds )
+
+def assertFrameEqual(df1, df2, **kwds):
+    return assert_frame_equal(df1.sort(axis=1), df2.sort(axis=1), check_names=True, **kwds)
+
 
 class TestHooks(TestCase):
     def test_data_frame(self):
-        data = {'one' : Series([1., 2., 3., 10.], index=['a', 'b', 'c', 'd']),
-            'two' : Series([1., 2., 3., 4.], index=['a', 'b', 'c', 'd'])}
+        data = {'one': Series([1., 2., 3., 10.], index=['a', 'b', 'c', 'd']),
+                'two': Series([1., 2., 3., 4.], index=['a', 'b', 'c', 'd'])}
         df = DataFrame(data)
         df_bytes = dumps(df)
         self.assertIsNotNone(df_bytes)
@@ -24,8 +26,20 @@ class TestHooks(TestCase):
 
         assertFrameEqual(df, _df)
 
+    def test_series(self):
+        data = Series([1., 2., 3., 10.], index=['a', 'b', 'c', 'd'])
+        _bytes = dumps(data)
+        self.assertIsNotNone(_bytes)
+        self.assertGreater(len(_bytes), 0)
+
+        _series = loads(_bytes)
+        self.assertIsInstance(_series, Series)
+        self.assertEqual(len(_series), len(data))
+
+        assert_series_equal(_series, data)
+
     def test_default(self):
-        data = {'one' : [1., 2., 3.], 'two' : [1., 2., 3., 4.]}
+        data = {'one': [1., 2., 3.], 'two': [1., 2., 3., 4.]}
         _bytes = dumps(data)
         self.assertIsNotNone(_bytes)
         self.assertGreater(len(_bytes), 0)

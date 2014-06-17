@@ -29,6 +29,6 @@ class BloomFilterHook(Hook):
 try:
     from cybloom import BloomFilter
 
-    HOOKS.register(4, BloomFilterHook)
+    HOOKS.register(5, BloomFilterHook)
 except ImportError:
     warn("could not find cybloom, BloomFilterHook not registered.")

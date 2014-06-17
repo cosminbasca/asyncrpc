@@ -48,7 +48,7 @@ class QueryVarHook(Hook):
 try:
     from cytokyotygr import RdfLiteral, QueryVar
 
-    HOOKS.register(2, RdfLiteralHook)
-    HOOKS.register(3, QueryVarHook)
+    HOOKS.register(3, RdfLiteralHook)
+    HOOKS.register(4, QueryVarHook)
 except ImportError:
     warn("could not find cytokyotygr, RdfLiteral & QueryVar not registered.")
