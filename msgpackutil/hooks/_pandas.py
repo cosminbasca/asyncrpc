@@ -10,32 +10,31 @@ _INDEX = 'i'
 
 class DataFrameHook(Hook):
     def reduce(self, data_frame):
-        # _itertuples = data_frame.itertuples
-        # _columns = data_frame.columns
-        # return {
-        # _DATA: [t for t in _itertuples(index=False)],
-        # _COLS: [c for c in _columns]
-        # }
-        # _columns = data_frame.columns
+        _itertuples = data_frame.itertuples
+        _columns = data_frame.columns
         return {
-            _DATA: data_frame.values.tolist(),
-            _COLS: data_frame.columns.tolist()
-            # _INDEX: data_frame.index.tolist()
+            _DATA: [t for t in _itertuples(index=False)],
+            _COLS: [c for c in _columns]
         }
+        # return {
+        # _DATA: data_frame.values.tolist(),
+        #     _COLS: data_frame.columns.tolist()
+        #     # _INDEX: data_frame.index.tolist()
+        # }
 
 
     def create(self, data_frame_dict):
-        # data = list(data_frame_dict[_DATA])
-        # return DataFrame(
-        # data=data,
-        # columns=data_frame_dict[_COLS]
-        # ) if data else DataFrame(columns=data_frame_dict[_COLS])
         data = list(data_frame_dict[_DATA])
         return DataFrame(
             data=data,
             columns=data_frame_dict[_COLS]
-            # index=data_frame_dict[_INDEX]
         ) if data else DataFrame(columns=data_frame_dict[_COLS])
+        # data = list(data_frame_dict[_DATA])
+        # return DataFrame(
+        # data=data,
+        #     columns=data_frame_dict[_COLS]
+        #     # index=data_frame_dict[_INDEX]
+        # ) if data else DataFrame(columns=data_frame_dict[_COLS])
 
 
 class SeriesHook(Hook):
