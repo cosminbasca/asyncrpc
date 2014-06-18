@@ -17,6 +17,10 @@ cPickle_loads = cPickle.loads
 class Hook(object):
     __metaclass__ = ABCMeta
 
+    @abstractproperty
+    def type(self):
+        pass
+
     @abstractmethod
     def reduce(self, value):
         pass
@@ -27,6 +31,10 @@ class Hook(object):
 
 
 class DefaultHook(Hook):
+    def type(self):
+        return object
+
+
     def reduce(self, value):
         return {_DATA: cPickle_dumps(value)}
 
@@ -57,19 +65,19 @@ class HooksRegistry(object):
             return self._id2hook[hook_id]
         return self._type2hook[hook_id]
 
-    def register(self, item_id, hook_class):
-        if item_id in self._id2hook:
-            raise ValueError('item_id already registered for {0}'.format(self._id2hook[item_id]))
+    def register(self, hook_id, hook_class):
+        if hook_id in self._id2hook:
+            raise ValueError('item_id already registered for {0}'.format(self._id2hook[hook_id]))
         if not issubclass(hook_class, Hook):
             raise ValueError('item_class not a subclass of Hook')
         hook = hook_class()
-        self._id2hook[item_id] = hook
-        self._type2hook[hook_class] = hook
+        self._id2hook[hook_id] = hook
+        self._type2hook[hook.type] = (hook_id, hook)
 
 
     def pack(self, value):
         try:
-            hook_id, hook = self._id2hook[type(value)]
+            hook_id, hook = self._type2hook[type(value)]
         except:
             hook_id, hook = (0, self._default)
         value_dict = hook.reduce(value)

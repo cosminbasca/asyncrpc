@@ -9,48 +9,56 @@ _INDEX = 'i'
 
 
 class DataFrameHook(Hook):
+    @property
+    def type(self):
+        return DataFrame
+
     def reduce(self, data_frame):
         _itertuples = data_frame.itertuples
         _columns = data_frame.columns
-        return {
+        _index = data_frame.index
+        data_frame_dict = {
             _DATA: [t for t in _itertuples(index=False)],
-            _COLS: [c for c in _columns]
-        }
-        # return {
-        # _DATA: data_frame.values.tolist(),
-        #     _COLS: data_frame.columns.tolist()
-        #     # _INDEX: data_frame.index.tolist()
-        # }
-
+            _COLS: [c for c in _columns]}
+        if _index.dtype != int:
+            data_frame_dict[_INDEX] = [i for i in _index]
+        return data_frame_dict
 
     def create(self, data_frame_dict):
         data = list(data_frame_dict[_DATA])
-        return DataFrame(
-            data=data,
-            columns=data_frame_dict[_COLS]
-        ) if data else DataFrame(columns=data_frame_dict[_COLS])
-        # data = list(data_frame_dict[_DATA])
-        # return DataFrame(
-        # data=data,
-        #     columns=data_frame_dict[_COLS]
-        #     # index=data_frame_dict[_INDEX]
-        # ) if data else DataFrame(columns=data_frame_dict[_COLS])
+        columns = data_frame_dict[_COLS]
+        if data:
+            if _INDEX in data_frame_dict:
+                return DataFrame(data=data, columns=columns, index=data_frame_dict[_INDEX])
+            else:
+                return DataFrame(data=data, columns=columns)
+        else:
+            return DataFrame(columns=columns)
 
 
 class SeriesHook(Hook):
-    def reduce(self, series):
-        return {
-            _DATA: series.values.tolist(),
-            _INDEX: series.index.tolist()
-        }
+    @property
+    def type(self):
+        return Series
 
+    def reduce(self, series):
+        _index = series.index
+        series_dict = {
+            _DATA: series.values.tolist(),
+        }
+        if _index.dtype != int:
+            series_dict[_INDEX] = [i for i in _index]
+        return series_dict
 
     def create(self, series_dict):
         data = list(series_dict[_DATA])
-        return Series(
-            data=series_dict[_DATA],
-            index=series_dict[_INDEX]
-        ) if data else Series()
+        if data:
+            if _INDEX in series_dict:
+                return Series(data=data, index=series_dict[_INDEX])
+            else:
+                return Series(data=data)
+        else:
+            return Series()
 
 
 HOOKS.register(1, DataFrameHook)

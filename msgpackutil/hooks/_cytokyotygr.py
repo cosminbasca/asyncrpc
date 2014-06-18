@@ -12,6 +12,10 @@ _TYPE = 't'
 
 
 class RdfLiteralHook(Hook):
+    @property
+    def type(self):
+        return RdfLiteral
+
     def reduce(self, rdf_literal):
         return {
             _LABEL: rdf_literal.__label,
@@ -19,7 +23,6 @@ class RdfLiteralHook(Hook):
             _LANG: rdf_literal.__lang,
             _TYPE: rdf_literal.__type,
         }
-
 
     def create(self, rdf_literal_dict):
         rdflit = RdfLiteral(rdf_literal_dict[_LABEL])
@@ -30,13 +33,16 @@ class RdfLiteralHook(Hook):
 
 
 class QueryVarHook(Hook):
+    @property
+    def type(self):
+        return QueryVar
+
     def reduce(self, query_var):
         return {
             _LABEL: query_var.__label,
             _ID: query_var.id,
             _SEL: query_var.selectivity,
         }
-
 
     def create(self, query_var_dict):
         query_var = QueryVar(query_var_dict[_LABEL])
