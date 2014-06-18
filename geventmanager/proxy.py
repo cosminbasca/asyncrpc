@@ -3,10 +3,12 @@ import socket
 import errno
 import traceback
 from gevent import sleep as gevent_sleep
+from geventhttpclient.connectionpool import ConnectionPool
 from time import sleep
 from msgpackutil import dumps, loads
 from rpcsocket import GeventRpcSocket, InetRpcSocket
 from log import get_logger
+from exceptions import get_exception
 
 
 __author__ = 'basca'
@@ -105,7 +107,7 @@ class Proxy(object):
         while retries < self._retries:
             try:
                 _sock = self._SocketClass()
-                _sock.connect(self._host)
+                _sock.connect(self._address)
                 return _sock
             except socket.timeout:
                 retries -= 1
@@ -125,7 +127,7 @@ class Proxy(object):
             return result
 
         self._log.error('[receive] exception encountered {0} '.format(error))
-        exception = get_exception(error, self._host)
+        exception = get_exception(error, self._address)
         raise exception
 
 
@@ -173,11 +175,10 @@ class GeventProxy(Proxy):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class GeventPooledProxy(GeventProxy):
-    def __init__(self, address, retries=2000, concurrency=32, **kwargs):
+    def __init__(self, address, retries=2000, concurrency=32, timeout=300, **kwargs):
         super(GeventPooledProxy, self).__init__(address, sock=None, retries=retries, **kwargs)
-        self._connection_pool = ConnectionPool(self.host, self.port, size=concurrency,
-                                               network_timeout=CONNECTION_TIMEOUT.value,
-                                               connection_timeout=CONNECTION_TIMEOUT.value, disable_ipv6=False)
+        self._connection_pool = ConnectionPool(self.host, self.port, size=concurrency, network_timeout=timeout,
+                                               connection_timeout=timeout, disable_ipv6=False)
 
     def _init_socket(self):
         sock = self._connection_pool.get_socket()
