@@ -2,13 +2,13 @@ from abc import ABCMeta, abstractproperty
 import socket
 import errno
 import traceback
+from time import sleep
 from gevent import sleep as gevent_sleep
 from geventhttpclient.connectionpool import ConnectionPool
-from time import sleep
 from msgpackutil import dumps, loads
-from rpcsocket import GeventRpcSocket, InetRpcSocket, RpcSocket
-from log import get_logger
-from exceptions import get_exception
+from geventmanager.rpcsocket import GeventRpcSocket, InetRpcSocket, RpcSocket
+from geventmanager.log import get_logger
+from geventmanager.exceptions import get_exception
 
 
 __author__ = 'basca'
@@ -40,7 +40,7 @@ class Proxy(object):
             host, port = address.split(':')
             port = int(port)
         else:
-            raise ValueError('host, must be either a tuple/list or string of the name:port form')
+            raise ValueError('address, must be either a tuple/list or string of the name:port form')
         self._address = (host, port)
         self._retries = retries
         self._log = get_logger(self.__class__.__name__)
