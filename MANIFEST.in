@@ -8,5 +8,4 @@ exclude *.log.*
 exclude *.pdf
 exclude *.xlsx
 exclude dependencies.txt
-recursive-include trushrdf/lib *
-recursive-include trushrdf/test/data *
+exclude _bench.py
