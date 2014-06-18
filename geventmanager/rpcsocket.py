@@ -17,10 +17,6 @@ __author__ = 'basca'
 _FORMAT = '!l'
 _STARTER = '#'
 _SIZE = calcsize(_FORMAT) + 1  # (the extra 1 comes from starter)
-_DEFAULT_HOST = ('127.0.0.1', 0)  # port 0 means -> get a free port while binding!
-_RETRIES_TOUT = 2000
-
-DEFAULT_CONNECTION_TIMEOUT = 300
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -30,8 +26,10 @@ DEFAULT_CONNECTION_TIMEOUT = 300
 class RpcSocket(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, sock=None, **kwargs):
+    def __init__(self, sock=None, mx_retries=2000, **kwargs):
         self._sock = self._initsock(sock)
+        self._max_retries = mx_retries
+        self._address = None
 
     def __getattr__(self, attr):
         if hasattr(self._sock, attr):
@@ -47,6 +45,18 @@ class RpcSocket(object):
     def _shutdown(self):
         return None
 
+    @property
+    def port(self):
+        return self._address[1]
+
+    @property
+    def host(self):
+        return self._address[0]
+
+    @property
+    def address(self):
+        return self._address
+
     def close(self):
         if self._sock is not None:
             try:
@@ -61,20 +71,21 @@ class RpcSocket(object):
     def _wait_write(self):
         pass
 
-    def connect(self, host):
-        if isinstance(host, (tuple, list)):
-            name, port = host
-        elif isinstance(host, (str, unicode)):
-            name, port = host.split(':')
+    def connect(self, address):
+        if isinstance(address, (tuple, list)):
+            host, port = address
+        elif isinstance(address, (str, unicode)):
+            host, port = address.split(':')
             port = int(port)
         else:
-            raise ValueError('host, must be either a tuple/list or string of the name:port form')
-        self._sock.connect((name, port))
+            raise ValueError('address, must be either a tuple/list or string of the host:port form')
+        self._address = (host, port)
+        self._sock.connect(self._address)
         return self
 
     def _sendall(self, sz_data, data):
         retries = 0
-        while retries < _RETRIES_TOUT:
+        while retries < self._max_retries:
             self._wait_write()
             try:
                 self._sock.sendall(''.join((_STARTER, sz_data, data)))
@@ -88,7 +99,7 @@ class RpcSocket(object):
 
     def _recv(self, size):
         retries = 0
-        while retries < _RETRIES_TOUT:
+        while retries < self._max_retries:
             self._wait_read()
             try:
                 return self._sock.recv(size)
@@ -144,7 +155,7 @@ class InetRpcSocket(RpcSocket):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class GeventRpcSocket(RpcSocket):
-    def __init__(self, sock=None, connection_timeout=DEFAULT_CONNECTION_TIMEOUT):
+    def __init__(self, sock=None, connection_timeout=300):
         super(GeventRpcSocket, self).__init__(sock=sock, connection_timeout=connection_timeout)
         self.connection_timeout = connection_timeout
 
