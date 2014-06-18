@@ -4,7 +4,7 @@ __email__ = 'basca@ifi.uzh.ch; cosmin.basca@gmail.com'
 from setuptools import setup, find_packages
 
 str_version = None
-execfile('geventutil/__version__.py')
+execfile('geventmanager/__version__.py')
 
 pip_deps = [
     'gevent>=1.0.1',
@@ -17,15 +17,15 @@ manual_deps = [
 ]
 
 setup(
-    name='geventutil',
+    name='geventmanager',
     version=str_version,
-    description='utilitarian module which provides more gevent goodies',
+    description='a gevent manager similar to the multiprocessing manager',
     author='Cosmin Basca',
     author_email='basca@ifi.uzh.ch',
-    packages = ["geventutil", "geventutil/test"],
+    packages = ["geventmanager", "geventmanager/test"],
     include_package_data = True,
     exclude_package_data = {
-        'geventutil': ['*.log', '*.log.*']
+        'geventmanager': ['*.log', '*.log.*']
     },
     zip_safe = False,
     install_requires=manual_deps + pip_deps,
