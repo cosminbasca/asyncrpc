@@ -7,6 +7,7 @@ str_version = None
 execfile('geventutil/__version__.py')
 
 pip_deps = [
+    'gevent>=1.0.1',
     'nose>=1.3.0',
     'rednose>=0.3',
 ]
