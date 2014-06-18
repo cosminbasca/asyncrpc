@@ -2,8 +2,8 @@
 clear
 echo "install dependencies ... "
 pip install -r "./dependencies.txt"
-echo "testing msgpackutil ..."
-nosetests --rednose -v -s ./msgpackutil/test/
+echo "testing geventutil ..."
+nosetests --rednose -v -s ./geventutil/test/
 echo "building module egg distribution ... "
 python setup.py bdist_egg
 echo "building source distribution ... "
