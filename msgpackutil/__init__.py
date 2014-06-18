@@ -1,16 +1,21 @@
 import hooks
 from base import HOOKS
-from msgpack import packb, unpackb
+from msgpack import packb as _packb, unpackb as _unpackb
 
 __author__ = 'basca'
 _pack_hook = HOOKS.pack
 _unpack_hook = HOOKS.unpack
 
+__all__ = ['dumps', 'loads', 'packb', 'unpackb']
+
 
 def dumps(value):
-    return packb(value, default=_pack_hook)
+    return _packb(value, default=_pack_hook)
 
 
 def loads(value_bytes):
-    return unpackb(value_bytes, object_hook=_unpack_hook)
+    return _unpackb(value_bytes, object_hook=_unpack_hook)
 
+
+packb = dumps
+unpackb = loads
