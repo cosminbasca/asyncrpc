@@ -6,7 +6,7 @@ from gevent import sleep as gevent_sleep
 from geventhttpclient.connectionpool import ConnectionPool
 from time import sleep
 from msgpackutil import dumps, loads
-from rpcsocket import GeventRpcSocket, InetRpcSocket
+from rpcsocket import GeventRpcSocket, InetRpcSocket, RpcSocket
 from log import get_logger
 from exceptions import get_exception
 
@@ -35,7 +35,13 @@ _RETRY_WAIT = 0.025
 class Proxy(object):
     __metaclass__ = ABCMeta
 
-    _SocketClass = abstractproperty()
+    RpcSocketClass = abstractproperty
+
+    def get_socket(self):
+        sock = self.RpcSocketClass()
+        if not isinstance(sock, RpcSocket):
+            raise ValueError('socket is not an RpcSocket instance!')
+        return sock
 
     def __init__(self, address, retries=2000, **kwargs):
         if isinstance(address, (tuple, list)):
@@ -79,15 +85,15 @@ class Proxy(object):
                     except socket.error, err:
                         if err[0] == errno.ECONNRESET or err[0] == errno.EPIPE:
                             # Connection reset by peer, or an error on the pipe...
-                            self._log.debug('rpc retry...')
+                            self._log.debug('rpc retry ...')
                             if _sock:
                                 self._release_socket(_sock)
                             del _sock
                             _sock = None
                             self.wait(_RETRY_WAIT)
                         else:
-                            self._log.error('[__getattr__] exception encountered: {0} \nstack_trace = \n{1}'.format(err,
-                                                                                                                    traceback.format_exc()))
+                            self._log.error('[__getattr__] exception encountered: {0} \nstack_trace = \n{1}'.format(
+                                err, traceback.format_exc()))
                             raise err
                     retries += 1
             finally:
@@ -106,7 +112,7 @@ class Proxy(object):
         retries = 0
         while retries < self._retries:
             try:
-                _sock = self._SocketClass()
+                _sock = self.get_socket()
                 _sock.connect(self._address)
                 return _sock
             except socket.timeout:
@@ -115,7 +121,7 @@ class Proxy(object):
                 if type(err.args) != tuple or err[0] != errno.ETIMEDOUT:
                     raise
                 retries -= 1
-            self.wait(0.05)
+            self.wait(_RETRY_WAIT)
 
     def _release_socket(self, sock):
         sock.close()
@@ -133,28 +139,11 @@ class Proxy(object):
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
-# a simple dispatcher proxy
-#
-# ----------------------------------------------------------------------------------------------------------------------
-class DispatcherProxy(Proxy):
-    def __init__(self, address, sock, retries=2000, **kwargs):
-        super(DispatcherProxy, self).__init__(address, retries=retries, **kwargs)
-        self._sock = sock
-
-    def _init_socket(self):
-        return self._sock
-
-    def _release_socket(self, sock):
-        sock.close()
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-#
 # Inet backed proxy
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class InetProxy(Proxy):
-    _SocketClass = InetRpcSocket
+    RpcSocket = InetRpcSocket
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -163,7 +152,7 @@ class InetProxy(Proxy):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class GeventProxy(Proxy):
-    _SocketClass = GeventRpcSocket
+    RpcSocket = GeventRpcSocket
 
     def wait(self, seconds):
         gevent_sleep(seconds=seconds)
