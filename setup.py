@@ -13,7 +13,7 @@ pip_deps = [
 ]
 
 manual_deps = [
-
+    'msgpackutil>=0.1.12'
 ]
 
 setup(

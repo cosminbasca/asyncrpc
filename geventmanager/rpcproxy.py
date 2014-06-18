@@ -4,8 +4,14 @@ import errno
 import traceback
 from gevent import sleep as gevent_sleep
 from time import sleep
+from msgpackutil import dumps, loads
+from rpcsocket import GeventRpcSocket, InetRpcSocket
+from log import get_logger
+
 
 __author__ = 'basca'
+
+__all__ = ['Proxy', 'DispatcherProxy', 'InetProxy', 'GeventProxy', 'GeventPooledProxy']
 
 
 def _command(name):
@@ -19,11 +25,15 @@ _INIT_ROBJ = _command('init_robj')
 
 _RETRY_WAIT = 0.025
 
-
-class BaseProxy(object):
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# base Rpc proxy
+#
+# ----------------------------------------------------------------------------------------------------------------------
+class Proxy(object):
     __metaclass__ = ABCMeta
 
-    _Socket = abstractproperty()
+    _SocketClass = abstractproperty()
 
     def __init__(self, address, retries=2000, **kwargs):
         if isinstance(address, (tuple, list)):
@@ -35,6 +45,7 @@ class BaseProxy(object):
             raise ValueError('host, must be either a tuple/list or string of the name:port form')
         self._address = (host, port)
         self._retries = retries
+        self._log = get_logger(self.__class__.__name__)
 
     @property
     def port(self):
@@ -59,21 +70,22 @@ class BaseProxy(object):
                     try:
                         _sock = self._init_socket()
                         _sock.setblocking(1)
-                        self._call_method(func, _sock, *args, **kwargs)
+                        _sock.write(dumps((func, args, kwargs)))
+
                         result = self._receive_result(_sock)
                         break
                     except socket.error, err:
                         if err[0] == errno.ECONNRESET or err[0] == errno.EPIPE:
                             # Connection reset by peer, or an error on the pipe...
-                            self._log_message('rpc retry...') # TODO: handle the logging ...
+                            self._log.debug('rpc retry...')
                             if _sock:
                                 self._release_socket(_sock)
                             del _sock
                             _sock = None
                             self.wait(_RETRY_WAIT)
                         else:
-                            self._log_message('exception encountered: {0}'.format(err))
-                            self._log_message('stack_trace = \n{0}'.format(traceback.format_exc()))
+                            self._log.error('[__getattr__] exception encountered: {0} \nstack_trace = \n{1}'.format(err,
+                                                                                                                    traceback.format_exc()))
                             raise err
                     retries += 1
             finally:
@@ -92,7 +104,7 @@ class BaseProxy(object):
         retries = 0
         while retries < self._retries:
             try:
-                _sock = self._Socket()
+                _sock = self._SocketClass()
                 _sock.connect(self._host)
                 return _sock
             except socket.timeout:
@@ -106,29 +118,24 @@ class BaseProxy(object):
     def _release_socket(self, sock):
         sock.close()
 
-    def _call_method(self, func, sock, *args, **kwargs):
-        request = dumps((func, args, kwargs))
-        sock.write(request)
-
     def _receive_result(self, sock):
         data = sock.read()
         result, error = loads(data)
         if not error:
             return result
 
-        self.info('[ >>>> SCOKET RPC CLIENT <<<< ] ERROR = %s ' % error)
+        self._log.error('[receive] exception encountered {0} '.format(error))
         exception = get_exception(error, self._host)
-        # self.debug('[SOCKETRPC CLIENT] got exception = %s, %s'%(type(exception), exception))
         raise exception
 
 
-# =================================================================================
+# ----------------------------------------------------------------------------------------------------------------------
 #
-# the rpc Proxy classes
+# a simple dispatcher proxy
 #
-# =================================================================================
-class DispatcherProxy(BaseProxy):
-    def __init__(self, address, sock, retries=_RETRIES, **kwargs):
+# ----------------------------------------------------------------------------------------------------------------------
+class DispatcherProxy(Proxy):
+    def __init__(self, address, sock, retries=2000, **kwargs):
         super(DispatcherProxy, self).__init__(address, retries=retries, **kwargs)
         self._sock = sock
 
@@ -139,28 +146,38 @@ class DispatcherProxy(BaseProxy):
         sock.close()
 
 
-# ---------------------------------------------------------------------------------
-class InetProxy(BaseProxy):
-    _Socket = InetRpcSocket
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# Inet backed proxy
+#
+# ----------------------------------------------------------------------------------------------------------------------
+class InetProxy(Proxy):
+    _SocketClass = InetRpcSocket
 
 
-# ---------------------------------------------------------------------------------
-class GeventProxy(BaseProxy):
-    _Socket = GeventRpcSocket
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# Gevent backed proxy
+#
+# ----------------------------------------------------------------------------------------------------------------------
+class GeventProxy(Proxy):
+    _SocketClass = GeventRpcSocket
 
     def wait(self, seconds):
         gevent_sleep(seconds=seconds)
 
 
-# ---------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# Gevent pooled backed proxy
+#
+# ----------------------------------------------------------------------------------------------------------------------
 class GeventPooledProxy(GeventProxy):
-    def __init__(self, address, concurrency=32, **kwargs):
-        super(GeventPooledProxy, self).__init__(address, sock=None, retries=_RETRIES, **kwargs)
-        self._connection_pool = ConnectionPool(
-            self._host, self._port, size=concurrency,
-            network_timeout=CONNECTION_TIMEOUT.value,
-            connection_timeout=CONNECTION_TIMEOUT.value,
-            disable_ipv6=False)
+    def __init__(self, address, retries=2000, concurrency=32, **kwargs):
+        super(GeventPooledProxy, self).__init__(address, sock=None, retries=retries, **kwargs)
+        self._connection_pool = ConnectionPool(self.host, self.port, size=concurrency,
+                                               network_timeout=CONNECTION_TIMEOUT.value,
+                                               connection_timeout=CONNECTION_TIMEOUT.value, disable_ipv6=False)
 
     def _init_socket(self):
         sock = self._connection_pool.get_socket()
