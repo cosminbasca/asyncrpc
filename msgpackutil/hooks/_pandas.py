@@ -14,14 +14,12 @@ class DataFrameHook(Hook):
         return DataFrame
 
     def reduce(self, data_frame):
-        _itertuples = data_frame.itertuples
-        _columns = data_frame.columns
         _index = data_frame.index
         data_frame_dict = {
-            _DATA: [t for t in _itertuples(index=False)],
-            _COLS: [c for c in _columns]}
+            _DATA: data_frame.values.tolist(),
+            _COLS: data_frame.columns.tolist()}
         if _index.dtype != int:
-            data_frame_dict[_INDEX] = [i for i in _index]
+            data_frame_dict[_INDEX] = data_frame.index.tolist()
         return data_frame_dict
 
     def create(self, data_frame_dict):
