@@ -1,11 +1,14 @@
 from abc import ABCMeta, abstractmethod
 import inspect
+import socket
 import sys
 import os
 import traceback
 from msgpackutil import dumps, loads
 from geventmanager.exceptions import current_error
 from geventmanager.log import get_logger
+from geventmanager.rpcsocket import InetRpcSocket, GeventRpcSocket, RpcSocket
+from threading import Thread, BoundedSemaphore
 
 __author__ = 'basca'
 
@@ -79,7 +82,7 @@ class RpcServer(object):
             os._exit(0)
 
     # noinspection PyBroadException
-    def handle_rpc_request(self, sock):
+    def handle_rpc(self, sock):
         try:
             request = sock.read()
             name, args, kwargs = loads(request)
@@ -114,17 +117,16 @@ class RpcServer(object):
 # the rpc threaded server
 #
 # =================================================================================
-class ThreadedRpcServer(RpcServer, RpcHandlerMixin):
-    def __init__(self, host, rpc_handler, threads=DEFAULT_MAX_THREADS, backlog=DEFAULT_SOCK_BACKLOG):
-        super(ThreadedRpcServer, self).__init__(host, rpc_handler)
+class ThreadedRpcServer(RpcServer):
+    def __init__(self, address, rpc_handler, threads=1024, backlog=64):
+        super(ThreadedRpcServer, self).__init__(address, rpc_handler)
         self._semaphore = BoundedSemaphore(value=threads)
         self._sock = InetRpcSocket()
         self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         # self._sock.settimeout(None)
         self._sock.setblocking(1)
-        self._sock.bind((self._host.name, self._host.port))
+        self._sock.bind(self._address)
         self._backlog = backlog
-        self._address = self.get_address(self._sock)
 
     address = property(fget=lambda self: self._address)
 
