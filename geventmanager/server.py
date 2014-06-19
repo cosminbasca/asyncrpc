@@ -217,7 +217,7 @@ class PreforkRPCManager(preforkserver.Manager):
         pass
 
 
-class PreforkedRpcServer(RpcServer, LoggerMixin):
+class PreforkedRpcServer(RpcServer):
     def __init__(self, host, rpc_handler, backlog=DEFAULT_SOCK_BACKLOG,
                  maxServers=cpu_count() * 2,
                  minServers=cpu_count(),
