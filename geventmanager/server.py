@@ -112,11 +112,11 @@ class RpcServer(object):
 
 
 
-# =================================================================================
+# ----------------------------------------------------------------------------------------------------------------------
 #
-# the rpc threaded server
+# Threaded RPC server - backed by an INET socket
 #
-# =================================================================================
+# ----------------------------------------------------------------------------------------------------------------------
 class ThreadedRpcServer(RpcServer):
     def __init__(self, address, rpc_handler, threads=1024, backlog=64):
         super(ThreadedRpcServer, self).__init__(address, rpc_handler)
@@ -136,7 +136,7 @@ class ThreadedRpcServer(RpcServer):
             self.rpc_handler.close()
 
     def run(self):
-        self.debug('starting ... ')
+        self._log.debug('starting server ... ')
         try:
             self._sock.listen(self._backlog)
             while True:
@@ -146,26 +146,27 @@ class ThreadedRpcServer(RpcServer):
                 thread.daemon = True
                 thread.start()
         finally:
-            self.debug('closing the server.')
+            self._log.debug('closing the server ...')
             self.close()
+            self._log.debug('server shutdown complete')
 
     def handle_request(self, sock):
         try:
             sock = InetRpcSocket(sock)
-            self._handle_request(sock, self.close, self._methods, self.rpc_handler)
+            self.handle_rpc(sock)
         except EOFError:
-            self.debug('eof error on handle_request')
+            self._log.debug('eof error on handle_request')
         finally:
             sock.close()
             self._semaphore.release()
 
 
-# =================================================================================
+# ----------------------------------------------------------------------------------------------------------------------
 #
-# the rpc prefork server (suited for parallel work!)
+# preforked RPC Server (backed by Inet sockets)
 #
-# =================================================================================
-class RpcHandlerChild(preforkserver.BaseChild, RpcHandlerMixin):
+# ----------------------------------------------------------------------------------------------------------------------
+class RpcHandlerChild(preforkserver.BaseChild):
     _methods = None
     rpc_handler = None
     shutdown = None
