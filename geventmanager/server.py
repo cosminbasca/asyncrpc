@@ -31,12 +31,12 @@ _INIT_ROBJ = _command('init_robj')
 #
 # ----------------------------------------------------------------------------------------------------------------------
 # class RpcHandler(object):
-#     def __init__(self, ):
+# def __init__(self, ):
 
 class RpcServer(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, address, rpc_handler, **kwargs):
+    def __init__(self, address, registry, **kwargs):
         if isinstance(address, (tuple, list)):
             host, port = address
         elif isinstance(address, (str, unicode)):
@@ -45,16 +45,19 @@ class RpcServer(object):
         else:
             raise ValueError('address, must be either a tuple/list or string of the name:port form')
 
-        if not isinstance(rpc_handler, type):
-            raise ValueError('rpc_handler must be an instance!')
+        if not isinstance(registry, dict):
+            raise ValueError('registry must be a dictionary')
 
-        self.rpc_handler = rpc_handler
+        self._registry = registry
         self._address = (host, port)
 
-        methods = inspect.getmembers(self.rpc_handler, predicate=inspect.ismethod)
-        self._methods = {method_name: impl for method_name, impl in methods if not method_name.startswith('_')}
-
         self._log = get_logger(self.__class__.__name__)
+
+    @classmethod
+    def get_methods(cls, obj):
+        methods = inspect.getmembers(obj, predicate=inspect.ismethod)
+        return {method_name: impl for method_name, impl in methods if
+                not method_name.startswith('_') and hasattr(impl, '__call__')}
 
     @property
     def port(self):
@@ -195,7 +198,6 @@ class PreforkedRpcServer(RpcServer):
         self._Child._methods = self._methods
         self._Child.rpc_handler = self.rpc_handler
         self._Child.shutdown = self.shutdown
-
 
         RequestHandler = type('', (pfs.BaseChild,), {
             'process_request': None})
