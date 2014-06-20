@@ -37,7 +37,7 @@ class RpcServer(object):
             raise ValueError('registry must be a dictionary')
 
         self._registry = registry
-        self._methods_registry = dict()
+        self._objects = dict()
         self._address = (host, port)
 
         self._log = get_logger(self.__class__.__name__)
@@ -97,11 +97,12 @@ class RpcServer(object):
                 self.shutdown()
                 result = True
             else:
-                methods = self._methods_registry.get(oid, None)
+                obj, methods = self._objects.get(oid, (None, None))
                 if not methods:
                     _init, _args, _kwargs = self._registry[oid]
                     obj = _init(*_args, **_kwargs)
-                    self._methods_registry[oid] = methods = self.get_methods(obj)
+                    methods = self.get_methods(obj)
+                    self._objects[oid] = obj, methods
 
                 func = methods.get(name, None)
                 if not func:
@@ -122,8 +123,8 @@ class RpcServer(object):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class ThreadedRpcServer(RpcServer):
-    def __init__(self, address, rpc_handler, threads=1024, backlog=64):
-        super(ThreadedRpcServer, self).__init__(address, rpc_handler)
+    def __init__(self, address, registry, threads=1024, backlog=64):
+        super(ThreadedRpcServer, self).__init__(address, registry)
         self._semaphore = BoundedSemaphore(value=threads)
         self._sock = InetRpcSocket()
         self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -136,15 +137,14 @@ class ThreadedRpcServer(RpcServer):
 
     def close(self):
         self._sock.close()
-        if hasattr(self.rpc_handler, 'close'):
-            self.rpc_handler.close()
+        #TODO: consider other cleanup (of objects in the registry)
 
     def run(self):
         self._log.debug('starting server ... ')
         try:
             self._sock.listen(self._backlog)
             while True:
-                sock, addr = self._sock.accept()
+                sock, bound_address = self._sock.accept()
                 self._semaphore.acquire()
                 thread = Thread(target=self.handle_request, args=(sock,))
                 thread.daemon = True
