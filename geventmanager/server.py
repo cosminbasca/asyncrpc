@@ -30,9 +30,6 @@ _INIT_ROBJ = _command('init_robj')
 # base Rpc server api
 #
 # ----------------------------------------------------------------------------------------------------------------------
-# class RpcHandler(object):
-# def __init__(self, ):
-
 class RpcServer(object):
     __metaclass__ = ABCMeta
 
