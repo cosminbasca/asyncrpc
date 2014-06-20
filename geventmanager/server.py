@@ -46,6 +46,7 @@ class RpcServer(object):
             raise ValueError('registry must be a dictionary')
 
         self._registry = registry
+        self._objects = dict()
         self._address = (host, port)
 
         self._log = get_logger(self.__class__.__name__)
@@ -79,18 +80,20 @@ class RpcServer(object):
     def run(self):
         pass
 
-    def shutdown(self):
+    def shutdown(self, os_exit=True):
         try:
             self.close()
         finally:
-            # sys.exit(0)
-            os._exit(0)
+            if os_exit:
+                s._exit(0)
+            else:
+                sys.exit(0)
 
     # noinspection PyBroadException
     def handle_rpc(self, sock):
         try:
             request = sock.read()
-            name, args, kwargs = loads(request)
+            oid, name, args, kwargs = loads(request)
 
             if name == _CMD_PING:
                 self._log.debug('received PING')
@@ -103,7 +106,11 @@ class RpcServer(object):
                 self.shutdown()
                 result = True
             else:
-                func = self._methods.get(name, None)
+                methods = self._objects.get(oid, None)
+                if not methods:
+                    self._objects[oid] = methods = self.get_methods(obj)
+
+                func = methods.get(name, None)
                 if not func:
                     raise NameError('method "{0}" not found in handler object'.format(name))
                 result = func(*args, **kwargs)
