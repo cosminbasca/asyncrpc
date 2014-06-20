@@ -15,15 +15,6 @@ from multiprocessing import cpu_count
 __author__ = 'basca'
 
 
-def _command(name):
-    return '#cmd:{0}#'.format(name)
-
-
-_CMD_SHUTDOWN = _command('shutdown')
-_CMD_PING = _command('ping')
-_CMD_CLOSE_CONN = _command('close_conn')
-_INIT_ROBJ = _command('init_robj')
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -46,7 +37,7 @@ class RpcServer(object):
             raise ValueError('registry must be a dictionary')
 
         self._registry = registry
-        self._objects = dict()
+        self._methods_registry = dict()
         self._address = (host, port)
 
         self._log = get_logger(self.__class__.__name__)
@@ -85,7 +76,7 @@ class RpcServer(object):
             self.close()
         finally:
             if os_exit:
-                s._exit(0)
+                os._exit(0)
             else:
                 sys.exit(0)
 
@@ -95,20 +86,22 @@ class RpcServer(object):
             request = sock.read()
             oid, name, args, kwargs = loads(request)
 
-            if name == _CMD_PING:
-                self._log.debug('received PING')
+            if name == "#PING":
+                self._log.debug('=> PING')
                 result = True
-            elif name == _CMD_CLOSE_CONN:
-                self._log.debug('received CLOSE_CONN')
+            elif name == "#CLOSECONN":
+                self._log.debug('=> CLOSE_CONN')
                 result = True
-            elif name == _CMD_SHUTDOWN:
-                self._log.debug('received SHUTDOWN')
+            elif name == "#SHUTDOWN":
+                self._log.debug('=> SHUTDOWN')
                 self.shutdown()
                 result = True
             else:
-                methods = self._objects.get(oid, None)
+                methods = self._methods_registry.get(oid, None)
                 if not methods:
-                    self._objects[oid] = methods = self.get_methods(obj)
+                    _init, _args, _kwargs = self._registry[oid]
+                    obj = _init(*_args, **_kwargs)
+                    self._methods_registry[oid] = methods = self.get_methods(obj)
 
                 func = methods.get(name, None)
                 if not func:
