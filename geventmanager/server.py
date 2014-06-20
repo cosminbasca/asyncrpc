@@ -171,33 +171,34 @@ class ThreadedRpcServer(RpcServer):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class RpcHandlerChild(pfs.BaseChild):
-    _methods = None
-    rpc_handler = None
-    shutdown = None
-
-    # def initialize(self):
-    # def handle_terminate(signum, frame):
-    # logger.info('SIGTERM received for child process [%s]'%(os.getpid()))
-    # sys.exit()
-    # signal.signal(signal.SIGTERM, handle_terminate)
+    @classmethod
+    def set_rpc_handler(cls, handler):
+        if not hasattr(handler, 'handle_rpc'):
+            raise ValueError('handler must expose handle_rpc member!')
+        cls._handle_rpc = getattr(handler, 'handle_rpc')
+        if not hasattr(cls._handle_rpc, '__call__'):
+            raise ValueError('handle_rpc member is not callable')
 
     def process_request(self):
         sock = InetRpcSocket(self.conn)
-        self._handle_request(sock, self.shutdown, self._methods, self.rpc_handler)
+        self._handle_rpc(sock)
 
 
 class PreforkedRpcServer(RpcServer):
-    def __init__(self, host, rpc_handler, backlog=64, max_servers=cpu_count() * 2, min_servers=cpu_count(),
+    def __init__(self, host, registry, backlog=64, max_servers=cpu_count() * 2, min_servers=cpu_count(),
                  min_spare_servers=cpu_count(), max_spare_servers=cpu_count(), max_requests=0):
-        super(PreforkedRpcServer, self).__init__(host, rpc_handler)
+        super(PreforkedRpcServer, self).__init__(host, registry)
 
-        self._Child = None
-        self._Child._methods = self._methods
-        self._Child.rpc_handler = self.rpc_handler
+        self._Child = RpcHandlerChild
+        self._Child.handle_rpc = self.handle_rpc
         self._Child.shutdown = self.shutdown
 
+        def _handle_rpc(conn):
+            self.handle_rpc(InetRpcSocket(conn))
+
         RequestHandler = type('', (pfs.BaseChild,), {
-            'process_request': None})
+            'process_request': lambda self: _handle_rpc(self.conn)
+        })
 
         self._manager = pfs.Manager(self._Child, max_servers=max_servers, min_servers=min_servers,
                                     min_spare_servers=min_spare_servers, max_spare_servers=max_spare_servers,
@@ -210,11 +211,7 @@ class PreforkedRpcServer(RpcServer):
 
     def close(self):
         self._log.info('closing ... ')
-        if hasattr(self.rpc_handler, 'close'):
-            self.rpc_handler.close()
         self._manager.close()
-        # self.info('signaling children')
-        # self.signal_children()
         self._log.info('exit')
 
     def run(self):
