@@ -171,12 +171,15 @@ class ThreadedRpcServer(RpcServer):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class RpcHandlerChild(pfs.BaseChild):
-    @classmethod
-    def set_rpc_handler(cls, handler):
-        if not hasattr(handler, 'handle_rpc'):
+    def __init__(self, server_socket, max_requests, child_conn, protocol, *args, **kwargs):
+        self._handle_rpc = None
+        super(RpcHandlerChild, self).__init__(server_socket, max_requests, child_conn, protocol, *args, **kwargs)
+
+    def initialize(self, rpc_handler=None):
+        if not hasattr(rpc_handler, 'handle_rpc'):
             raise ValueError('handler must expose handle_rpc member!')
-        cls._handle_rpc = getattr(handler, 'handle_rpc')
-        if not hasattr(cls._handle_rpc, '__call__'):
+        self._handle_rpc = getattr(rpc_handler, 'handle_rpc')
+        if not hasattr(self._handle_rpc, '__call__'):
             raise ValueError('handle_rpc member is not callable')
 
     def process_request(self):
@@ -189,18 +192,8 @@ class PreforkedRpcServer(RpcServer):
                  min_spare_servers=cpu_count(), max_spare_servers=cpu_count(), max_requests=0):
         super(PreforkedRpcServer, self).__init__(host, registry)
 
-        self._Child = RpcHandlerChild
-        self._Child.handle_rpc = self.handle_rpc
-        self._Child.shutdown = self.shutdown
-
-        def _handle_rpc(conn):
-            self.handle_rpc(InetRpcSocket(conn))
-
-        RequestHandler = type('', (pfs.BaseChild,), {
-            'process_request': lambda self: _handle_rpc(self.conn)
-        })
-
-        self._manager = pfs.Manager(self._Child, max_servers=max_servers, min_servers=min_servers,
+        self._manager = pfs.Manager(RpcHandlerChild, child_kwargs={'rpc_handler': self},
+                                    max_servers=max_servers, min_servers=min_servers,
                                     min_spare_servers=min_spare_servers, max_spare_servers=max_spare_servers,
                                     max_requests=max_requests, bind_ip=self.host, port=self.port, protocol='tcp',
                                     listen=backlog)
