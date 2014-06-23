@@ -81,14 +81,17 @@ def main2():
 
     MyManager.register("MyClass", MyClass)
     manager = MyManager(async=False, preforked=False)
+    print '1 >'
     manager.start()
 
+    print '2 >'
     my1 = manager.MyClass(counter=10)
     my2 = manager.MyClass(counter=20)
     my3 = manager.MyClass(counter=30)
     my4 = manager.MyClass(counter=40)
     my5 = manager.MyClass(counter=50)
 
+    print '3 >'
     my1.inc()
     my2.inc()
     my2.inc()
