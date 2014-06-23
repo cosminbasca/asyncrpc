@@ -42,8 +42,14 @@ EXCEPTION_CONNECTION = 2
 class InvalidInstanceId(Exception):
     pass
 
+
 class InvalidType(Exception):
     pass
+
+
+class InvalidStateException(Exception):
+    pass
+
 
 class RpcServerException(Exception):
     __metaclass__ = ABCMeta
