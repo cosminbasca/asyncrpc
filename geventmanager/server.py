@@ -82,7 +82,7 @@ class RpcServer(object):
                 sys.exit(0)
 
     # noinspection PyBroadException
-    def _rpc_read(self, sock):
+    def _receive(self, sock):
         try:
             request = sock.read()
             name, _id, args, kwargs = loads(request)
@@ -160,7 +160,7 @@ class ThreadedRpcServer(RpcServer):
     def handle_request(self, sock):
         try:
             sock = InetRpcSocket(sock)
-            self._rpc_read(sock)
+            self._receive(sock)
         except EOFError:
             self._log.debug('eof error on handle_request')
         finally:

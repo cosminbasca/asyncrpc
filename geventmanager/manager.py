@@ -9,7 +9,7 @@ class GeventManager(object):
     _registry = {}
 
     @classmethod
-    def register(cls, type_id, preforked=False, async=False, pooled=False, pool_concurrency=32):
+    def register(cls, type_id): #, preforked=False, async=False, pooled=False, pool_concurrency=32):
         if '_registry' not in cls.__dict__:
             cls._registry = cls._registry.copy()
 
