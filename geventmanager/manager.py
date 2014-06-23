@@ -110,7 +110,7 @@ class GeventManager(object):
         self._process.start()
 
         writer.close()
-        self._address = reader.recv()
+        self._bound_address = reader.recv()
         reader.close()
         self._log.debug('server starting on {0}'.format(self._bound_address))
         self._dispatch = Dispatcher(self._bound_address)

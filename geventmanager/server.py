@@ -147,7 +147,7 @@ class ThreadedRpcServer(RpcServer):
         self._sock.setblocking(1)
         self._sock.bind(self._address)
         self._backlog = backlog
-        self._bound_address = None
+        self._bound_address = self._sock.getsockname()
 
     def close(self):
         self._sock.close()
@@ -157,7 +157,7 @@ class ThreadedRpcServer(RpcServer):
         try:
             self._sock.listen(self._backlog)
             while True:
-                sock, self._bound_address = self._sock.accept()
+                sock, addr = self._sock.accept()
                 self._semaphore.acquire()
                 thread = Thread(target=self.handle_request, args=(sock,))
                 thread.daemon = True
