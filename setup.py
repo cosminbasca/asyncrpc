@@ -11,6 +11,7 @@ pip_deps = [
     'geventhttpclient>=1.1',
     'nose>=1.3.0',
     'rednose>=0.3',
+    'psutil>=2.1.1',
 ]
 
 manual_deps = [
