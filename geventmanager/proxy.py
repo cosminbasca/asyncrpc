@@ -182,7 +182,9 @@ class GeventPooledProxy(GeventProxy):
 # dispatcher object
 #
 # ----------------------------------------------------------------------------------------------------------------------
-class Dispatcher(InetProxy):
+class Dispatcher(Proxy):
+    RpcSocket = InetRpcSocket
+
     public = []
 
     def __init__(self, address, **kwargs):

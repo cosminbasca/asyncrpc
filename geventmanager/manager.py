@@ -112,7 +112,9 @@ class GeventManager(object):
         writer.close()
         self._address = reader.recv()
         reader.close()
-        self._log.debug('server starting on {0}'.format(self._address))
+        self._log.debug('server starting on {0}'.format(self._bound_address))
+        self._dispatch = Dispatcher(self._bound_address)
+        self._log.debug('server initialized dispatcher')
 
         self.shutdown = Finalize(self, self._finalize, args=(), exitpriority=0)
 
