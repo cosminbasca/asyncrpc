@@ -48,7 +48,7 @@ class Proxy(object):
 
     def __del__(self):
         # delete server-side instance
-        self._rpc_send('#DEL')
+        self._rpc_write('#DEL')
 
     @property
     def port(self):
@@ -62,7 +62,7 @@ class Proxy(object):
     def address(self):
         return self._address
 
-    def _rpc_send(self, name, *args, **kwargs):
+    def _rpc_write(self, name, *args, **kwargs):
         _sock = None
         result = None
         try:
@@ -98,7 +98,7 @@ class Proxy(object):
 
     def __getattr__(self, func):
         def func_wrapper(*args, **kwargs):
-            return self._rpc_send(func, *args, **kwargs)
+            return self._rpc_write(func, *args, **kwargs)
 
         self.__dict__[func] = func_wrapper
         return func_wrapper
