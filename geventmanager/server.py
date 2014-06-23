@@ -8,7 +8,7 @@ from msgpackutil import dumps, loads
 from geventmanager.exceptions import current_error, InvalidInstanceId, InvalidType
 from geventmanager.log import get_logger
 from geventmanager.rpcsocket import InetRpcSocket, GeventRpcSocket, RpcSocket
-from threading import Thread, BoundedSemaphore
+from threading import Thread, BoundedSemaphore, RLock
 import preforkserver as pfs
 from multiprocessing import cpu_count
 
@@ -45,6 +45,7 @@ class RpcServer(object):
         self._registry = registry
         self._instances = dict()
         self._address = (host, port)
+        self._mutex = RLock()
 
         self._log = get_logger(self.__class__.__name__)
 
@@ -89,11 +90,15 @@ class RpcServer(object):
             result = False
 
             if name == '#INIT':
-                self._log.debug('=> INIT')
-                _class = self._registry[_id]
-                instance = _class(*args, **kwargs)
-                self._instances[_id] = instance, get_methods(instance)
-                result = True
+                try:
+                    self._log.debug('=> INIT')
+                    self._mutex.acquire()
+                    _class = self._registry[_id]
+                    instance = _class(*args, **kwargs)
+                    self._instances[_id] = instance, get_methods(instance)
+                    result = hash(instance)
+                finally:
+                    self._mutex.release()
             elif name == '#DEL':
                 self._log.debug('=> DEL')
                 del self._instances[_id]

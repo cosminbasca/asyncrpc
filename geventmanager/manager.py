@@ -1,4 +1,7 @@
-from geventmanager.proxy import InetProxy, GeventProxy, GeventPooledProxy
+from geventmanager.log import get_logger
+from geventmanager.proxy import InetProxy, GeventProxy, GeventPooledProxy, Dispatcher
+from geventmanager.server import PreforkedRpcServer, ThreadedRpcServer
+from multiprocessing.managers import State
 
 __author__ = 'basca'
 
@@ -11,55 +14,43 @@ class GeventManager(object):
     _registry = {}
 
     @classmethod
-    def register(cls, type_id, callable=None): #, preforked=False, async=False, pooled=False, pool_concurrency=32):
+    def register(cls, type_id, callable=None):
         if '_registry' not in cls.__dict__:
             cls._registry = cls._registry.copy()
 
         cls._registry[type_id] = callable
 
-        def proxy_creator(self, *args, **kwds):
-            proxy = None
+        def proxy_creator(self, *args, **kwargs):
+            instance_id = self._dispatch('#INIT', *args, **kwargs)
             if self._async:
                 if self._async_pooled:
-                    proxy = GeventPooledProxy(1, self._bound_address, concurrency=self._pool_concurrency)
+                    proxy = GeventPooledProxy(instance_id, self._bound_address, concurrency=self._pool_concurrency)
                 else:
-                    proxy = GeventProxy(1, self._bound_address)
+                    proxy = GeventProxy(instance_id, self._bound_address)
             else:
-                proxy = InetProxy(1, self._bound_address)
+                proxy = InetProxy(instance_id, self._bound_address)
             return proxy
+
         proxy_creator.__name__ = type_id
         setattr(cls, type_id, proxy_creator)
 
-    def _create(self):
-        pass
+    def __init__(self, address=None, async=False, async_pooled=False, gevent_patch=False, pool_concurrency=32,
+                 preforked=False, **kwargs):
+        self._log = get_logger(self.__class__.__name__)
 
-    def __init__(self, handler_class, handler_args=(), handler_kwargs={},
-                 host=None, logger=logger,
-                 prefork=False, async=True, pooled=False, gevent_patch=False, concurrency=32, **kwargs):
-        assert isinstance(handler_class, type), '`handler_class` must be a class (type)'
-        if host:
-            assert isinstance(host, Host), '`host` is not an instance of Host'
         self._process = None
-        self._host = host if host else _DEFAULT_HOST
+        self._address = address if address else ('127.0.0.1', 0)
         self._state = State()
         self._state.value = State.INITIAL
-        self._logger = logger
-        self._kwargs = kwargs
-        self._RpcHandler = handler_class
-        self._handler_args = handler_args
-        self._handler_kwargs = handler_kwargs
-        self._Server = PreforkedRPCServer if prefork else ThreadedRPCServer
-        self._async = async
-        self._Proxy = InetProxy
-        self._concurrency = concurrency
-        if self._async:
-            self._Proxy = GeventPooledProxy if pooled else GeventProxy
-            self._gevent_patch = gevent_patch
-        self._log_message('using Server = %s' % self._Server.__name__)
-        self._log_message('using Proxy  = %s' % self._Proxy.__name__)
 
-    port = property(fget=lambda self: self._host.port)
-    name = property(fget=lambda self: self._host.name)
+        self._async = async
+        self._async_pooled = async_pooled
+        self._gevent_patch = gevent_patch
+        self._pool_concurrency = pool_concurrency
+
+        self._Server = PreforkedRpcServer if preforked else ThreadedRpcServer
+        self._log.debug('manager using [{0}] server'.format(self._Server.__name__))
+
 
     def _run_server(self, HandlerClass, host, writer, h_args=(), h_kwargs={}, srv_kwargs={}, gevent_patch=False):
         """ Create a server, report its address and run it """

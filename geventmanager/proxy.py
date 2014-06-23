@@ -13,9 +13,10 @@ from geventmanager.exceptions import get_exception
 
 __author__ = 'basca'
 
-__all__ = ['Proxy', 'DispatcherProxy', 'InetProxy', 'GeventProxy', 'GeventPooledProxy']
+__all__ = ['Proxy', 'InetProxy', 'GeventProxy', 'GeventPooledProxy', 'Dispatcher', 'dispatch']
 
 _RETRY_WAIT = 0.025
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -175,3 +176,23 @@ class GeventPooledProxy(GeventProxy):
         if sock:
             self._connection_pool.release_socket(sock._sock)
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# dispatcher object
+#
+# ----------------------------------------------------------------------------------------------------------------------
+class Dispatcher(InetProxy):
+    public = []
+
+    def __init__(self, address, **kwargs):
+        super(Dispatcher, self).__init__(None, address.address if isinstance(address, RpcSocket) else address, **kwargs)
+
+    def __call__(self, message, *args, **kwargs):
+        if not message.startswith('#'):
+            raise ValueError('method "dispatch" can only be used to serve builtin messages!')
+        return self._send(message, *args, **kwargs)
+
+
+def dispatch(address, message, *args, **kwargs):
+    return Dispatcher(address).dispatch(message, *args, **kwargs)
