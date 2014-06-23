@@ -162,8 +162,8 @@ class GeventProxy(Proxy):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class GeventPooledProxy(GeventProxy):
-    def __init__(self, address, retries=2000, concurrency=32, timeout=300, **kwargs):
-        super(GeventPooledProxy, self).__init__(address, sock=None, retries=retries, **kwargs)
+    def __init__(self, instance_id, address, retries=2000, concurrency=32, timeout=300, **kwargs):
+        super(GeventPooledProxy, self).__init__(instance_id, address, sock=None, retries=retries, **kwargs)
         self._connection_pool = ConnectionPool(self.host, self.port, size=concurrency, network_timeout=timeout,
                                                connection_timeout=timeout, disable_ipv6=False)
 

@@ -1,3 +1,5 @@
+from geventmanager.proxy import InetProxy, GeventProxy, GeventPooledProxy
+
 __author__ = 'basca'
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -9,14 +11,21 @@ class GeventManager(object):
     _registry = {}
 
     @classmethod
-    def register(cls, type_id): #, preforked=False, async=False, pooled=False, pool_concurrency=32):
+    def register(cls, type_id, callable=None): #, preforked=False, async=False, pooled=False, pool_concurrency=32):
         if '_registry' not in cls.__dict__:
             cls._registry = cls._registry.copy()
 
-        cls._registry[type_id] = type_id
+        cls._registry[type_id] = callable
 
         def proxy_creator(self, *args, **kwds):
             proxy = None
+            if self._async:
+                if self._async_pooled:
+                    proxy = GeventPooledProxy(1, self._bound_address, concurrency=self._pool_concurrency)
+                else:
+                    proxy = GeventProxy(1, self._bound_address)
+            else:
+                proxy = InetProxy(1, self._bound_address)
             return proxy
         proxy_creator.__name__ = type_id
         setattr(cls, type_id, proxy_creator)

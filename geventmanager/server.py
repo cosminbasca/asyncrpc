@@ -90,7 +90,7 @@ class RpcServer(object):
 
             if name == '#INIT':
                 self._log.debug('=> INIT')
-                _class, _methods = self._registry[_id]
+                _class = self._registry[_id]
                 instance = _class(*args, **kwargs)
                 self._instances[_id] = instance, get_methods(instance)
                 result = True
