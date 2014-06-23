@@ -33,7 +33,7 @@ class Proxy(object):
             raise ValueError('socket is not an RpcSocket instance!')
         return sock
 
-    def __init__(self, address, retries=2000, **kwargs):
+    def __init__(self, object_id, address, retries=2000, **kwargs):
         if isinstance(address, (tuple, list)):
             host, port = address
         elif isinstance(address, (str, unicode)):
@@ -41,6 +41,7 @@ class Proxy(object):
             port = int(port)
         else:
             raise ValueError('address, must be either a tuple/list or string of the name:port form')
+        self._object_id = object_id
         self._address = (host, port)
         self._retries = retries
         self._log = get_logger(self.__class__.__name__)
@@ -68,7 +69,7 @@ class Proxy(object):
                     try:
                         _sock = self._init_socket()
                         _sock.setblocking(1)
-                        _sock.write(dumps((func, args, kwargs)))
+                        _sock.write(dumps((self._object_id, func, args, kwargs)))
 
                         result = self._receive_result(_sock)
                         break
