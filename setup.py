@@ -25,9 +25,9 @@ setup(
     author_email='basca@ifi.uzh.ch',
     packages = ["geventmanager", "geventmanager/test"],
     include_package_data = True,
-    exclude_package_data = {
-        'geventmanager': ['*.log', '*.log.*']
-    },
+    # exclude_package_data = {
+    #     'geventmanager': ['*.log', '*.log.*']
+    # },
     zip_safe = False,
     install_requires=manual_deps + pip_deps,
     scripts=[
