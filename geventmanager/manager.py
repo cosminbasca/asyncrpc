@@ -6,6 +6,24 @@ __author__ = 'basca'
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class GeventManager(object):
+    _registry = {}
+
+    @classmethod
+    def register(cls, type_id, preforked=False, async=False, pooled=False, pool_concurrency=32):
+        if '_registry' not in cls.__dict__:
+            cls._registry = cls._registry.copy()
+
+        cls._registry[type_id] = type_id
+
+        def proxy_creator(self, *args, **kwds):
+            proxy = None
+            return proxy
+        proxy_creator.__name__ = type_id
+        setattr(cls, type_id, proxy_creator)
+
+    def _create(self):
+        pass
+
     def __init__(self, handler_class, handler_args=(), handler_kwargs={},
                  host=None, logger=logger,
                  prefork=False, async=True, pooled=False, gevent_patch=False, concurrency=32, **kwargs):

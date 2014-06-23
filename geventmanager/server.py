@@ -5,7 +5,7 @@ import sys
 import os
 import traceback
 from msgpackutil import dumps, loads
-from geventmanager.exceptions import current_error
+from geventmanager.exceptions import current_error, InvalidInstanceId, InvalidType
 from geventmanager.log import get_logger
 from geventmanager.rpcsocket import InetRpcSocket, GeventRpcSocket, RpcSocket
 from threading import Thread, BoundedSemaphore
@@ -21,6 +21,12 @@ __all__ = ['RpcServer', 'ThreadedRpcServer', 'PreforkedRpcServer']
 # base Rpc server api
 #
 # ----------------------------------------------------------------------------------------------------------------------
+def get_methods(obj):
+    methods = inspect.getmembers(obj, predicate=inspect.ismethod)
+    return {method_name: impl for method_name, impl in methods if
+            not method_name.startswith('_') and hasattr(impl, '__call__')}
+
+
 class RpcServer(object):
     __metaclass__ = ABCMeta
 
@@ -37,16 +43,11 @@ class RpcServer(object):
             raise ValueError('registry must be a dictionary')
 
         self._registry = registry
-        self._objects = dict()
+        self._instances = dict()
         self._address = (host, port)
 
         self._log = get_logger(self.__class__.__name__)
 
-    @classmethod
-    def get_methods(cls, obj):
-        methods = inspect.getmembers(obj, predicate=inspect.ismethod)
-        return {method_name: impl for method_name, impl in methods if
-                not method_name.startswith('_') and hasattr(impl, '__call__')}
 
     @property
     def port(self):
@@ -84,29 +85,34 @@ class RpcServer(object):
     def handle_rpc(self, sock):
         try:
             request = sock.read()
-            oid, name, args, kwargs = loads(request)
+            name, _id, args, kwargs = loads(request)
+            result = False
 
-            if name == "#PING":
+            if name == '#INIT':
+                self._log.debug('=> INIT')
+                _class, _methods = self._registry[_id]
+                instance = _class(*args, **kwargs)
+                self._instances[_id] = instance, get_methods(instance)
+                result = True
+            elif name == '#DEL':
+                self._log.debug('=> DEL')
+                del self._instances[_id]
+                result = True
+            elif name == "#PING":
                 self._log.debug('=> PING')
                 result = True
-            elif name == "#CLOSECONN":
-                self._log.debug('=> CLOSE_CONN')
-                result = True
-            elif name == "#SHUTDOWN":
+            elif name == '#SHUTDOWN':
                 self._log.debug('=> SHUTDOWN')
                 self.shutdown()
                 result = True
             else:
-                obj, methods = self._objects.get(oid, (None, None))
-                if not methods:
-                    _init, _args, _kwargs = self._registry[oid]
-                    obj = _init(*_args, **_kwargs)
-                    methods = self.get_methods(obj)
-                    self._objects[oid] = obj, methods
-
+                instance_info = self._instances.get(_id, None)
+                if not instance_info:
+                    raise InvalidInstanceId('insance with id:{0} not registered'.format(_id))
+                instance, methods = instance_info
                 func = methods.get(name, None)
                 if not func:
-                    raise NameError('method "{0}" not found in handler object'.format(name))
+                    raise NameError('instance does not have method "{0}"'.format(name))
                 result = func(*args, **kwargs)
             error = None
         except Exception:
@@ -133,11 +139,8 @@ class ThreadedRpcServer(RpcServer):
         self._sock.bind(self._address)
         self._backlog = backlog
 
-    address = property(fget=lambda self: self._address)
-
     def close(self):
         self._sock.close()
-        #TODO: consider other cleanup (of objects in the registry)
 
     def run(self):
         self._log.debug('starting server ... ')

@@ -39,6 +39,12 @@ EXCEPTION_REMOTE = 1
 EXCEPTION_CONNECTION = 2
 
 
+class InvalidInstanceId(Exception):
+    pass
+
+class InvalidType(Exception):
+    pass
+
 class RpcServerException(Exception):
     __metaclass__ = ABCMeta
     __description__ = abstractproperty

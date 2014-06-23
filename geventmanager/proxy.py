@@ -33,7 +33,7 @@ class Proxy(object):
             raise ValueError('socket is not an RpcSocket instance!')
         return sock
 
-    def __init__(self, object_id, address, retries=2000, **kwargs):
+    def __init__(self, instance_id, address, retries=2000, **kwargs):
         if isinstance(address, (tuple, list)):
             host, port = address
         elif isinstance(address, (str, unicode)):
@@ -41,10 +41,14 @@ class Proxy(object):
             port = int(port)
         else:
             raise ValueError('address, must be either a tuple/list or string of the name:port form')
-        self._object_id = object_id
+        self._id = instance_id
         self._address = (host, port)
         self._retries = retries
         self._log = get_logger(self.__class__.__name__)
+
+    def __del__(self):
+        # delete server-side instance
+        self._rpc_send('#DEL')
 
     @property
     def port(self):
@@ -58,40 +62,43 @@ class Proxy(object):
     def address(self):
         return self._address
 
+    def _rpc_send(self, name, *args, **kwargs):
+        _sock = None
+        result = None
+        try:
+            retries = 0
+            while retries < self._retries:
+                # wait until a connection becomes available
+                try:
+                    _sock = self._init_socket()
+                    _sock.setblocking(1)
+                    _sock.write(dumps((name, self._id, args, kwargs)))
+
+                    result = self._receive_result(_sock)
+                    break
+                except socket.error, err:
+                    if err[0] == errno.ECONNRESET or err[0] == errno.EPIPE:
+                        # Connection reset by peer, or an error on the pipe...
+                        self._log.debug('rpc retry ...')
+                        if _sock:
+                            self._release_socket(_sock)
+                        del _sock
+                        _sock = None
+                        self.wait(_RETRY_WAIT)
+                    else:
+                        self._log.error('[__getattr__] exception encountered: {0} \nstack_trace = \n{1}'.format(
+                            err, traceback.format_exc()))
+                        raise err
+                retries += 1
+        finally:
+            if _sock:
+                self._release_socket(_sock)
+            del _sock
+        return result
+
     def __getattr__(self, func):
         def func_wrapper(*args, **kwargs):
-            _sock = None
-            result = None
-            try:
-                retries = 0
-                while retries < self._retries:
-                    # wait until a connection is available from the server!
-                    try:
-                        _sock = self._init_socket()
-                        _sock.setblocking(1)
-                        _sock.write(dumps((self._object_id, func, args, kwargs)))
-
-                        result = self._receive_result(_sock)
-                        break
-                    except socket.error, err:
-                        if err[0] == errno.ECONNRESET or err[0] == errno.EPIPE:
-                            # Connection reset by peer, or an error on the pipe...
-                            self._log.debug('rpc retry ...')
-                            if _sock:
-                                self._release_socket(_sock)
-                            del _sock
-                            _sock = None
-                            self.wait(_RETRY_WAIT)
-                        else:
-                            self._log.error('[__getattr__] exception encountered: {0} \nstack_trace = \n{1}'.format(
-                                err, traceback.format_exc()))
-                            raise err
-                    retries += 1
-            finally:
-                if _sock:
-                    self._release_socket(_sock)
-                del _sock
-            return result
+            return self._rpc_send(func, *args, **kwargs)
 
         self.__dict__[func] = func_wrapper
         return func_wrapper
