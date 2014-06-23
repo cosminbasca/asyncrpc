@@ -1,4 +1,4 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
 import inspect
 import socket
 import sys
@@ -64,6 +64,10 @@ class RpcServer(object):
 
     @abstractmethod
     def close(self):
+        pass
+
+    @abstractproperty
+    def bound_address(self):
         pass
 
     def stop_requests(self):
@@ -143,6 +147,7 @@ class ThreadedRpcServer(RpcServer):
         self._sock.setblocking(1)
         self._sock.bind(self._address)
         self._backlog = backlog
+        self._bound_address = None
 
     def close(self):
         self._sock.close()
@@ -152,7 +157,7 @@ class ThreadedRpcServer(RpcServer):
         try:
             self._sock.listen(self._backlog)
             while True:
-                sock, bound_address = self._sock.accept()
+                sock, self._bound_address = self._sock.accept()
                 self._semaphore.acquire()
                 thread = Thread(target=self.handle_request, args=(sock,))
                 thread.daemon = True
@@ -171,6 +176,10 @@ class ThreadedRpcServer(RpcServer):
         finally:
             sock.close()
             self._semaphore.release()
+
+    @property
+    def bound_address(self):
+        return self._bound_address
 
 
 # ----------------------------------------------------------------------------------------------------------------------
