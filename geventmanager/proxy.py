@@ -26,10 +26,12 @@ _RETRY_WAIT = 0.025
 class Proxy(object):
     __metaclass__ = ABCMeta
 
-    RpcSocketClass = abstractproperty
+    @abstractproperty
+    def _rpc_socket_impl(self):
+        return None
 
     def get_socket(self):
-        sock = self.RpcSocketClass()
+        sock = self._rpc_socket_impl()
         if not isinstance(sock, RpcSocket):
             raise ValueError('socket is not an RpcSocket instance!')
         return sock
@@ -142,7 +144,9 @@ class Proxy(object):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class InetProxy(Proxy):
-    RpcSocket = InetRpcSocket
+    @property
+    def _rpc_socket_impl(self):
+        return InetRpcSocket
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -151,7 +155,9 @@ class InetProxy(Proxy):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class GeventProxy(Proxy):
-    RpcSocket = GeventRpcSocket
+    @property
+    def _rpc_socket_impl(self):
+        return GeventRpcSocket
 
     def wait(self, seconds):
         gevent_sleep(seconds=seconds)
@@ -182,9 +188,7 @@ class GeventPooledProxy(GeventProxy):
 # dispatcher object
 #
 # ----------------------------------------------------------------------------------------------------------------------
-class Dispatcher(Proxy):
-    RpcSocket = InetRpcSocket
-
+class Dispatcher(InetProxy):
     public = []
 
     def __init__(self, address, **kwargs):
