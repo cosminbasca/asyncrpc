@@ -3,7 +3,7 @@ from geventmanager.log import get_logger
 from geventmanager.proxy import InetProxy, GeventProxy, GeventPooledProxy, Dispatcher
 from geventmanager.server import PreforkedRpcServer, ThreadedRpcServer
 from multiprocessing.managers import State
-from multiprocessing import Pipe, Process
+from multiprocessing import Pipe, Process, Manager
 from multiprocessing.util import Finalize
 from gevent.monkey import patch_all
 from gevent import reinit
@@ -63,7 +63,13 @@ class GeventManager(object):
         self._pool_concurrency = pool_concurrency
         self._retries = retries
 
-        self._Server = PreforkedRpcServer if preforked else ThreadedRpcServer
+        self._Server = ThreadedRpcServer
+        if preforked:
+            self._Server = PreforkedRpcServer
+            self._mem_manager = Manager()
+            # use a "shared" dictionary from multiprocessing
+            self._registry = self._mem_manager.dict(self._registry)
+
         self._log.debug('manager using [{0}] server'.format(self._Server.__name__))
 
 

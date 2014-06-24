@@ -62,25 +62,26 @@ def main():
     print '[getattr             ] took {0} seconds'.format(time()-t0)
 
 
+class MyClass(object):
+    def __init__(self, counter=0):
+        self._c = counter
+
+    def add(self, value=1):
+        self._c += value
+
+    def dec(self, value=1):
+        self._c -= value
+
+    def current_counter(self):
+        return self._c
+
 def main2():
-    class MyClass(object):
-        def __init__(self, counter=0):
-            self._c = counter
-
-        def add(self, value=1):
-            self._c += value
-
-        def dec(self, value=1):
-            self._c -= value
-
-        def current_counter(self):
-            return self._c
-
     class MyManager(GeventManager):
         pass
 
     MyManager.register("MyClass", MyClass)
-    manager = MyManager(async=False, preforked=False)
+    # manager = MyManager(async=False, preforked=False)
+    manager = MyManager(async=False, preforked=True)
     # manager = MyManager(async=True, async_pooled=False, preforked=False)
     # manager = MyManager(async=True, async_pooled=True, preforked=False)
     # manager = MyManager(async=False, preforked=True)

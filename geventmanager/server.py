@@ -11,7 +11,7 @@ from geventmanager.log import get_logger
 from geventmanager.rpcsocket import InetRpcSocket, GeventRpcSocket, RpcSocket
 from threading import Thread, BoundedSemaphore, RLock
 import preforkserver as pfs
-from multiprocessing import cpu_count
+from multiprocessing import cpu_count, Manager
 
 __author__ = 'basca'
 
@@ -50,11 +50,10 @@ class RpcServer(RpcHandler):
         else:
             raise ValueError('address, must be either a tuple/list or string of the name:port form')
 
-        if not isinstance(registry, dict):
-            raise ValueError('registry must be a dictionary')
+        # if not isinstance(registry, dict):
+        #     raise ValueError('registry must be a dictionary')
 
         self._registry = registry
-        self._instances = dict()
         self._address = (host, port)
         self._mutex = RLock()
 
@@ -107,14 +106,14 @@ class RpcServer(RpcHandler):
                     _class = self._registry[_id]
                     instance = _class(*args, **kwargs)
                     instance_id = hash(instance)
-                    self._instances[instance_id] = instance, get_methods(instance)
+                    self._registry[instance_id] = instance
                     result = instance_id
                     self._log.debug('=> INIT, instance id= {0}'.format(instance_id))
                 finally:
                     self._mutex.release()
             elif name == '#DEL':
                 self._log.debug('=> DEL')
-                del self._instances[_id]
+                del self._registry[_id]
                 result = True
             elif name == "#PING":
                 self._log.debug('=> PING')
@@ -129,16 +128,12 @@ class RpcServer(RpcHandler):
 REGISTRY:
 {0}
 ------------------------------------------------------------------------------------------------------------------------
-INSTANCES:
-{1}
-------------------------------------------------------------------------------------------------------------------------
-'''.format(pformat(self._registry), pformat(self._instances)))
+'''.format(pformat(self._registry)))
             else:
-                instance_info = self._instances.get(_id, None)
-                if not instance_info:
+                instance = self._registry.get(_id, None)
+                if not instance:
                     raise InvalidInstanceId('insance with id:{0} not registered'.format(_id))
-                instance, methods = instance_info
-                func = methods.get(name, None)
+                func = getattr(instance, name, None)
                 if not func:
                     raise NameError('instance does not have method "{0}"'.format(name))
                 result = func(*args, **kwargs)
@@ -224,7 +219,6 @@ class PreforkedRpcServer(RpcServer):
     def __init__(self, host, registry, backlog=64, max_servers=cpu_count() * 2, min_servers=cpu_count(),
                  min_spare_servers=cpu_count(), max_spare_servers=cpu_count(), max_requests=0):
         super(PreforkedRpcServer, self).__init__(host, registry)
-
         self._manager = pfs.Manager(RpcHandlerChild, child_kwargs={'rpc_handler': self},
                                     max_servers=max_servers, min_servers=min_servers,
                                     min_spare_servers=min_spare_servers, max_spare_servers=max_spare_servers,
