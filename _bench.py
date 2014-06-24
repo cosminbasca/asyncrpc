@@ -5,6 +5,7 @@ from pandas import DataFrame
 import numpy as np
 import numpy.random as rnd
 from geventmanager import GeventManager
+from geventmanager.manager import PreforkedManager
 
 __author__ = 'basca'
 
@@ -80,39 +81,39 @@ def main2():
         pass
 
     MyManager.register("MyClass", MyClass)
-    # manager = MyManager(async=False, preforked=False)
-    manager = MyManager(async=False, preforked=True)
-    # manager = MyManager(async=True, async_pooled=False, preforked=False)
-    # manager = MyManager(async=True, async_pooled=True, preforked=False)
-    # manager = MyManager(async=False, preforked=True)
-    # manager = MyManager(async=True, async_pooled=False, preforked=True)
+    manager = MyManager(async=False)
+    # manager = MyManager(async=True, async_pooled=False)
+    # manager = MyManager(async=True, async_pooled=True)
     print '[1 >]'
     manager.start()
 
     print '[2 >]'
     my1 = manager.MyClass(counter=10)
     my2 = manager.MyClass(counter=20)
-    my3 = manager.MyClass(counter=30)
-    my4 = manager.MyClass(counter=40)
-    my5 = manager.MyClass(counter=50)
+    # my3 = manager.MyClass(counter=30)
+    # my4 = manager.MyClass(counter=40)
+    # my5 = manager.MyClass(counter=50)
 
     manager.debug()
 
-    print '[3 >]'
+    print '[3.1 >]'
     my1.add()
+    print '[3.2 >]'
     my2.add()
+    print '[3.3 >]'
     my2.add()
-    my4.add()
+    # my4.add()
 
     manager.debug()
 
     print "My 1 = {0}".format(my1.current_counter())
     print "My 2 = {0}".format(my2.current_counter())
-    print "My 3 = {0}".format(my3.current_counter())
-    print "My 4 = {0}".format(my4.current_counter())
-    print "My 5 = {0}".format(my5.current_counter())
+    # print "My 3 = {0}".format(my3.current_counter())
+    # print "My 4 = {0}".format(my4.current_counter())
+    # print "My 5 = {0}".format(my5.current_counter())
 
     print 'done'
+
 
 if __name__ == '__main__':
     # main()

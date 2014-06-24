@@ -1,21 +1,27 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
-import inspect
-from pprint import pformat
-import socket
-import sys
-import os
-import traceback
 from msgpackutil import dumps, loads
+import errno
+from geventmanager import Dispatcher
 from geventmanager.exceptions import current_error, InvalidInstanceId, InvalidType
 from geventmanager.log import get_logger
 from geventmanager.rpcsocket import InetRpcSocket, GeventRpcSocket, RpcSocket
 from threading import Thread, BoundedSemaphore, RLock
 import preforkserver as pfs
-from multiprocessing import cpu_count, Manager
+from multiprocessing import cpu_count, Pipe, Process
+from gevent.monkey import patch_all
+from gevent import reinit
+from pprint import pformat
+import traceback
+import inspect
+import socket
+import sys
+import os
 
 __author__ = 'basca'
 
 __all__ = ['RpcHandler', 'RpcServer', 'ThreadedRpcServer', 'PreforkedRpcServer']
+
+logger = get_logger(__name__)
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -26,6 +32,13 @@ def get_methods(obj):
     methods = inspect.getmembers(obj, predicate=inspect.ismethod)
     return {method_name: impl for method_name, impl in methods if
             not method_name.startswith('_') and hasattr(impl, '__call__')}
+
+
+def dict_to_str(dictionary):
+    return '\n'.join([
+        '[{0}]\t{1} => {2}'.format(i, k, pformat(v))
+        for i, (k, v) in enumerate(dictionary.items())
+    ])
 
 
 class RpcHandler(object):
@@ -51,7 +64,7 @@ class RpcServer(RpcHandler):
             raise ValueError('address, must be either a tuple/list or string of the name:port form')
 
         # if not isinstance(registry, dict):
-        #     raise ValueError('registry must be a dictionary')
+        # raise ValueError('registry must be a dictionary')
 
         self._registry = registry
         self._address = (host, port)
@@ -128,12 +141,14 @@ class RpcServer(RpcHandler):
 REGISTRY:
 {0}
 ------------------------------------------------------------------------------------------------------------------------
-'''.format(pformat(self._registry)))
+'''.format(dict_to_str(self._registry)))
             else:
                 instance = self._registry.get(_id, None)
+                self._log.debug('got instance {0}'.format(instance))
                 if not instance:
                     raise InvalidInstanceId('insance with id:{0} not registered'.format(_id))
                 func = getattr(instance, name, None)
+                self._log.debug('\tgot func {0}'.format(func))
                 if not func:
                     raise NameError('instance does not have method "{0}"'.format(name))
                 result = func(*args, **kwargs)
@@ -237,3 +252,138 @@ class PreforkedRpcServer(RpcServer):
     def run(self):
         self._log.info('starting ... ')
         self._manager.run()
+
+
+
+class BackgroundServerRunner(object):
+    def _run_server(self, writer, **kwargs):
+        """ Create a server, report its address and run it """
+        try:
+            if self._gevent_patch:
+                reinit()
+                patch_all()
+            server = None
+
+            retries = 0
+            while retries < self._retries:
+                try:
+                    server = self._server_class(self._address, self._registry, **kwargs)
+                    break
+                except socket.timeout:
+                    retries -= 1
+                except socket.error, err:
+                    if type(err.args) != tuple or err[0] not in [errno.ETIMEDOUT, errno.EAGAIN, errno.EADDRINUSE]:
+                        raise
+                    retries -= 1
+
+            if server:
+                writer.send(server.bound_address)
+                writer.close()
+                server.run()
+            else:
+                writer.close()
+        except Exception, err:
+            self._log.error(
+                'Rpc server exited. {0}'.format('Exception on exit: {0}'.format(err if err.message else '')))
+
+
+    def start(self, wait=True):
+        """ start server in a different process (avoid blocking the main thread due to the servers event loop ) """
+        if self._state.value != State.INITIAL:
+            raise InvalidStateException('[rpc manager] has already been initialized')
+
+        reader, writer = Pipe(duplex=False)
+
+        self._process = Process(target=self._run_server, args=(writer,))
+
+        identity = ':'.join(str(i) for i in self._process._identity)
+        self._process.name = type(self).__name__ + '-' + identity
+        self._process.start()
+
+        writer.close()
+        self._bound_address = reader.recv()
+        reader.close()
+        self._log.debug('server starting on {0}'.format(self._bound_address))
+        self._dispatch = Dispatcher(self._bound_address)
+        self._log.debug('server initialized dispatcher')
+
+        self.shutdown = Finalize(self, self._finalize, args=(), exitpriority=0)
+
+        if wait:
+            while True:
+                try:
+                    if self._process.is_alive():
+                        self._log.debug("server process started, waiting for initialization ... ")
+                        self._dispatch("#PING")
+                        self._log.debug('server started OK')
+                        self._state.value = State.STARTED
+                        return True
+                    else:
+                        return False
+                except Exception, e:
+                    self._log.error("error: {0}".format(e))
+                    sleep(0.01)
+            return False
+        return True
+
+    def restart(self, wait=None):
+        self._log.debug('restart')
+        self.shutdown()
+        self._state.value = State.INITIAL
+        self.start(wait=True)
+        self._log.debug('restarted')
+
+    def stop(self):
+        self.shutdown()
+
+    def _signal_children(self):
+        pid = self._process.pid
+        proc = psutil.Process(pid)
+        kids = proc.get_children(recursive=False)
+        self._log.debug('signaling {0} request child processes'.format(len(kids)))
+        for kid in kids:
+            try:
+                self._log.debug('\t signal request process [{0}]'.format(kid.pid))
+                kid.send_signal(signal.SIGUSR1)
+            except psutil.NoSuchProcess:
+                self._log.error('\t process [{0}] no longer exists (skipping)'.format(kid.pid))
+
+    # noinspection PyBroadException
+    def _finalize(self):
+        """ Shutdown the manager process; will be registered as a finalizer """
+        if not self._process:
+            return
+
+        if self._process.is_alive():
+            self._signal_children()
+
+            self._log.debug('sending shutdown message to server')
+            try:
+                self._dispatch("#SHUTDOWN")
+            except Exception:
+                pass
+
+            self._log.debug('wait for server-starter process to terminate')
+            self._process.join(timeout=10.0)
+
+            if self._process.is_alive():
+                self._log.debug('manager still alive')
+                if hasattr(self._process, 'terminate'):
+                    self._log.debug('trying to `terminate()` manager process')
+                    self._process.terminate()
+                    self._process.join(timeout=10.0)
+                    if self._process.is_alive():
+                        self._log.debug('manager still alive after terminate!')
+            else:
+                self._log.debug('server-starter process has terminated')
+        self._state.value = State.SHUTDOWN
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.shutdown()
+
+    @property
+    def bound_address(self):
+        return self._bound_address

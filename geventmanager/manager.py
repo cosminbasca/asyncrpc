@@ -3,7 +3,7 @@ from geventmanager.log import get_logger
 from geventmanager.proxy import InetProxy, GeventProxy, GeventPooledProxy, Dispatcher
 from geventmanager.server import PreforkedRpcServer, ThreadedRpcServer
 from multiprocessing.managers import State
-from multiprocessing import Pipe, Process, Manager
+from multiprocessing import Pipe, Process
 from multiprocessing.util import Finalize
 from gevent.monkey import patch_all
 from gevent import reinit
@@ -15,6 +15,8 @@ import psutil
 
 __author__ = 'basca'
 
+__all__ = ['RpcManager', 'GeventManager']
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # a generic manager, that supports gevent cooperative sockets as well. The server can be threaded or preforked
@@ -24,11 +26,11 @@ class GeventManager(object):
     _registry = {}
 
     @classmethod
-    def register(cls, type_id, callable=None):
+    def register(cls, type_id, initialiser):
         if '_registry' not in cls.__dict__:
             cls._registry = cls._registry.copy()
 
-        cls._registry[type_id] = callable
+        cls._registry[type_id] = initialiser
 
         def proxy_creator(self, *args, **kwargs):
             _init = Dispatcher(self._bound_address, type_id=type_id)
@@ -40,14 +42,15 @@ class GeventManager(object):
                     proxy = GeventProxy(instance_id, self._bound_address)
             else:
                 proxy = InetProxy(instance_id, self._bound_address)
-            self._log.debug('created proxy "{0}" for instance id={1} of type {2}'.format(type(proxy), instance_id, type_id))
+            self._log.debug(
+                'created proxy "{0}" for instance id={1} of type {2}'.format(type(proxy), instance_id, type_id))
             return proxy
 
         proxy_creator.__name__ = type_id
         setattr(cls, type_id, proxy_creator)
 
     def __init__(self, address=None, async=False, async_pooled=False, gevent_patch=False, pool_concurrency=32,
-                 preforked=False, retries=2000, **kwargs):
+                 retries=2000, **kwargs):
         self._log = get_logger(self.__class__.__name__)
 
         self._process = None
@@ -63,15 +66,10 @@ class GeventManager(object):
         self._pool_concurrency = pool_concurrency
         self._retries = retries
 
-        self._Server = ThreadedRpcServer
-        if preforked:
-            self._Server = PreforkedRpcServer
-            self._mem_manager = Manager()
-            # use a "shared" dictionary from multiprocessing
-            self._registry = self._mem_manager.dict(self._registry)
 
-        self._log.debug('manager using [{0}] server'.format(self._Server.__name__))
-
+    @property
+    def _server_class(self):
+        return ThreadedRpcServer
 
     def _run_server(self, writer, **kwargs):
         """ Create a server, report its address and run it """
@@ -84,7 +82,7 @@ class GeventManager(object):
             retries = 0
             while retries < self._retries:
                 try:
-                    server = self._Server(self._address, self._registry, **kwargs)
+                    server = self._server_class(self._address, self._registry, **kwargs)
                     break
                 except socket.timeout:
                     retries -= 1
@@ -207,3 +205,31 @@ class GeventManager(object):
     @property
     def bound_address(self):
         return self._bound_address
+
+
+class PreforkedManager(GeventManager):
+    @classmethod
+    def register(cls, instance, **kwargs):
+        if '_registry' not in cls.__dict__:
+            cls._registry = cls._registry.copy()
+
+        instance_id = hash(instance)
+        cls._registry[instance_id] = instance
+
+        return instance_id
+
+    @property
+    def _server_class(self):
+        return PreforkedRpcServer
+
+    def get_instance(self, instance_id):
+        if self._async:
+            if self._async_pooled:
+                proxy = GeventPooledProxy(instance_id, self._bound_address, concurrency=self._pool_concurrency)
+            else:
+                proxy = GeventProxy(instance_id, self._bound_address)
+        else:
+            proxy = InetProxy(instance_id, self._bound_address)
+        self._log.debug(
+            'created proxy "{0}" for instance id={1}'.format(type(proxy), instance_id))
+        return proxy
