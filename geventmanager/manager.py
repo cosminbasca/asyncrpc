@@ -97,7 +97,7 @@ class GeventManager(object):
                 'Rpc server exited. {0}'.format('Exception on exit: {0}'.format(err if err.message else '')))
 
 
-    def start(self, wait=False):
+    def start(self, wait=True):
         """ start server in a different process (avoid blocking the main thread due to the servers event loop ) """
         if self._state.value != State.INITIAL:
             raise InvalidStateException('[rpc manager] has already been initialized')
@@ -143,6 +143,9 @@ class GeventManager(object):
 
     def stop(self):
         self.shutdown()
+
+    def debug(self):
+        self._dispatch('#DEBUG')
 
     def _signal_children(self):
         pid = self._process.pid

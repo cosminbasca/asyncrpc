@@ -80,7 +80,8 @@ def main2():
         pass
 
     MyManager.register("MyClass", MyClass)
-    manager = MyManager(async=False, preforked=False)
+    # manager = MyManager(async=False, preforked=False)
+    manager = MyManager(async=False, preforked=True)
     print '[1 >]'
     manager.start()
 
@@ -96,6 +97,8 @@ def main2():
     my2.add()
     my2.add()
     my4.add()
+
+    manager.debug()
 
     print "My 1 = {0}".format(my1.current_counter())
     print "My 2 = {0}".format(my2.current_counter())

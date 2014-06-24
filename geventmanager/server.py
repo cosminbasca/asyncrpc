@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 import inspect
+from pprint import pformat
 import socket
 import sys
 import os
@@ -115,6 +116,16 @@ class RpcServer(object):
                 self._log.debug('=> SHUTDOWN')
                 self.shutdown()
                 result = True
+            elif name == '#DEBUG':
+                self._log.debug('''
+------------------------------------------------------------------------------------------------------------------------
+REGISTRY:
+{0}
+------------------------------------------------------------------------------------------------------------------------
+INSTANCES:
+{1}
+------------------------------------------------------------------------------------------------------------------------
+'''.format(pformat(self._registry), pformat(self._instances)))
             else:
                 instance_info = self._instances.get(_id, None)
                 if not instance_info:
@@ -141,7 +152,7 @@ class RpcServer(object):
 class ThreadedRpcServer(RpcServer):
     def __init__(self, address, registry, threads=1024, backlog=64):
         super(ThreadedRpcServer, self).__init__(address, registry)
-        self._semaphore = BoundedSemaphore(value=threads) # to limit the number of concurrent threads ...
+        self._semaphore = BoundedSemaphore(value=threads)  # to limit the number of concurrent threads ...
         self._sock = InetRpcSocket()
         self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         # self._sock.settimeout(None)
@@ -192,13 +203,6 @@ class RpcHandlerChild(pfs.BaseChild):
     def __init__(self, server_socket, max_requests, child_conn, protocol, *args, **kwargs):
         self._handle_rpc = None
         super(RpcHandlerChild, self).__init__(server_socket, max_requests, child_conn, protocol, *args, **kwargs)
-
-    def initialize(self, rpc_handler=None):
-        if not hasattr(rpc_handler, 'handle_rpc'):
-            raise ValueError('handler must expose handle_rpc member!')
-        self._handle_rpc = getattr(rpc_handler, 'handle_rpc')
-        if not hasattr(self._handle_rpc, '__call__'):
-            raise ValueError('handle_rpc member is not callable')
 
     def process_request(self):
         sock = InetRpcSocket(self.conn)
