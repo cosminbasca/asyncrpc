@@ -26,6 +26,8 @@ _RETRY_WAIT = 0.025
 class Proxy(object):
     __metaclass__ = ABCMeta
 
+    public = ['port', 'host', 'address', 'send', 'wait']
+
     @abstractproperty
     def _rpc_socket_impl(self):
         return None
@@ -51,7 +53,7 @@ class Proxy(object):
 
     def __del__(self):
         # delete server-side instance
-        self._send('#DEL')
+        self.send('#DEL')
 
     @property
     def port(self):
@@ -65,7 +67,7 @@ class Proxy(object):
     def address(self):
         return self._address
 
-    def _send(self, name, *args, **kwargs):
+    def send(self, name, *args, **kwargs):
         _sock = None
         result = None
         try:
@@ -101,7 +103,7 @@ class Proxy(object):
 
     def __getattr__(self, func):
         def func_wrapper(*args, **kwargs):
-            return self._send(func, *args, **kwargs)
+            return self.send(func, *args, **kwargs)
 
         self.__dict__[func] = func_wrapper
         return func_wrapper
@@ -192,15 +194,16 @@ class Dispatcher(InetProxy):
     public = []
 
     def __init__(self, address, type_id=None, **kwargs):
-        super(Dispatcher, self).__init__(type_id, address.address if isinstance(address, RpcSocket) else address, **kwargs)
+        super(Dispatcher, self).__init__(type_id, address.address if isinstance(address, RpcSocket) else address,
+                                         **kwargs)
 
     def __call__(self, message, *args, **kwargs):
         if not message.startswith('#'):
             raise ValueError('method "dispatch" can only be used to serve builtin messages!')
-        return self._send(message, *args, **kwargs)
+        return self.send(message, *args, **kwargs)
 
     def __del__(self):
-        pass # override so that no deletion occurs on server side ...
+        pass  # override so that no deletion occurs on server side ...
 
 
 def dispatch(address, message, *args, **kwargs):

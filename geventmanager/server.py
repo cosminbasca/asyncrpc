@@ -15,7 +15,7 @@ from multiprocessing import cpu_count
 
 __author__ = 'basca'
 
-__all__ = ['RpcServer', 'ThreadedRpcServer', 'PreforkedRpcServer']
+__all__ = ['RpcHandler', 'RpcServer', 'ThreadedRpcServer', 'PreforkedRpcServer']
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -28,8 +28,18 @@ def get_methods(obj):
             not method_name.startswith('_') and hasattr(impl, '__call__')}
 
 
-class RpcServer(object):
+class RpcHandler(object):
     __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def receive(self, sock):
+        pass
+
+
+class RpcServer(RpcHandler):
+    __metaclass__ = ABCMeta
+
+    public = ['port', 'host', 'address', 'close', 'bound_address', 'run', 'shutdown', 'receive']
 
     def __init__(self, address, registry, **kwargs):
         if isinstance(address, (tuple, list)):
@@ -71,9 +81,6 @@ class RpcServer(object):
     def bound_address(self):
         pass
 
-    def stop_requests(self):
-        pass
-
     @abstractmethod
     def run(self):
         pass
@@ -88,7 +95,7 @@ class RpcServer(object):
                 sys.exit(0)
 
     # noinspection PyBroadException
-    def _receive(self, sock):
+    def receive(self, sock):
         try:
             request = sock.read()
             name, _id, args, kwargs = loads(request)
@@ -182,7 +189,7 @@ class ThreadedRpcServer(RpcServer):
     def handle_request(self, sock):
         try:
             sock = InetRpcSocket(sock)
-            self._receive(sock)
+            self.receive(sock)
         except EOFError:
             self._log.debug('eof error on handle_request')
         finally:
@@ -200,13 +207,16 @@ class ThreadedRpcServer(RpcServer):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class RpcHandlerChild(pfs.BaseChild):
-    def __init__(self, server_socket, max_requests, child_conn, protocol, *args, **kwargs):
-        self._handle_rpc = None
-        super(RpcHandlerChild, self).__init__(server_socket, max_requests, child_conn, protocol, *args, **kwargs)
+    def __init__(self, server_socket, max_requests, child_conn, protocol, rpc_handler=None):
+        super(RpcHandlerChild, self).__init__(server_socket, max_requests, child_conn, protocol, rpc_handler=rpc_handler)
+
+        if not isinstance(rpc_handler, RpcHandler):
+            raise ValueError('rpc_handler is not an instance of RpcHandler')
+        self.receive = rpc_handler.receive
 
     def process_request(self):
         sock = InetRpcSocket(self.conn)
-        self._handle_rpc(sock)
+        self.receive(sock)
 
 
 class PreforkedRpcServer(RpcServer):
