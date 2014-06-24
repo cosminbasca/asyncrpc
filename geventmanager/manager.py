@@ -123,13 +123,15 @@ class GeventManager(object):
             while True:
                 try:
                     if self._process.is_alive():
+                        self._log.debug("server process started, waiting for initialization ... ")
                         self._dispatch("#PING")
                         self._log.debug('server started OK')
                         self._state.value = State.STARTED
                         return True
                     else:
                         return False
-                except:
+                except Exception, e:
+                    self._log.error("error: {0}".format(e))
                     sleep(0.01)
             return False
         return True
