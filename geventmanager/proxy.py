@@ -191,14 +191,17 @@ class GeventPooledProxy(GeventProxy):
 class Dispatcher(InetProxy):
     public = []
 
-    def __init__(self, address, **kwargs):
-        super(Dispatcher, self).__init__(None, address.address if isinstance(address, RpcSocket) else address, **kwargs)
+    def __init__(self, address, type_id=None, **kwargs):
+        super(Dispatcher, self).__init__(type_id, address.address if isinstance(address, RpcSocket) else address, **kwargs)
 
     def __call__(self, message, *args, **kwargs):
         if not message.startswith('#'):
             raise ValueError('method "dispatch" can only be used to serve builtin messages!')
         return self._send(message, *args, **kwargs)
 
+    def __del__(self):
+        pass # override so that no deletion occurs on server side ...
+
 
 def dispatch(address, message, *args, **kwargs):
-    return Dispatcher(address).dispatch(message, *args, **kwargs)
+    return Dispatcher(address)(message, *args, **kwargs)

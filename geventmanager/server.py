@@ -99,8 +99,9 @@ class RpcServer(object):
                     self._mutex.acquire()
                     _class = self._registry[_id]
                     instance = _class(*args, **kwargs)
-                    self._instances[_id] = instance, get_methods(instance)
-                    result = hash(instance)
+                    instance_id = hash(instance)
+                    self._instances[instance_id] = instance, get_methods(instance)
+                    result = instance_id
                 finally:
                     self._mutex.release()
             elif name == '#DEL':

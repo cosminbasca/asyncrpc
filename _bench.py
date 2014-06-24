@@ -92,10 +92,10 @@ def main2():
     my5 = manager.MyClass(counter=50)
 
     print '3 >'
-    my1.inc()
-    my2.inc()
-    my2.inc()
-    my4.inc()
+    my1.add()
+    my2.add()
+    my2.add()
+    my4.add()
 
     print "My 1 = {0}".format(my1.current_counter())
     print "My 2 = {0}".format(my2.current_counter())

@@ -31,7 +31,8 @@ class GeventManager(object):
         cls._registry[type_id] = callable
 
         def proxy_creator(self, *args, **kwargs):
-            instance_id = self._dispatch('#INIT', *args, **kwargs)
+            _init = Dispatcher(self._bound_address, type_id=type_id)
+            instance_id = _init('#INIT', *args, **kwargs)
             if self._async:
                 if self._async_pooled:
                     proxy = GeventPooledProxy(instance_id, self._bound_address, concurrency=self._pool_concurrency)
