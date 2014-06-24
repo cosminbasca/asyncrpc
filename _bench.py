@@ -81,7 +81,10 @@ def main2():
 
     MyManager.register("MyClass", MyClass)
     # manager = MyManager(async=False, preforked=False)
+    # manager = MyManager(async=True, async_pooled=False, preforked=False)
+    # manager = MyManager(async=True, async_pooled=True, preforked=False)
     manager = MyManager(async=False, preforked=True)
+    # manager = MyManager(async=True, async_pooled=False, preforked=True)
     print '[1 >]'
     manager.start()
 

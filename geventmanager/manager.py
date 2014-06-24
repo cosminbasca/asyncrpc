@@ -40,6 +40,7 @@ class GeventManager(object):
                     proxy = GeventProxy(instance_id, self._bound_address)
             else:
                 proxy = InetProxy(instance_id, self._bound_address)
+            self._log.debug('created proxy "{0}" for instance id={1} of type {2}'.format(type(proxy), instance_id, type_id))
             return proxy
 
         proxy_creator.__name__ = type_id
