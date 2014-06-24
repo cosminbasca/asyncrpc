@@ -208,7 +208,8 @@ class ThreadedRpcServer(RpcServer):
 # ----------------------------------------------------------------------------------------------------------------------
 class RpcHandlerChild(pfs.BaseChild):
     def __init__(self, server_socket, max_requests, child_conn, protocol, rpc_handler=None):
-        super(RpcHandlerChild, self).__init__(server_socket, max_requests, child_conn, protocol, rpc_handler=rpc_handler)
+        super(RpcHandlerChild, self).__init__(server_socket, max_requests, child_conn, protocol,
+                                              rpc_handler=rpc_handler)
 
         if not isinstance(rpc_handler, RpcHandler):
             raise ValueError('rpc_handler is not an instance of RpcHandler')
