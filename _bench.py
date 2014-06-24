@@ -95,6 +95,8 @@ def main2():
     my4 = manager.MyClass(counter=40)
     my5 = manager.MyClass(counter=50)
 
+    manager.debug()
+
     print '[3 >]'
     my1.add()
     my2.add()
