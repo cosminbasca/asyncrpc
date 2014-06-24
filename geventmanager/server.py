@@ -95,13 +95,13 @@ class RpcServer(object):
 
             if name == '#INIT':
                 try:
-                    self._log.debug('=> INIT')
                     self._mutex.acquire()
                     _class = self._registry[_id]
                     instance = _class(*args, **kwargs)
                     instance_id = hash(instance)
                     self._instances[instance_id] = instance, get_methods(instance)
                     result = instance_id
+                    self._log.debug('=> INIT, instance id= {0}'.format(instance_id))
                 finally:
                     self._mutex.release()
             elif name == '#DEL':
