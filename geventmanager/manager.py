@@ -94,7 +94,7 @@ class GeventManager(object):
             if server:
                 writer.send(server.bound_address)
                 writer.close()
-                server.run()
+                server.start()
             else:
                 writer.close()
         except Exception, err:

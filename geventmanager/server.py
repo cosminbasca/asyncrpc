@@ -94,7 +94,7 @@ class RpcServer(RpcHandler):
         pass
 
     @abstractmethod
-    def run(self):
+    def start(self):
         pass
 
     def shutdown(self, os_exit=True):
@@ -181,7 +181,7 @@ class ThreadedRpcServer(RpcServer):
     def close(self):
         self._sock.close()
 
-    def run(self):
+    def start(self):
         self._log.debug('starting server ... ')
         try:
             self._sock.listen(self._backlog)
@@ -249,7 +249,7 @@ class PreforkedRpcServer(RpcServer):
         self._manager.close()
         self._log.info('exit')
 
-    def run(self):
+    def start(self):
         self._log.info('starting ... ')
         self._manager.run()
 
@@ -279,7 +279,7 @@ class BackgroundServerRunner(object):
             if server:
                 writer.send(server.bound_address)
                 writer.close()
-                server.run()
+                server.start()
             else:
                 writer.close()
         except Exception, err:
