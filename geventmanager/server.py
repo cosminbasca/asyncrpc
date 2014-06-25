@@ -254,8 +254,16 @@ class PreforkedRpcServer(RpcServer):
         self._manager.run()
 
 
-
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# Background runner ...
+#
+# ----------------------------------------------------------------------------------------------------------------------
 class BackgroundServerRunner(object):
+    def __init__(self, gevent_patch=False, retries=2000):
+        self._gevent_patch = gevent_patch
+        self._retries = retries
+
     def _run_server(self, writer, **kwargs):
         """ Create a server, report its address and run it """
         try:
