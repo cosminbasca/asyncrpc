@@ -141,19 +141,18 @@ class RpcServer(RpcHandler):
                 self.shutdown()
                 result = True
             elif name == '#DEBUG':
-                self._log.debug('''
+                self._log.debug('''=> DEBUG REGISTRY:
 ------------------------------------------------------------------------------------------------------------------------
-REGISTRY:
 {0}
 ------------------------------------------------------------------------------------------------------------------------
 '''.format(dict_to_str(self._registry)))
             else:
                 instance = self._registry.get(_id, None)
-                self._log.debug('got instance {0}'.format(instance))
+                # self._log.debug('got instance {0}'.format(instance))
                 if not instance:
-                    raise InvalidInstanceId('insance with id:{0} not registered'.format(_id))
+                    raise InvalidInstanceId('instance with id:{0} not registered'.format(_id))
                 func = getattr(instance, name, None)
-                self._log.debug('\tgot func {0}'.format(func))
+                # self._log.debug('\tgot func {0}'.format(func))
                 if not func:
                     raise NameError('instance does not have method "{0}"'.format(name))
                 result = func(*args, **kwargs)
