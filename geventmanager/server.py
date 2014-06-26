@@ -1,25 +1,30 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
-from msgpackutil import dumps, loads
-import errno
 from geventmanager import Dispatcher
-from geventmanager.exceptions import current_error, InvalidInstanceId, InvalidType
+from geventmanager.exceptions import current_error, InvalidInstanceId, InvalidStateException
 from geventmanager.log import get_logger
 from geventmanager.rpcsocket import InetRpcSocket, GeventRpcSocket, RpcSocket
-from threading import Thread, BoundedSemaphore, RLock
-import preforkserver as pfs
+from multiprocessing.managers import State
+from multiprocessing.util import Finalize
 from multiprocessing import cpu_count, Pipe, Process
+from msgpackutil import dumps, loads
+from threading import Thread, BoundedSemaphore, RLock
 from gevent.monkey import patch_all
+import preforkserver as pfs
 from gevent import reinit
 from pprint import pformat
+from time import sleep
 import traceback
 import inspect
 import socket
+import psutil
+import signal
+import errno
 import sys
 import os
 
 __author__ = 'basca'
 
-__all__ = ['RpcHandler', 'RpcServer', 'ThreadedRpcServer', 'PreforkedRpcServer']
+__all__ = ['RpcHandler', 'RpcServer', 'ThreadedRpcServer', 'PreforkedRpcServer', 'BackgroundServerRunner']
 
 logger = get_logger(__name__)
 
@@ -256,16 +261,33 @@ class PreforkedRpcServer(RpcServer):
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
-# Background runner ...
+# Background rpc server runner
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class BackgroundServerRunner(object):
-    def __init__(self, gevent_patch=False, retries=2000):
+    public = ['start', 'stop', 'restart', 'bound_address']
+
+    def __init__(self, server_class=ThreadedRpcServer, address=('127.0.0.1', 0), registry=None, gevent_patch=False,
+                 retries=2000):
+        if not issubclass(server_class, RpcServer):
+            raise ValueError('server_class must be a subclass of RpcServer')
+        self._server_class = server_class
+        self._address = address
+        self._registry = registry
+
         self._gevent_patch = gevent_patch
         self._retries = retries
+        self._state = State()
+        self._state.value = State.INITIAL
+        self._process = None
+        self._bound_address = None
+        self._dispatch = None
 
-    def _run_server(self, writer, **kwargs):
-        """ Create a server, report its address and run it """
+        self._stop = lambda: None
+
+        self._log = get_logger(server_class.__name__)
+
+    def _background_start(self, writer, **kwargs):
         try:
             if self._gevent_patch:
                 reinit()
@@ -302,7 +324,7 @@ class BackgroundServerRunner(object):
 
         reader, writer = Pipe(duplex=False)
 
-        self._process = Process(target=self._run_server, args=(writer,))
+        self._process = Process(target=self._background_start, args=(writer,))
 
         identity = ':'.join(str(i) for i in self._process._identity)
         self._process.name = type(self).__name__ + '-' + identity
@@ -315,7 +337,7 @@ class BackgroundServerRunner(object):
         self._dispatch = Dispatcher(self._bound_address)
         self._log.debug('server initialized dispatcher')
 
-        self.shutdown = Finalize(self, self._finalize, args=(), exitpriority=0)
+        self._stop = Finalize(self, self._finalize, args=(), exitpriority=0)
 
         if wait:
             while True:
@@ -336,15 +358,15 @@ class BackgroundServerRunner(object):
 
     def restart(self, wait=None):
         self._log.debug('restart')
-        self.shutdown()
+        self._stop()
         self._state.value = State.INITIAL
-        self.start(wait=True)
+        self.start(wait=wait)
         self._log.debug('restarted')
 
     def stop(self):
-        self.shutdown()
+        self._stop()
 
-    def _signal_children(self):
+    def _signal_children(self, signals=(signal.SIGINT, signal.SIGUSR1)):
         pid = self._process.pid
         proc = psutil.Process(pid)
         kids = proc.get_children(recursive=False)
@@ -352,13 +374,13 @@ class BackgroundServerRunner(object):
         for kid in kids:
             try:
                 self._log.debug('\t signal request process [{0}]'.format(kid.pid))
-                kid.send_signal(signal.SIGUSR1)
+                for sig in signals:
+                    kid.send_signal(sig)
             except psutil.NoSuchProcess:
                 self._log.error('\t process [{0}] no longer exists (skipping)'.format(kid.pid))
 
     # noinspection PyBroadException
     def _finalize(self):
-        """ Shutdown the manager process; will be registered as a finalizer """
         if not self._process:
             return
 
@@ -390,7 +412,7 @@ class BackgroundServerRunner(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.shutdown()
+        self._stop()
 
     @property
     def bound_address(self):
