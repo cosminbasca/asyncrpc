@@ -265,14 +265,14 @@ class PreforkedRpcServer(RpcServer):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class BackgroundServerRunner(object):
-    public = ['start', 'stop', 'restart', 'bound_address']
+    public = ['start', 'stop', 'restart', 'bound_address', 'dispatch', 'is_running']
 
     def __init__(self, server_class=ThreadedRpcServer, address=('127.0.0.1', 0), registry=None, gevent_patch=False,
                  retries=2000):
         if not issubclass(server_class, RpcServer):
             raise ValueError('server_class must be a subclass of RpcServer')
         self._server_class = server_class
-        self._address = address
+        self._address = address if address else ('127.0.0.1', 0)
         self._registry = registry
 
         self._gevent_patch = gevent_patch
@@ -345,8 +345,8 @@ class BackgroundServerRunner(object):
                     if self._process.is_alive():
                         self._log.debug("server process started, waiting for initialization ... ")
                         self._dispatch("#PING")
-                        self._log.debug('server started OK')
                         self._state.value = State.STARTED
+                        self._log.debug('server started OK')
                         return True
                     else:
                         return False
@@ -417,3 +417,11 @@ class BackgroundServerRunner(object):
     @property
     def bound_address(self):
         return self._bound_address
+
+    @property
+    def dispatch(self):
+        return self._dispatch
+
+    @property
+    def is_running(self):
+        return self._state.value == State.STARTED

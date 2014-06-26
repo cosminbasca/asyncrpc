@@ -5,7 +5,6 @@ from pandas import DataFrame
 import numpy as np
 import numpy.random as rnd
 from geventmanager import GeventManager
-from geventmanager.manager import PreforkedManager
 
 __author__ = 'basca'
 
