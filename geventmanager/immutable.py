@@ -28,5 +28,7 @@ __author__ = 'basca'
 #             'created proxy "{0}" for instance id={1}'.format(type(proxy), instance_id))
 #         return proxy
 
-class PreforkedClient(object):
+
+
+class PreforkedRpcClient(object):
     pass
