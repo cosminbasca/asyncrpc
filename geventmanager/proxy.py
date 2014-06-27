@@ -38,7 +38,7 @@ class Proxy(object):
             raise ValueError('socket is not an RpcSocket instance!')
         return sock
 
-    def __init__(self, instance_id, address, retries=2000, **kwargs):
+    def __init__(self, instance_id, address, slots=None, retries=2000, **kwargs):
         if isinstance(address, (tuple, list)):
             host, port = address
         elif isinstance(address, (str, unicode)):
@@ -49,6 +49,7 @@ class Proxy(object):
         self._id = instance_id
         self._address = (host, port)
         self._retries = retries
+        self._slots = slots
         self._log = get_logger(self.__class__.__name__)
 
     def __del__(self):
@@ -103,6 +104,8 @@ class Proxy(object):
 
     def __getattr__(self, func):
         def func_wrapper(*args, **kwargs):
+            if self._slots and func not in self._slots:
+                raise ValueError('access to function {0} is restricted'.format(func))
             return self.send(func, *args, **kwargs)
 
         self.__dict__[func] = func_wrapper
@@ -171,8 +174,8 @@ class GeventProxy(Proxy):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class GeventPooledProxy(GeventProxy):
-    def __init__(self, instance_id, address, retries=2000, concurrency=32, timeout=300, **kwargs):
-        super(GeventPooledProxy, self).__init__(instance_id, address, sock=None, retries=retries, **kwargs)
+    def __init__(self, instance_id, address, slots=None, retries=2000, concurrency=32, timeout=300, **kwargs):
+        super(GeventPooledProxy, self).__init__(instance_id, address, slots=slots, sock=None, retries=retries, **kwargs)
         self._connection_pool = ConnectionPool(self.host, self.port, size=concurrency, network_timeout=timeout,
                                                connection_timeout=timeout, disable_ipv6=False)
 
@@ -191,7 +194,7 @@ class GeventPooledProxy(GeventProxy):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class Dispatcher(InetProxy):
-    public = []
+    public = ['port', 'host', 'address']
 
     def __init__(self, address, type_id=None, **kwargs):
         super(Dispatcher, self).__init__(type_id, address.address if isinstance(address, RpcSocket) else address,
