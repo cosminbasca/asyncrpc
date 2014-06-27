@@ -75,7 +75,7 @@ class RpcHandler(object):
                 handler = self._handle_rpc_call
                 self._log.debug('calling function: "{0}"'.format(name))
             else:
-                self._log.debug('received: "{0}"'.format(name))
+                self._log.info('received: "{0}"'.format(name))
             result = handler(name, _id, *args, **kwargs)
             error = None
         except Exception, e:
@@ -182,7 +182,7 @@ class RpcServer(RpcHandler):
         return True
 
     def _handler_debug(self, name, instance_id, *args, **kwargs):
-        self._log.debug('''
+        self._log.info('''
 ------------------------------------------------------------------------------------------------------------------------
 REGISTRY:
 {0}
