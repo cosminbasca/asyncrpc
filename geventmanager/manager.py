@@ -30,19 +30,22 @@ class GeventManager(object):
 
             _init = Dispatcher(self.bound_address, type_id=type_id)
             instance_id = _init('#INIT', *args, **kwargs)
-            if self._async:
-                if self._async_pooled:
-                    proxy = GeventPooledProxy(instance_id, self.bound_address, concurrency=self._pool_concurrency)
-                else:
-                    proxy = GeventProxy(instance_id, self.bound_address)
-            else:
-                proxy = InetProxy(instance_id, self.bound_address)
+            proxy = self._proxy(instance_id)
             self._log.debug(
                 'created proxy "{0}" for instance id={1} of type {2}'.format(type(proxy), instance_id, type_id))
             return proxy
 
         proxy_creator.__name__ = type_id
         setattr(cls, type_id, proxy_creator)
+
+    def _proxy(self, instance_id):
+        if self._async:
+            if self._async_pooled:
+                return GeventPooledProxy(instance_id, self.bound_address, concurrency=self._pool_concurrency)
+            else:
+                return GeventProxy(instance_id, self.bound_address)
+        else:
+            return InetProxy(instance_id, self.bound_address)
 
     def __init__(self, address=None, async=False, async_pooled=False, gevent_patch=False, pool_concurrency=32,
                  retries=2000, **kwargs):
