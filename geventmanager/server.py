@@ -358,9 +358,8 @@ class BackgroundServerRunner(object):
         reader, writer = Pipe(duplex=False)
 
         self._process = Process(target=self._background_start, args=(writer,))
-
-        identity = ':'.join(str(i) for i in self._process._identity)
-        self._process.name = type(self).__name__ + '-' + identity
+        self._process.name = type(self).__name__ + '-' + self._process.name
+        self._log.debug('starting background process: {0}'.format(self._process.name))
         self._process.start()
 
         writer.close()
