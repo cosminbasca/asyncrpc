@@ -73,9 +73,9 @@ class RpcHandler(object):
             handler = self._get_handler(name)
             if not hasattr(handler, '__call__'):
                 handler = self._handle_rpc_call
-                self._log.debug('executing object function "{0}"'.format(name))
+                self._log.debug('calling function: "{0}"'.format(name))
             else:
-                self._log.debug('executing command "{0}"'.format(name))
+                self._log.debug('received: "{0}"'.format(name))
             result = handler(name, _id, *args, **kwargs)
             error = None
         except Exception, e:
@@ -165,7 +165,7 @@ class RpcServer(RpcHandler):
             instance = _class(*args, **kwargs)
             instance_id = hash(instance)
             self._registry[instance_id] = instance
-            self._log.debug('got instance id= {0}'.format(instance_id))
+            self._log.debug('got instance id:{0}'.format(instance_id))
             return instance_id
         finally:
             self._mutex.release()
@@ -183,11 +183,11 @@ class RpcServer(RpcHandler):
 
     def _handler_debug(self, name, instance_id, *args, **kwargs):
         self._log.debug('''
-# ------------------------------------------------------------------------------------------------------------------------
-# REGISTRY:
-# {0}
-# ------------------------------------------------------------------------------------------------------------------------
-# '''.format(dict_to_str(self._registry)))
+------------------------------------------------------------------------------------------------------------------------
+REGISTRY:
+{0}
+------------------------------------------------------------------------------------------------------------------------
+'''.format(dict_to_str(self._registry)))
 
     def _handle_rpc_call(self, name, instance_id, *args, **kwargs):
         instance = self._registry.get(instance_id, None)

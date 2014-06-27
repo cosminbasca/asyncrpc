@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from geventmanager.log import get_logger
 from geventmanager.proxy import InetProxy, GeventProxy, GeventPooledProxy, Dispatcher
 from geventmanager.server import PreforkedRpcServer, ThreadedRpcServer, BackgroundServerRunner
@@ -14,7 +15,7 @@ __all__ = ['RpcManager', 'GeventManager']
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class GeventManager(object):
-    _registry = {}
+    _registry = OrderedDict()
 
     @classmethod
     def register(cls, type_id, initialiser):
