@@ -46,20 +46,59 @@ def dict_to_str(dictionary):
     ])
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# base Rpc server handler class
+#
+# ----------------------------------------------------------------------------------------------------------------------
 class RpcHandler(object):
     __metaclass__ = ABCMeta
 
+    def __init__(self, *args, **kwargs):
+        self._log = get_logger(self.__class__.__name__)
+
     @abstractmethod
-    def receive(self, sock):
+    def _handle_rpc_call(self, name, instance_id, *args, **kwargs):
+        return None
+
+    @abstractmethod
+    def _get_handler(self, name):
         pass
 
+    def receive(self, sock):
+        try:
+            request = sock.read()
+            name, _id, args, kwargs = loads(request)
 
+            handler = self._get_handler(name)
+            if not hasattr(handler, '__call__'):
+                handler = self._handle_rpc_call
+                self._log.debug('executing object function "{0}"'.format(name))
+            else:
+                self._log.debug('executing command "{0}"'.format(name))
+            result = handler(name, _id, *args, **kwargs)
+            error = None
+        except Exception, e:
+            error = current_error()
+            result = None
+            self._log.error('[_handle_request] error: {0}, traceback: \n{1}'.format(e, traceback.format_exc()))
+        response = dumps((result, error))
+        sock.write(response)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# the actual rpc sever base api
+#
+# ----------------------------------------------------------------------------------------------------------------------
 class RpcServer(RpcHandler):
     __metaclass__ = ABCMeta
 
     public = ['port', 'host', 'address', 'close', 'bound_address', 'run', 'shutdown', 'receive']
 
     def __init__(self, address, registry, **kwargs):
+        super(RpcServer, self).__init__()
+
         if isinstance(address, (tuple, list)):
             host, port = address
         elif isinstance(address, (str, unicode)):
@@ -68,15 +107,23 @@ class RpcServer(RpcHandler):
         else:
             raise ValueError('address, must be either a tuple/list or string of the name:port form')
 
-        # if not isinstance(registry, dict):
-        # raise ValueError('registry must be a dictionary')
+        if not isinstance(registry, dict):
+            raise ValueError('registry must be a dictionary')
 
         self._registry = registry
         self._address = (host, port)
         self._mutex = RLock()
 
-        self._log = get_logger(self.__class__.__name__)
+        self._handlers = {
+            '#INIT': self._handler_init,
+            '#DEL': self._handler_del,
+            '#PING': self._handler_ping,
+            '#SHUTDOWN': self._handler_shutdown,
+            '#DEBUG': self._handler_debug,
+        }
 
+    def _get_handler(self, name):
+        return self._handlers.get(name, None)
 
     @property
     def port(self):
@@ -111,58 +158,45 @@ class RpcServer(RpcHandler):
             else:
                 sys.exit(0)
 
-    # noinspection PyBroadException
-    def receive(self, sock):
+    def _handler_init(self, name, type_id, *args, **kwargs):
         try:
-            request = sock.read()
-            name, _id, args, kwargs = loads(request)
-            result = False
+            self._mutex.acquire()
+            _class = self._registry[type_id]
+            instance = _class(*args, **kwargs)
+            instance_id = hash(instance)
+            self._registry[instance_id] = instance
+            self._log.debug('got instance id= {0}'.format(instance_id))
+            return instance_id
+        finally:
+            self._mutex.release()
 
-            if name == '#INIT':
-                try:
-                    self._mutex.acquire()
-                    _class = self._registry[_id]
-                    instance = _class(*args, **kwargs)
-                    instance_id = hash(instance)
-                    self._registry[instance_id] = instance
-                    result = instance_id
-                    self._log.debug('=> INIT, instance id= {0}'.format(instance_id))
-                finally:
-                    self._mutex.release()
-            elif name == '#DEL':
-                self._log.debug('=> DEL')
-                del self._registry[_id]
-                result = True
-            elif name == "#PING":
-                self._log.debug('=> PING')
-                result = True
-            elif name == '#SHUTDOWN':
-                self._log.debug('=> SHUTDOWN')
-                self.shutdown()
-                result = True
-            elif name == '#DEBUG':
-                self._log.debug('''=> DEBUG REGISTRY:
-------------------------------------------------------------------------------------------------------------------------
-{0}
-------------------------------------------------------------------------------------------------------------------------
-'''.format(dict_to_str(self._registry)))
-            else:
-                instance = self._registry.get(_id, None)
-                # self._log.debug('got instance {0}'.format(instance))
-                if not instance:
-                    raise InvalidInstanceId('instance with id:{0} not registered'.format(_id))
-                func = getattr(instance, name, None)
-                # self._log.debug('\tgot func {0}'.format(func))
-                if not func:
-                    raise NameError('instance does not have method "{0}"'.format(name))
-                result = func(*args, **kwargs)
-            error = None
-        except Exception:
-            error = current_error()
-            result = None
-            self._log.error('[_handle_request] error, traceback: \n{0}'.format(traceback.format_exc()))
-        response = dumps((result, error))
-        sock.write(response)
+    def _handler_del(self, name, instance_id, *args, **kwargs):
+        del self._registry[instance_id]
+        return True
+
+    def _handler_ping(self, name, instance_id, *args, **kwargs):
+        return True
+
+    def _handler_shutdown(self, name, instance_id, *args, **kwargs):
+        self.shutdown()
+        return True
+
+    def _handler_debug(self, name, instance_id, *args, **kwargs):
+        self._log.debug('''
+# ------------------------------------------------------------------------------------------------------------------------
+# REGISTRY:
+# {0}
+# ------------------------------------------------------------------------------------------------------------------------
+# '''.format(dict_to_str(self._registry)))
+
+    def _handle_rpc_call(self, name, instance_id, *args, **kwargs):
+        instance = self._registry.get(instance_id, None)
+        if not instance:
+            raise InvalidInstanceId('insance with id:{0} not registered'.format(instance_id))
+        func = getattr(instance, name, None)
+        if not func:
+            raise NameError('instance does not have method "{0}"'.format(name))
+        return func(*args, **kwargs)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
