@@ -54,37 +54,9 @@ def dict_to_str(dictionary):
 class RpcHandler(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, *args, **kwargs):
-        self._log = get_logger(self.__class__.__name__)
-
     @abstractmethod
-    def _handle_rpc_call(self, name, instance_id, *args, **kwargs):
-        return None
-
-    @abstractmethod
-    def _get_handler(self, name):
-        pass
-
     def receive(self, sock):
-        try:
-            request = sock.read()
-            name, _id, args, kwargs = loads(request)
-
-            handler = self._get_handler(name)
-            if not hasattr(handler, '__call__'):
-                handler = self._handle_rpc_call
-                self._log.debug('calling function: "{0}"'.format(name))
-            else:
-                self._log.info('received: "{0}"'.format(name))
-            result = handler(name, _id, *args, **kwargs)
-            error = None
-        except Exception, e:
-            error = current_error()
-            result = None
-            self._log.error('[_handle_request] error: {0}, traceback: \n{1}'.format(e, traceback.format_exc()))
-        response = dumps((result, error))
-        sock.write(response)
-
+        pass
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -113,6 +85,8 @@ class RpcServer(RpcHandler):
         self._registry = registry
         self._address = (host, port)
         self._mutex = RLock()
+
+        self._log = get_logger(self.__class__.__name__)
 
         self._handlers = {
             '#INIT': self._handler_init,
@@ -198,7 +172,25 @@ REGISTRY:
             raise NameError('instance does not have method "{0}"'.format(name))
         return func(*args, **kwargs)
 
+    def receive(self, sock):
+        try:
+            request = sock.read()
+            name, _id, args, kwargs = loads(request)
 
+            handler = self._handlers.get(name, None)
+            if not hasattr(handler, '__call__'):
+                handler = self._handle_rpc_call
+                self._log.debug('calling function: "{0}"'.format(name))
+            else:
+                self._log.info('received: "{0}"'.format(name))
+            result = handler(name, _id, *args, **kwargs)
+            error = None
+        except Exception, e:
+            error = current_error()
+            result = None
+            self._log.error('[_handle_request] error: {0}, traceback: \n{1}'.format(e, traceback.format_exc()))
+        response = dumps((result, error))
+        sock.write(response)
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # Threaded RPC server - backed by an INET socket
@@ -351,7 +343,6 @@ class BackgroundServerRunner(object):
 
 
     def start(self, wait=True):
-        """ start server in a different process (avoid blocking the main thread due to the servers event loop ) """
         if self._state.value != State.INITIAL:
             raise InvalidStateException('[rpc manager] has already been initialized')
 
