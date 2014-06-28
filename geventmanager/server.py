@@ -393,14 +393,17 @@ class BackgroundServerRunner(object):
         pid = self._process.pid
         proc = psutil.Process(pid)
         kids = proc.get_children(recursive=False)
-        self._log.debug('signaling {0} request child processes'.format(len(kids)))
-        for kid in kids:
-            try:
-                self._log.debug('\t signal request process [{0}]'.format(kid.pid))
-                for sig in signals:
-                    kid.send_signal(sig)
-            except psutil.NoSuchProcess:
-                self._log.error('\t process [{0}] no longer exists (skipping)'.format(kid.pid))
+        if len(kids):
+            self._log.debug('signaling {0} request child processes'.format(len(kids)))
+            for kid in kids:
+                try:
+                    self._log.debug('\t signal request process [{0}]'.format(kid.pid))
+                    for sig in signals:
+                        kid.send_signal(sig)
+                except psutil.NoSuchProcess:
+                    self._log.error('\t process [{0}] no longer exists (skipping)'.format(kid.pid))
+        else:
+            self._log.debug('no child processes to signal on stop')
 
     # noinspection PyBroadException
     def _finalize(self):
