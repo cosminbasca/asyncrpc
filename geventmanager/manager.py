@@ -1,9 +1,8 @@
+from geventmanager.server import PreforkedRpcServer, ThreadedRpcServer, BackgroundServerRunner
+from geventmanager.proxy import InetProxy, GeventProxy, GeventPooledProxy, Dispatcher
+from geventmanager.exceptions import RpcServerNotStartedException
+from geventmanager.log import get_logger
 from collections import OrderedDict
-from geventutil.log import get_logger
-from geventutil.proxy import InetProxy, GeventProxy, GeventPooledProxy, Dispatcher
-from geventutil.server import PreforkedRpcServer, ThreadedRpcServer, BackgroundServerRunner
-from geventutil.exceptions import RpcServerNotStartedException
-
 
 __author__ = 'basca'
 

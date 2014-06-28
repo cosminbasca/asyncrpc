@@ -1,8 +1,8 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
-from geventutil import Dispatcher
-from geventutil.exceptions import current_error, InvalidInstanceId, InvalidStateException
-from geventutil.log import get_logger
-from geventutil.rpcsocket import InetRpcSocket, GeventRpcSocket, RpcSocket
+from geventmanager.log import get_logger
+from geventmanager.exceptions import current_error, InvalidInstanceId, InvalidStateException
+from geventmanager.rpcsocket import InetRpcSocket, GeventRpcSocket, RpcSocket
+from geventmanager.proxy import Dispatcher
 from multiprocessing.managers import State
 from multiprocessing.util import Finalize
 from multiprocessing import cpu_count, Pipe, Process

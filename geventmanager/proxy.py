@@ -1,14 +1,14 @@
+from geventmanager.rpcsocket import GeventRpcSocket, InetRpcSocket, RpcSocket
+from geventmanager.exceptions import get_exception
+from geventmanager.log import get_logger
+from geventhttpclient.connectionpool import ConnectionPool
 from abc import ABCMeta, abstractproperty
+from gevent import sleep as gevent_sleep
+from msgpackutil import dumps, loads
+from time import sleep
+import traceback
 import socket
 import errno
-import traceback
-from time import sleep
-from gevent import sleep as gevent_sleep
-from geventhttpclient.connectionpool import ConnectionPool
-from msgpackutil import dumps, loads
-from geventutil.rpcsocket import GeventRpcSocket, InetRpcSocket, RpcSocket
-from geventutil.log import get_logger
-from geventutil.exceptions import get_exception
 
 
 __author__ = 'basca'

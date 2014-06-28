@@ -2,7 +2,7 @@ import inspect
 from time import time, sleep
 from pandas import DataFrame
 import numpy.random as rnd
-from geventutil.manager import GeventManager, PreforkedSingletonManager
+from geventmanager.manager import GeventManager, PreforkedSingletonManager
 
 __author__ = 'basca'
 
