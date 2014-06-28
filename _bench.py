@@ -77,63 +77,44 @@ class MyClass(object):
     def current_counter(self):
         return self._c
 
-def main2():
+def bench_gevent_man(async=False, pooled=False):
     class MyManager(GeventManager):
         pass
 
     MyManager.register("MyClass", MyClass)
-    manager = MyManager(async=False)
-    # manager = MyManager(async=True, async_pooled=False)
-    # manager = MyManager(async=True, async_pooled=True)
-    print '[1 >]'
+    manager = MyManager(async=async, async_pooled=pooled)
     manager.start()
 
-    print '[2 >]'
     my1 = manager.MyClass(counter=10)
-    my2 = manager.MyClass(counter=20)
-    # my3 = manager.MyClass(counter=30)
-    # my4 = manager.MyClass(counter=40)
-    # my5 = manager.MyClass(counter=50)
 
-    manager.debug()
+    calls = 10000
+    t0 = time()
+    for i in xrange(calls):
+        my1.current_counter()
+    t1 = time()-t0
+    ncalls = long(float(calls) / float(t1))
+    print 'DID: {0} calls / second'.format(ncalls)
 
-    print '[3.1 >]'
-    my1.add()
-    print '[3.2 >]'
-    my2.add()
-    print '[3.3 >]'
-    my2.add()
-    # my4.add()
-
-    manager.debug()
-
-    print "My 1 = {0}".format(my1.current_counter())
-    print "My 2 = {0}".format(my2.current_counter())
-    # print "My 3 = {0}".format(my3.current_counter())
-    # print "My 4 = {0}".format(my4.current_counter())
-    # print "My 5 = {0}".format(my5.current_counter())
 
     del manager
     print 'done'
 
 
-def main3():
+def bench_prefork_man(async=False, pooled=False):
     my_instance = MyClass(counter=10)
-    print 'instance counter = {0}'.format(my_instance.current_counter())
-    my_instance.add(15)
-    print 'instance counter = {0}'.format(my_instance.current_counter())
-    manager = PreforkedSingletonManager(my_instance, slots=['current_counter'], async=False)
+    manager = PreforkedSingletonManager(my_instance, slots=['current_counter'], async=async, async_pooled=pooled)
     manager.start()
 
     manager.debug()
 
     my_instance = manager.proxy
-    print 'instance counter = {0}'.format(my_instance.current_counter())
-    try:
-        my_instance.add(15)
-    except ValueError, e:
-        print 'called add (error) : ',e
-    print 'instance counter = {0}'.format(my_instance.current_counter())
+    calls = 10000
+    t0 = time()
+    for i in xrange(calls):
+        my_instance.current_counter()
+    t1 = time()-t0
+    ncalls = long(float(calls) / float(t1))
+    print 'DID: {0} calls / second'.format(ncalls)
 
     del manager
     print 'done'
@@ -142,10 +123,10 @@ def main3():
 if __name__ == '__main__':
     # main()
     print '------------------------------------------------------------------------------------------------------------'
-    main2()
+    bench_gevent_man()
     # sleep(1)
     print '------------------------------------------------------------------------------------------------------------'
-    main3()
+    bench_prefork_man()
     # [numpy tolist        ] took 0.00174593925476 seconds      numpy tolist is 25x faster than list comprehension
     # [list comprehension  ] took 0.0259149074554 seconds
     # [dict                ] took 0.0167138576508 seconds       DICT 2x faster than getattr
