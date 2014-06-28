@@ -5,7 +5,7 @@ import _bench
 __author__ = 'basca'
 
 
-def profile(prefork=False, async=False, pooled=False, wait=2):
+def profile(prefork=False, async=False, pooled=False, wait=1):
     call = 'bench_prefork_man' if prefork else 'bench_gevent_man'
     stats_name = "profile_{0}_async_{1}_pooled_{2}.prof".format('pfork' if prefork else 'gevent',
                                                                 'T' if async else 'F',
