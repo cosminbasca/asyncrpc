@@ -2,7 +2,7 @@ import inspect
 from time import time, sleep
 from pandas import DataFrame
 import numpy.random as rnd
-from geventmanager import set_level
+from geventmanager import set_level, get_logger
 from geventmanager.manager import GeventManager, PreforkedSingletonManager
 
 __author__ = 'basca'
@@ -115,6 +115,28 @@ def bench_prefork_man(async=False, pooled=False):
     t1 = time()-t0
     ncalls = long(float(calls) / float(t1))
     print 'DID: {0} calls / second'.format(ncalls)
+
+    del manager
+    print 'done'
+
+
+def bench_old_geventman(async=False, pooled=False):
+    from geventmanager.__deprecated__.sockrpc import GeventManager as _GeventManager
+    manager = _GeventManager(MyClass, handler_args=(), handler_kwargs={'counter':10},
+                 host=None, logger=get_logger(_GeventManager.__name__),
+                 prefork=False, async=async, pooled=pooled, gevent_patch=False, concurrency=32)
+    manager.start()
+
+    my1 = manager.proxy
+
+    calls = 10000
+    t0 = time()
+    for i in xrange(calls):
+        my1.current_counter()
+    t1 = time()-t0
+    ncalls = long(float(calls) / float(t1))
+    print 'DID: {0} calls / second'.format(ncalls)
+
 
     del manager
     print 'done'
