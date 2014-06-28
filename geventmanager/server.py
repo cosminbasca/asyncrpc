@@ -286,6 +286,24 @@ class PreforkedRpcServer(RpcServer):
         self._log.info('starting ... ')
         self._manager.run()
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# tornado based preforked tcpserver
+#
+# ----------------------------------------------------------------------------------------------------------------------
+class TornadoRpcServer(RpcServer):
+    def __init__(self, address, registry, **kwargs):
+        super(TornadoRpcServer, self).__init__(address, registry, **kwargs)
+
+    def close(self):
+        pass
+
+    def bound_address(self):
+        pass
+
+    def start(self):
+        pass
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 #

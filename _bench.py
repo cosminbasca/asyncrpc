@@ -143,15 +143,11 @@ def bench_old_geventman(async=False, pooled=False):
 
 
 if __name__ == '__main__':
-    # main()
     print '------------------------------------------------------------------------------------------------------------'
     bench_gevent_man()
-    # sleep(1)
     print '------------------------------------------------------------------------------------------------------------'
     bench_prefork_man()
-    # [numpy tolist        ] took 0.00174593925476 seconds      numpy tolist is 25x faster than list comprehension
-    # [list comprehension  ] took 0.0259149074554 seconds
-    # [dict                ] took 0.0167138576508 seconds       DICT 2x faster than getattr
-    # [getattr             ] took 0.028911113739 seconds
+    print '------------------------------------------------------------------------------------------------------------'
+    bench_old_geventman()
 
 
