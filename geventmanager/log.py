@@ -12,3 +12,16 @@ fileConfig(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logging.ini
 
 def get_logger(name):
     return logging.getLogger(name)
+
+__levels__ = {
+    'debug': logging.DEBUG,
+    'info': logging.INFO,
+    'warning': logging.WARNING,
+    'error': logging.ERROR,
+    'critical': logging.CRITICAL,
+}
+
+def set_level(level, default=logging.WARNING):
+    if isinstance(level, basestring):
+        level = __levels__.get(level, default)
+    logging.root.setLevel(level)

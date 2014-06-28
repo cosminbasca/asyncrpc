@@ -2,9 +2,13 @@ import inspect
 from time import time, sleep
 from pandas import DataFrame
 import numpy.random as rnd
+from geventmanager import set_level
 from geventmanager.manager import GeventManager, PreforkedSingletonManager
 
 __author__ = 'basca'
+
+set_level('warning')
+# set_level('debug')
 
 def main():
     data = [range(100) for i in xrange(1000) ]
