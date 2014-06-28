@@ -1,8 +1,8 @@
 import inspect
-from time import time
+from time import time, sleep
 from pandas import DataFrame
 import numpy.random as rnd
-from geventutil.manager import GeventManager
+from geventutil.manager import GeventManager, PreforkedSingletonManager
 
 __author__ = 'basca'
 
@@ -109,12 +109,39 @@ def main2():
     # print "My 4 = {0}".format(my4.current_counter())
     # print "My 5 = {0}".format(my5.current_counter())
 
+    del manager
+    print 'done'
+
+
+def main3():
+    my_instance = MyClass(counter=10)
+    print 'instance counter = {0}'.format(my_instance.current_counter())
+    my_instance.add(15)
+    print 'instance counter = {0}'.format(my_instance.current_counter())
+    manager = PreforkedSingletonManager(my_instance, slots=['current_counter'], async=False)
+    manager.start()
+
+    manager.debug()
+
+    my_instance = manager.proxy
+    print 'instance counter = {0}'.format(my_instance.current_counter())
+    try:
+        my_instance.add(15)
+    except ValueError, e:
+        print 'called add (error) : ',e
+    print 'instance counter = {0}'.format(my_instance.current_counter())
+
+    del manager
     print 'done'
 
 
 if __name__ == '__main__':
     # main()
+    print '------------------------------------------------------------------------------------------------------------'
     main2()
+    # sleep(1)
+    print '------------------------------------------------------------------------------------------------------------'
+    main3()
     # [numpy tolist        ] took 0.00174593925476 seconds      numpy tolist is 25x faster than list comprehension
     # [list comprehension  ] took 0.0259149074554 seconds
     # [dict                ] took 0.0167138576508 seconds       DICT 2x faster than getattr

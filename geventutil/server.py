@@ -415,6 +415,9 @@ class BackgroundServerRunner(object):
 
         if self._process.is_alive():
             self._signal_children()
+            self._process.join(timeout=0.1)
+            if not self._process.is_alive():
+                return
 
             self._log.debug('sending shutdown message to server')
             try:

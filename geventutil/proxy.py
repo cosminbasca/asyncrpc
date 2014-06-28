@@ -45,7 +45,8 @@ class Proxy(object):
             host, port = address.split(':')
             port = int(port)
         else:
-            raise ValueError('address, must be either a tuple/list or string of the name:port form')
+            raise ValueError(
+                'address, must be either a tuple/list or string of the name:port form, got {0}'.format(address))
         self._id = instance_id
         self._address = (host, port)
         self._retries = retries

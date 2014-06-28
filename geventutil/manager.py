@@ -59,12 +59,18 @@ class GeventManager(object):
         self._runner = BackgroundServerRunner(server_class=self._server_class, address=address,
                                               registry=self._registry, gevent_patch=gevent_patch, retries=retries)
 
+    def __del__(self):
+        self._runner.stop()
+
     @property
     def _server_class(self):
         return ThreadedRpcServer
 
     def start(self, wait=True):
         self._runner.start(wait=wait)
+
+    def stop(self):
+        self._runner.stop()
 
     def debug(self):
         if self._runner.is_running:
@@ -103,9 +109,11 @@ class PreforkedSingletonManager(GeventManager):
         super(PreforkedSingletonManager, self).__init__(address=address, async=async, async_pooled=async_pooled,
                                                         gevent_patch=gevent_patch, pool_concurrency=pool_concurrency,
                                                         retries=retries)
-        self._instance_proxy = self._proxy(0)
-        self._log.debug('created proxy "{0}"'.format(type(self._instance_proxy)))
+        self._instance_proxy = None
 
     @property
     def proxy(self):
+        if not self._instance_proxy:
+            self._instance_proxy = self._proxy(0, slots=self._slots)
+            self._log.debug('created proxy "{0}"'.format(type(self._instance_proxy)))
         return self._instance_proxy
