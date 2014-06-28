@@ -1,8 +1,8 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
-from geventmanager import Dispatcher
-from geventmanager.exceptions import current_error, InvalidInstanceId, InvalidStateException
-from geventmanager.log import get_logger
-from geventmanager.rpcsocket import InetRpcSocket, GeventRpcSocket, RpcSocket
+from geventutil import Dispatcher
+from geventutil.exceptions import current_error, InvalidInstanceId, InvalidStateException
+from geventutil.log import get_logger
+from geventutil.rpcsocket import InetRpcSocket, GeventRpcSocket, RpcSocket
 from multiprocessing.managers import State
 from multiprocessing.util import Finalize
 from multiprocessing import cpu_count, Pipe, Process
@@ -57,6 +57,7 @@ class RpcHandler(object):
     @abstractmethod
     def receive(self, sock):
         pass
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -191,6 +192,8 @@ REGISTRY:
             self._log.error('[_handle_request] error: {0}, traceback: \n{1}'.format(e, traceback.format_exc()))
         response = dumps((result, error))
         sock.write(response)
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # Threaded RPC server - backed by an INET socket

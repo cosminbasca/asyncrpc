@@ -1,8 +1,8 @@
 from collections import OrderedDict
-from geventmanager.log import get_logger
-from geventmanager.proxy import InetProxy, GeventProxy, GeventPooledProxy, Dispatcher
-from geventmanager.server import PreforkedRpcServer, ThreadedRpcServer, BackgroundServerRunner
-from geventmanager.exceptions import RpcServerNotStartedException
+from geventutil.log import get_logger
+from geventutil.proxy import InetProxy, GeventProxy, GeventPooledProxy, Dispatcher
+from geventutil.server import PreforkedRpcServer, ThreadedRpcServer, BackgroundServerRunner
+from geventutil.exceptions import RpcServerNotStartedException
 
 
 __author__ = 'basca'
@@ -73,7 +73,6 @@ class GeventManager(object):
     @property
     def bound_address(self):
         return self._runner.bound_address
-
 
 
 # ----------------------------------------------------------------------------------------------------------------------

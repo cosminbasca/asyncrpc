@@ -1,10 +1,8 @@
 import inspect
 from time import time
-import numpy as np
 from pandas import DataFrame
-import numpy as np
 import numpy.random as rnd
-from geventmanager import GeventManager
+from geventutil.manager import GeventManager
 
 __author__ = 'basca'
 

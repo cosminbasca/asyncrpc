@@ -6,9 +6,9 @@ from time import sleep
 from gevent import sleep as gevent_sleep
 from geventhttpclient.connectionpool import ConnectionPool
 from msgpackutil import dumps, loads
-from geventmanager.rpcsocket import GeventRpcSocket, InetRpcSocket, RpcSocket
-from geventmanager.log import get_logger
-from geventmanager.exceptions import get_exception
+from geventutil.rpcsocket import GeventRpcSocket, InetRpcSocket, RpcSocket
+from geventutil.log import get_logger
+from geventutil.exceptions import get_exception
 
 
 __author__ = 'basca'
