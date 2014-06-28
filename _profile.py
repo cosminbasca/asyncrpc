@@ -19,8 +19,8 @@ def profile(prefork=False, async=False, pooled=False, wait=1):
 
 if __name__ == '__main__':
     profile(prefork=False, async=False, pooled=False)   # DID: 2454 calls / second
-    profile(prefork=False, async=True, pooled=False)    # DID: 715 calls / second
-    profile(prefork=False, async=True, pooled=True)     # DID: 391 calls / second
+    # profile(prefork=False, async=True, pooled=False)    # DID: 715 calls / second
+    # profile(prefork=False, async=True, pooled=True)     # DID: 391 calls / second
     profile(prefork=True, async=False, pooled=False)    # DID: 549 calls / second
-    profile(prefork=True, async=True, pooled=False)     # DID: 534 calls / second
-    profile(prefork=True, async=True, pooled=True)      # DID: 443 calls / second
+    # profile(prefork=True, async=True, pooled=False)     # DID: 534 calls / second
+    # profile(prefork=True, async=True, pooled=True)      # DID: 443 calls / second
