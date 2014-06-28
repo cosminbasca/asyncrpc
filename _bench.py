@@ -11,39 +11,39 @@ set_level('warning')
 # set_level('debug')
 
 def main():
-    data = [range(100) for i in xrange(1000) ]
+    data = [range(100) for i in xrange(1000)]
     df = DataFrame(data)
 
     t0 = time()
     v = df.values.tolist()
-    print '[numpy tolist        ] took {0} seconds'.format(time()-t0)
+    print '[numpy tolist        ] took {0} seconds'.format(time() - t0)
 
     _itertuples = df.itertuples
     t0 = time()
     v = [r for r in _itertuples(index=False)]
-    print '[list comprehension  ] took {0} seconds'.format(time()-t0)
+    print '[list comprehension  ] took {0} seconds'.format(time() - t0)
 
     class TestObj(object):
         def m_a(self):
             print 'm_a'
 
         def m_b(self):
-                print 'm_b'
+            print 'm_b'
 
         def m_c(self):
-                print 'm_c'
+            print 'm_c'
 
         def m_d(self):
-                print 'm_d'
+            print 'm_d'
 
         def m_e(self):
-                print 'm_e'
+            print 'm_e'
 
         def m_f(self):
-                print 'm_f'
+            print 'm_f'
 
         def m_g(self):
-                print 'm_g'
+            print 'm_g'
 
     to = TestObj()
     methods = inspect.getmembers(to, predicate=inspect.ismethod)
@@ -51,17 +51,17 @@ def main():
 
     to_call = ['m_{0}'.format(l) for l in 'abcdefg']
 
-    calls = rnd.random_integers(0, len(to_call)-1, 100000)
+    calls = rnd.random_integers(0, len(to_call) - 1, 100000)
 
     t0 = time()
     for i in calls:
         func = methods[to_call[i]]
-    print '[dict                ] took {0} seconds'.format(time()-t0)
+    print '[dict                ] took {0} seconds'.format(time() - t0)
 
     t0 = time()
     for i in calls:
         func = getattr(to, to_call[i])
-    print '[getattr             ] took {0} seconds'.format(time()-t0)
+    print '[getattr             ] took {0} seconds'.format(time() - t0)
 
 
 class MyClass(object):
@@ -77,6 +77,7 @@ class MyClass(object):
     def current_counter(self):
         return self._c
 
+
 def bench_gevent_man(async=False, pooled=False):
     class MyManager(GeventManager):
         pass
@@ -91,10 +92,9 @@ def bench_gevent_man(async=False, pooled=False):
     t0 = time()
     for i in xrange(calls):
         my1.current_counter()
-    t1 = time()-t0
+    t1 = time() - t0
     ncalls = long(float(calls) / float(t1))
     print 'DID: {0} calls / second'.format(ncalls)
-
 
     del manager
     print 'done'
@@ -112,7 +112,7 @@ def bench_prefork_man(async=False, pooled=False):
     t0 = time()
     for i in xrange(calls):
         my_instance.current_counter()
-    t1 = time()-t0
+    t1 = time() - t0
     ncalls = long(float(calls) / float(t1))
     print 'DID: {0} calls / second'.format(ncalls)
 
@@ -122,9 +122,10 @@ def bench_prefork_man(async=False, pooled=False):
 
 def bench_old_geventman(async=False, pooled=False):
     from geventmanager.__deprecated__.sockrpc import GeventManager as _GeventManager
-    manager = _GeventManager(MyClass, handler_args=(), handler_kwargs={'counter':10},
-                 host=None, logger=get_logger(_GeventManager.__name__),
-                 prefork=False, async=async, pooled=pooled, gevent_patch=False, concurrency=32)
+
+    manager = _GeventManager(MyClass, handler_args=(), handler_kwargs={'counter': 10},
+                             host=None, logger=get_logger(_GeventManager.__name__),
+                             prefork=False, async=async, pooled=pooled, gevent_patch=False, concurrency=32)
     manager.start()
 
     my1 = manager.proxy
@@ -133,10 +134,9 @@ def bench_old_geventman(async=False, pooled=False):
     t0 = time()
     for i in xrange(calls):
         my1.current_counter()
-    t1 = time()-t0
+    t1 = time() - t0
     ncalls = long(float(calls) / float(t1))
     print 'DID: {0} calls / second'.format(ncalls)
-
 
     del manager
     print 'done'

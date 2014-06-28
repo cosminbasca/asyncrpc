@@ -264,8 +264,8 @@ class RpcHandlerChild(pfs.BaseChild):
 
 
 class PreforkedRpcServer(RpcServer):
-    def __init__(self, host, registry, backlog=64, max_servers=cpu_count() * 2, min_servers=cpu_count(),
-                 min_spare_servers=cpu_count(), max_spare_servers=cpu_count(), max_requests=0):
+    def __init__(self, host, registry, backlog=64, max_servers=cpu_count(), min_servers=cpu_count(),
+                 min_spare_servers=cpu_count()/2, max_spare_servers=cpu_count()/2, max_requests=0):
         super(PreforkedRpcServer, self).__init__(host, registry)
         self._manager = pfs.Manager(RpcHandlerChild, child_kwargs={'rpc_handler': self},
                                     max_servers=max_servers, min_servers=min_servers,
