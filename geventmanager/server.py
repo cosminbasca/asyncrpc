@@ -10,6 +10,8 @@ from msgpackutil import dumps, loads
 from threading import Thread, BoundedSemaphore, RLock
 from gevent.monkey import patch_all
 import preforkserver as pfs
+from tornado.tcpserver import TCPServer
+from tornado.ioloop import IOLoop
 from gevent import reinit
 from pprint import pformat
 from time import sleep
@@ -291,9 +293,21 @@ class PreforkedRpcServer(RpcServer):
 # tornado based preforked tcpserver
 #
 # ----------------------------------------------------------------------------------------------------------------------
+class RpcTcpServer(TCPServer):
+    def __init__(self):
+        super(RpcTcpServer, self).__init__()
+        self._stream = None
+
+    def handle_stream(self, stream, address):
+        self._stream = stream
+        # self._read_line()
+
+
 class TornadoRpcServer(RpcServer):
-    def __init__(self, address, registry, **kwargs):
+    def __init__(self, address, registry, multiprocess=False, **kwargs):
         super(TornadoRpcServer, self).__init__(address, registry, **kwargs)
+        self._multiprocess = multiprocess
+        self._server = TCPServer()
 
     def close(self):
         pass
