@@ -4,7 +4,7 @@ from gevent import socket as gevent_socket
 import socket
 import errno
 
-__all__ = ['RpcSocket', 'InetRpcSocket', 'GeventRpcSocket', 'DEFAULT_CONNECTION_TIMEOUT']
+__all__ = ['RpcSocket', 'InetRpcSocket', 'GeventRpcSocket']
 
 __author__ = 'basca'
 
@@ -39,7 +39,7 @@ class RpcSocket(object):
 
     @abstractmethod
     def _initsock(self, sock):
-        return None
+        return sock
 
     @abstractmethod
     def _shutdown(self):
