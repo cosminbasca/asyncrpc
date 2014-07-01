@@ -50,6 +50,8 @@ def retry(max_retries, wait=None):
 class RpcSocket(object):
     __metaclass__ = ABCMeta
 
+    public = ['port', 'host', 'address', 'close', 'connect', 'write', 'read']
+
     def __init__(self, sock=None, mx_retries=2000, **kwargs):
         self._sock = self._init_sock(sock)
         self._max_retries = mx_retries
@@ -160,8 +162,7 @@ class InetRpcSocket(RpcSocket):
     def _init_sock(self, sock):
         if isinstance(sock, socket.socket):
             return sock
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        return sock
+        return socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def _shutdown(self):
         self._sock.shutdown(socket.SHUT_RDWR)
