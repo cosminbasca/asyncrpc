@@ -138,9 +138,8 @@ class Proxy(object):
             return result
 
         self._log.error('[receive] exception encountered {0} '.format(error))
-        exception = get_exception(error, self._address)
-        raise exception
-
+        print error
+        raise get_exception(error, self._address)
 
 # ----------------------------------------------------------------------------------------------------------------------
 #

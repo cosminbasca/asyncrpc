@@ -1,3 +1,5 @@
+import traceback
+
 try:
     __import__('builtins')
 except ImportError:
@@ -33,6 +35,14 @@ class RemoteExceptionDescriptor(object):
         self.args = args
         self.traceback = traceback
 
+    def __str__(self):
+        return '''
+kind: {0}
+name: {1}
+args: {2}
+traceback:
+{3}
+'''.format(self.kind, self.name, self.args, ''.join(self.traceback))
 
 EXCEPTION_UNKNOWN = -1
 EXCEPTION_REMOTE = 1

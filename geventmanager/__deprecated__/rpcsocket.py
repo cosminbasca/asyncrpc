@@ -23,30 +23,6 @@ _SIZE = calcsize(_FORMAT) + 1  # (the extra 1 comes from starter)
 # an RPC socket wrapper
 #
 # ----------------------------------------------------------------------------------------------------------------------
-def retry(max_retries, wait=None):
-    def _decorator(function):
-        def wrapper(*args, **kwargs):
-            _retries = 0
-            while _retries < max_retries:
-                try:
-                    return function(*args, **kwargs)
-                except socket.timeout:
-                    _retries -= 1
-                except socket.error, err:
-                    # if type(err.args) != tuple or err[0] not in [errno.ETIMEDOUT, errno.EAGAIN]:
-                    # raise
-                    if err[0] in [errno.ETIMEDOUT, errno.EAGAIN]:
-                        _retries -= 1
-                    else:
-                        raise err
-                if hasattr(wait, '__call__'):
-                    wait()
-
-        return wrapper
-
-    return _decorator
-
-
 class RpcSocket(object):
     __metaclass__ = ABCMeta
 
@@ -54,17 +30,6 @@ class RpcSocket(object):
         self._sock = self._init_sock(sock)
         self._max_retries = mx_retries
         self._address = None
-
-        # set fast retry-enabled internal socket operations
-        @retry(self._max_retries, wait=self._wait_read)
-        def _retry_recv(size):
-            return self._sock.recv(size)
-        self.recv = _retry_recv
-
-        @retry(self._max_retries, wait=self._wait_read)
-        def _retry_sendall(sz_data, data):
-            self._sock.sendall(''.join((_STARTER, sz_data, data)))
-        self.sendall = _retry_sendall
 
     def __getattr__(self, attr):
         if hasattr(self._sock, attr):
@@ -118,14 +83,41 @@ class RpcSocket(object):
         self._sock.connect(self._address)
         return self
 
+    def _sendall(self, sz_data, data):
+        retries = 0
+        while retries < self._max_retries:
+            self._wait_write()
+            try:
+                self._sock.sendall(''.join((_STARTER, sz_data, data)))
+                break
+            except socket.timeout:
+                retries -= 1
+            except socket.error, err:
+                if type(err.args) != tuple or err[0] != errno.ETIMEDOUT:
+                    raise
+                retries -= 1
+
+    def _recv(self, size):
+        retries = 0
+        while retries < self._max_retries:
+            self._wait_read()
+            try:
+                return self._sock.recv(size)
+            except socket.timeout:
+                retries -= 1
+            except socket.error, err:
+                if type(err.args) != tuple or err[0] not in [errno.ETIMEDOUT, errno.EAGAIN]:
+                    raise
+                retries -= 1
+
     def write(self, data):
         _len = pack(_FORMAT, len(data))
-        self.sendall(_len, data)
+        self._sendall(_len, data)
 
     def read_bytes(self, size):
-        response = self.recv(size)
+        response = self._recv(size)
         while len(response) < size:
-            chunk = self.recv(size - len(response))
+            chunk = self._recv(size - len(response))
             if not chunk:
                 raise EOFError('[{0}] socket read error expected {1} bytes, received {2} bytes'.format(
                     self.__class__.__name__, size - len(response), len(response)))
@@ -139,17 +131,6 @@ class RpcSocket(object):
                 self.__class__.__name__, _STARTER, response[0]))
         size = unpack(_FORMAT, response[1:])[0]
         return self.read_bytes(size)
-
-        # def read_into(self, size, view):
-        # while size:
-        #         with retries(self._max_retries, wait=self._wait_read):
-        #             nbytes = self._sock.recv_into(view, size)
-        #             size -= nbytes
-
-        # def read2(self):
-        #     b_array = bytearray(_SIZE)
-        #     m_view = memoryview(b_array)
-        #     self.read_into(m_view, _SIZE)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
