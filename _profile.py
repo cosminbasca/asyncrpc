@@ -1,4 +1,5 @@
-import pstats, cProfile
+import pstats
+import cProfile
 from time import sleep
 import _bench
 
@@ -32,7 +33,7 @@ def _profile(async=False, pooled=False, wait=1):
 
 if __name__ == '__main__':
     # _profile(async=False, pooled=False)                   # DID: 2488 calls / second
-    profile(prefork=False, async=False, pooled=False)       # DID: 2122 calls / second
+    profile(prefork=False, async=False, pooled=False)  # DID: 2122 calls / second
     # profile(prefork=False, async=True, pooled=False)    # DID: 715 calls / second
     # profile(prefork=False, async=True, pooled=True)     # DID: 391 calls / second
     # profile(prefork=True, async=False, pooled=False)  # DID: 549 calls / second

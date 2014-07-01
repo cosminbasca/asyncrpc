@@ -265,7 +265,7 @@ class RpcHandlerChild(pfs.BaseChild):
 
 class PreforkedRpcServer(RpcServer):
     def __init__(self, host, registry, backlog=64, max_servers=cpu_count(), min_servers=cpu_count(),
-                 min_spare_servers=cpu_count()/2, max_spare_servers=cpu_count()/2, max_requests=0):
+                 min_spare_servers=cpu_count() / 2, max_spare_servers=cpu_count() / 2, max_requests=0):
         super(PreforkedRpcServer, self).__init__(host, registry)
         self._manager = pfs.Manager(RpcHandlerChild, child_kwargs={'rpc_handler': self},
                                     max_servers=max_servers, min_servers=min_servers,
@@ -285,6 +285,7 @@ class PreforkedRpcServer(RpcServer):
     def start(self):
         self._log.info('starting ... ')
         self._manager.run()
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -343,13 +344,11 @@ class BackgroundServerRunner(object):
             self._log.error(
                 'Rpc server exited. {0}'.format('Exception on exit: {0}'.format(err if err.message else '')))
 
-
     def start(self, wait=True):
         if self._state.value != State.INITIAL:
             raise InvalidStateException('[rpc manager] has already been initialized')
 
         reader, writer = Pipe(duplex=False)
-
         self._process = Process(target=self._background_start, args=(writer,))
         self._process.name = type(self).__name__ + '-' + self._process.name
         self._log.debug('starting background process: {0}'.format(self._process.name))
@@ -361,7 +360,6 @@ class BackgroundServerRunner(object):
         self._log.debug('server starting on {0}'.format(self._bound_address))
         self._dispatch = Dispatcher(self._bound_address)
         self._log.debug('server initialized dispatcher')
-
         self._stop = Finalize(self, self._finalize, args=(), exitpriority=0)
 
         if wait:
