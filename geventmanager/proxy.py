@@ -32,12 +32,6 @@ class Proxy(object):
     def _rpc_socket_impl(self):
         return None
 
-    def get_socket(self):
-        sock = self._rpc_socket_impl()
-        if not isinstance(sock, RpcSocket):
-            raise ValueError('socket is not an RpcSocket instance!')
-        return sock
-
     def __init__(self, instance_id, address, slots=None, retries=2000, **kwargs):
         if isinstance(address, (tuple, list)):
             host, port = address
@@ -52,6 +46,9 @@ class Proxy(object):
         self._retries = retries
         self._slots = slots
         self._log = get_logger(self.__class__.__name__)
+        self._RpcSocketClass = self._rpc_socket_impl
+        if not issubclass(self._RpcSocketClass, RpcSocket):
+            raise ValueError('SocketClass of type {0} is not an RpcSocket subclass'.format(self._RpcSocketClass))
 
     def __del__(self):
         # delete server-side instance
@@ -120,7 +117,7 @@ class Proxy(object):
         retries = 0
         while retries < self._retries:
             try:
-                _sock = self.get_socket()
+                _sock = self._RpcSocketClass()
                 _sock.connect(self._address)
                 return _sock
             except socket.timeout:
