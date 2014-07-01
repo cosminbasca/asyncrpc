@@ -42,7 +42,7 @@ def get_methods(obj):
 def dict_to_str(dictionary):
     return '\n'.join([
         '[{0}]\t{1} => {2}'.format(i, k, pformat(v))
-        for i, (k, v) in enumerate(dictionary.items())
+        for i, (k, v) in enumerate(dictionary.iteritems())
     ])
 
 

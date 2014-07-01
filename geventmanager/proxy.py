@@ -108,8 +108,9 @@ class Proxy(object):
             if self._slots and func not in self._slots:
                 raise ValueError('access to function {0} is restricted'.format(func))
             return self.send(func, *args, **kwargs)
-
-        self.__dict__[func] = func_wrapper
+        func_wrapper.__name__ = func
+        setattr(self, 'func', func_wrapper)
+        # self.__dict__[func] = func_wrapper
         return func_wrapper
 
     def wait(self, seconds):
