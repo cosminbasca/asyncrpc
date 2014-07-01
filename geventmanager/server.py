@@ -179,7 +179,7 @@ REGISTRY:
             name, _id, args, kwargs = loads(request)
 
             handler = self._handlers.get(name, None)
-            if not hasattr(handler, '__call__'):
+            if not handler:
                 handler = self._handle_rpc_call
                 self._log.debug('calling function: "{0}"'.format(name))
             else:
