@@ -124,7 +124,7 @@ class Proxy(object):
                 retries -= 1
             except socket.error, err:
                 if type(err.args) != tuple or err[0] != errno.ETIMEDOUT:
-                    raise
+                    raise err
                 retries -= 1
             self.wait(_RETRY_WAIT)
 
