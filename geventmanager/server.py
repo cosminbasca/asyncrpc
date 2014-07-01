@@ -200,7 +200,7 @@ REGISTRY:
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class ThreadedRpcServer(RpcServer):
-    def __init__(self, address, registry, threads=1024, backlog=64):
+    def __init__(self, address, registry, threads=256, backlog=64):
         super(ThreadedRpcServer, self).__init__(address, registry)
         self._semaphore = BoundedSemaphore(value=threads)  # to limit the number of concurrent threads ...
         self._sock = InetRpcSocket()
