@@ -137,7 +137,7 @@ class RpcSocket(object):
             chunk = self.recv(size - c_size)
             if not chunk:
                 raise EOFError('[{0}] socket read error expected {1} bytes, received {2} bytes'.format(
-                    self.__class__.__name__, size - len(response), len(response)))
+                    self.__class__.__name__, size - c_size, c_size))
             chunks.append(chunk)
             c_size += len(chunk)
         return ''.join(chunks)
