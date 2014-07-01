@@ -27,7 +27,7 @@ class RpcSocket(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, sock=None, mx_retries=2000, **kwargs):
-        self._sock = self._initsock(sock)
+        self._sock = self._init_sock(sock)
         self._max_retries = mx_retries
         self._address = None
 
@@ -38,7 +38,7 @@ class RpcSocket(object):
             self.__class__.__name__, attr, type(self._sock)))
 
     @abstractmethod
-    def _initsock(self, sock):
+    def _init_sock(self, sock):
         return sock
 
     @abstractmethod
@@ -139,7 +139,7 @@ class RpcSocket(object):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class InetRpcSocket(RpcSocket):
-    def _initsock(self, sock):
+    def _init_sock(self, sock):
         if isinstance(sock, socket.socket):
             return sock
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -159,7 +159,7 @@ class GeventRpcSocket(RpcSocket):
         super(GeventRpcSocket, self).__init__(sock=sock, connection_timeout=connection_timeout)
         self.connection_timeout = connection_timeout
 
-    def _initsock(self, sock):
+    def _init_sock(self, sock):
         if isinstance(sock, gevent_socket.socket):
             return sock
         return gevent_socket.socket(gevent_socket.AF_INET, gevent_socket.SOCK_STREAM)
