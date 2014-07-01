@@ -68,6 +68,12 @@ class RpcSocket(object):
 
         self.sendall = _retry_sendall
 
+        @retry(self._max_retries, wait=self._wait_read)
+        def _retry_recv_into(buff, size):
+            return self._sock.recv_into(buff, size)
+
+        self.recv_into = _retry_recv_into
+
     def __getattr__(self, attr):
         if hasattr(self._sock, attr):
             return getattr(self._sock, attr)
@@ -121,37 +127,28 @@ class RpcSocket(object):
         return self
 
     def write(self, data):
-        _len = pack(_FORMAT, len(data))
-        self.sendall(_len, data)
+        size = pack(_FORMAT, len(data))
+        self.sendall(size, data)
 
-    def read_bytes(self, size):
-        response = self.recv(size)
-        while len(response) < size:
-            chunk = self.recv(size - len(response))
+    def _read_bytes(self, size):
+        c_size = 0
+        chunks = []
+        while c_size < size:
+            chunk = self.recv(size - c_size)
             if not chunk:
                 raise EOFError('[{0}] socket read error expected {1} bytes, received {2} bytes'.format(
                     self.__class__.__name__, size - len(response), len(response)))
-            response += chunk
-        return response
+            chunks.append(chunk)
+            c_size += len(chunk)
+        return ''.join(chunks)
 
     def read(self):
-        response = self.read_bytes(_SIZE)
+        response = self._read_bytes(_SIZE)
         if response[0] != _STARTER:
             raise IOError('[{0}] message delimiter is incorrect, expecting {1} but found {2}'.format(
                 self.__class__.__name__, _STARTER, response[0]))
         size = unpack(_FORMAT, response[1:])[0]
-        return self.read_bytes(size)
-
-        # def read_into(self, size, view):
-        # while size:
-        # with retries(self._max_retries, wait=self._wait_read):
-        #             nbytes = self._sock.recv_into(view, size)
-        #             size -= nbytes
-
-        # def read2(self):
-        #     b_array = bytearray(_SIZE)
-        #     m_view = memoryview(b_array)
-        #     self.read_into(m_view, _SIZE)
+        return self._read_bytes(size)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
