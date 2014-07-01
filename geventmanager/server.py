@@ -219,8 +219,8 @@ class ThreadedRpcServer(RpcServer):
         try:
             self._sock.listen(self._backlog)
             while True:
-                sock, addr = self._sock.accept()
                 self._semaphore.acquire()
+                sock, addr = self._sock.accept()
                 thread = Thread(target=self.handle_request, args=(sock,))
                 thread.daemon = True
                 thread.start()
