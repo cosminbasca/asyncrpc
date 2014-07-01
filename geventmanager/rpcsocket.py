@@ -59,11 +59,13 @@ class RpcSocket(object):
         @retry(self._max_retries, wait=self._wait_read)
         def _retry_recv(size):
             return self._sock.recv(size)
+
         self.recv = _retry_recv
 
         @retry(self._max_retries, wait=self._wait_read)
         def _retry_sendall(sz_data, data):
             self._sock.sendall(''.join((_STARTER, sz_data, data)))
+
         self.sendall = _retry_sendall
 
     def __getattr__(self, attr):
@@ -142,7 +144,7 @@ class RpcSocket(object):
 
         # def read_into(self, size, view):
         # while size:
-        #         with retries(self._max_retries, wait=self._wait_read):
+        # with retries(self._max_retries, wait=self._wait_read):
         #             nbytes = self._sock.recv_into(view, size)
         #             size -= nbytes
 
