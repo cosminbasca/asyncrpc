@@ -22,6 +22,8 @@ import errno
 import sys
 import os
 
+from numba import jit
+
 __author__ = 'basca'
 
 __all__ = ['RpcHandler', 'RpcServer', 'ThreadedRpcServer', 'PreforkedRpcServer', 'BackgroundServerRunner']
@@ -173,6 +175,7 @@ REGISTRY:
             raise NameError('instance does not have method "{0}"'.format(name))
         return func(*args, **kwargs)
 
+    # @jit
     def receive(self, sock):
         try:
             request = sock.read()

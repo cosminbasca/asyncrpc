@@ -4,6 +4,8 @@ from gevent import socket as gevent_socket
 import socket
 import errno
 
+from numba import jit
+
 __all__ = ['RpcSocket', 'InetRpcSocket', 'GeventRpcSocket']
 
 __author__ = 'basca'
@@ -116,6 +118,7 @@ class RpcSocket(object):
     def _wait_write(self):
         pass
 
+    # @jit
     def connect(self, address):
         if isinstance(address, (tuple, list)):
             host, port = address
@@ -128,6 +131,7 @@ class RpcSocket(object):
         self._sock.connect(self._address)
         return self
 
+    # @jit
     def write(self, data):
         size = pack(_FORMAT, len(data))
         self.sendall(size, data)
@@ -144,6 +148,7 @@ class RpcSocket(object):
             c_size += len(chunk)
         return ''.join(chunks)
 
+    # @jit
     def read(self):
         response = self._read_bytes(_SIZE)
         if response[0] != _STARTER:
