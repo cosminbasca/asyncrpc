@@ -4,7 +4,7 @@ from gevent import socket as gevent_socket
 import socket
 import errno
 
-from numba import jit
+# from numba import jit
 
 __all__ = ['RpcSocket', 'InetRpcSocket', 'GeventRpcSocket']
 

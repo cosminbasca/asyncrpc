@@ -22,7 +22,7 @@ import errno
 import sys
 import os
 
-from numba import jit
+# from numba import jit
 
 __author__ = 'basca'
 
