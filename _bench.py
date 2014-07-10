@@ -5,7 +5,9 @@ import numpy.random as rnd
 from geventmanager import set_level, get_logger
 from geventmanager.manager import GeventManager, PreforkedSingletonManager
 import gevent
+from gevent.pool import Pool
 from random import random
+from multiprocessing.pool import ThreadPool
 
 __author__ = 'basca'
 
@@ -79,7 +81,8 @@ class MyClass(object):
         self._c -= value
 
     def current_counter(self):
-        if self._w: sleep(random() * 0.8) # between 0 and .8 seconds
+        # if self._w: sleep(random() * 0.8) # between 0 and .8 seconds
+        if self._w: self._c = sum([i ** 2 for i in xrange(int(random() * 250000))])  # a computation ...
         return self._c
 
 
@@ -92,15 +95,21 @@ def bench_gevent_man(async=False, pooled=False, wait=False):
     manager.start()
 
     my1 = manager.MyClass(counter=10, wait=wait)
-    calls = 100000
+    calls = 10000
+    concurrent = 256
     t0 = time()
     if async:
-        resutls = [gevent.spawn(my1.current_counter) for i in xrange(calls)]
+        pool = Pool(concurrent)
+        [pool.apply_async(my1.current_counter) for i in xrange(calls)]
+        pool.join()
     else:
-        resutls = [my1.current_counter() for i in xrange(calls)]
+        pool = ThreadPool(concurrent)
+        [pool.apply_async(my1.current_counter) for i in xrange(calls)]
+        pool.close()
+        pool.join()
     t1 = time() - t0
     ncalls = long(float(calls) / float(t1))
-    print 'DID: {0} calls / second, total {1} results'.format(ncalls, len(resutls))
+    print 'DID: {0} calls / second, total calls: {1}'.format(ncalls, calls)
 
     del manager
     print 'done'
@@ -150,5 +159,19 @@ def bench_old_geventman(async=False, pooled=False):
 
 if __name__ == '__main__':
     # bench_gevent_man(async=False, pooled=False)
-    bench_gevent_man(async=True, pooled=False)
+
+    # bench_gevent_man(async=True, pooled=False, wait=False)
+    # DID: 1852 calls / second, total 10000 results
+
+    bench_gevent_man(async=True, pooled=False, wait=True)
+    # DID: 580 calls / second, total calls: 10000,              256 connections, wait
+    # DID: 44 calls / second, total calls: 10000                256 connections, computation
+
+    # bench_gevent_man(async=False, pooled=False, wait=True)
+    # DID: 608 calls / second, total calls: 10000               256 connections, wait
+    # DID: 42 calls / second, total calls: 10000                256 connections, computation
+
+    # :( manager server gets saturated ... :|
+
+
 

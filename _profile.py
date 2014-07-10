@@ -35,13 +35,13 @@ if __name__ == '__main__':
 
     # profile(prefork=False, async=False, pooled=False, wait=False)
     # nowait            DID: 464 calls / second, total 100000 results
-    profile(prefork=False, async=False, pooled=False, wait=True)
+    # profile(prefork=False, async=False, pooled=False, wait=True)
     # randwait(0,.8)
 
     # profile(prefork=False, async=True, pooled=False, wait=False)
-    # nowait            DID: 56369 calls / second, total 100000 results
-    # profile(prefork=False, async=True, pooled=False, wait=True)
-    # randwait(0,.8)    DID: 54445 calls / second, total 100000 results
+    # nowait
+    profile(prefork=False, async=True, pooled=False, wait=True)
+    # randwait(0,.8)
 
     # profile(prefork=False, async=True, pooled=True)
     # profile(prefork=True, async=False, pooled=False)
