@@ -4,6 +4,8 @@ from pandas import DataFrame
 import numpy.random as rnd
 from geventmanager import set_level, get_logger
 from geventmanager.manager import GeventManager, PreforkedSingletonManager
+import gevent
+from random import random
 
 __author__ = 'basca'
 
@@ -65,8 +67,10 @@ def main():
 
 
 class MyClass(object):
-    def __init__(self, counter=0):
+    def __init__(self, counter=0, wait=False):
         self._c = counter
+        self._w = wait
+        print 'with wait = ',True if self._w else False
 
     def add(self, value=1):
         self._c += value
@@ -75,10 +79,11 @@ class MyClass(object):
         self._c -= value
 
     def current_counter(self):
+        if self._w: sleep(random() * 0.8) # between 0 and .8 seconds
         return self._c
 
 
-def bench_gevent_man(async=False, pooled=False):
+def bench_gevent_man(async=False, pooled=False, wait=False):
     class MyManager(GeventManager):
         pass
 
@@ -86,15 +91,16 @@ def bench_gevent_man(async=False, pooled=False):
     manager = MyManager(async=async, async_pooled=pooled)
     manager.start()
 
-    my1 = manager.MyClass(counter=10)
-
-    calls = 10000
+    my1 = manager.MyClass(counter=10, wait=wait)
+    calls = 100000
     t0 = time()
-    for i in xrange(calls):
-        my1.current_counter()
+    if async:
+        resutls = [gevent.spawn(my1.current_counter) for i in xrange(calls)]
+    else:
+        resutls = [my1.current_counter() for i in xrange(calls)]
     t1 = time() - t0
     ncalls = long(float(calls) / float(t1))
-    print 'DID: {0} calls / second'.format(ncalls)
+    print 'DID: {0} calls / second, total {1} results'.format(ncalls, len(resutls))
 
     del manager
     print 'done'
@@ -143,5 +149,6 @@ def bench_old_geventman(async=False, pooled=False):
 
 
 if __name__ == '__main__':
-    bench_gevent_man(async=False, pooled=False)
+    # bench_gevent_man(async=False, pooled=False)
+    bench_gevent_man(async=True, pooled=False)
 

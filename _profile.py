@@ -11,12 +11,11 @@ def profile(prefork=False, async=False, pooled=False, wait=1):
     stats_name = "profile_{0}_async_{1}_pooled_{2}.prof".format('pfork' if prefork else 'gevent',
                                                                 'T' if async else 'F',
                                                                 'T' if pooled else 'F')
-    cProfile.runctx("_bench.{0}(async={1}, pooled={2})".format(call, async, pooled), globals(), locals(),
+    cProfile.runctx("_bench.{0}(async={1}, pooled={2}, wait={3})".format(call, async, pooled, wait), globals(), locals(),
                     stats_name)
     s = pstats.Stats(stats_name)
     print '------------------------------------------------------------------------------------------------------------'
     s.strip_dirs().sort_stats("time").print_stats()
-    sleep(wait)
 
 
 def _profile(async=False, pooled=False, wait=1):
@@ -32,10 +31,19 @@ def _profile(async=False, pooled=False, wait=1):
 
 
 if __name__ == '__main__':
-    # _profile(async=False, pooled=False)                   # DID: 2488 calls / second
-    profile(prefork=False, async=False, pooled=False)  # DID: 2122 calls / second
-    # profile(prefork=False, async=True, pooled=False)    # DID: 715 calls / second
-    # profile(prefork=False, async=True, pooled=True)     # DID: 391 calls / second
-    # profile(prefork=True, async=False, pooled=False)  # DID: 549 calls / second
-    # profile(prefork=True, async=True, pooled=False)     # DID: 534 calls / second
-    # profile(prefork=True, async=True, pooled=True)      # DID: 443 calls / second
+    # _profile(async=False, pooled=False)
+
+    # profile(prefork=False, async=False, pooled=False, wait=False)
+    # nowait            DID: 464 calls / second, total 100000 results
+    profile(prefork=False, async=False, pooled=False, wait=True)
+    # randwait(0,.8)
+
+    # profile(prefork=False, async=True, pooled=False, wait=False)
+    # nowait            DID: 56369 calls / second, total 100000 results
+    # profile(prefork=False, async=True, pooled=False, wait=True)
+    # randwait(0,.8)    DID: 54445 calls / second, total 100000 results
+
+    # profile(prefork=False, async=True, pooled=True)
+    # profile(prefork=True, async=False, pooled=False)
+    # profile(prefork=True, async=True, pooled=False)
+    # profile(prefork=True, async=True, pooled=True)
