@@ -40,6 +40,7 @@ def retry(max_retries, wait=None):
                     if err[0] in [errno.ETIMEDOUT, errno.EAGAIN]:
                         _retries -= 1
                     else:
+                        print 'RAISE ',err
                         raise err
                 if hasattr(wait, '__call__'):
                     wait()

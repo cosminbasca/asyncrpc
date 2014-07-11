@@ -83,7 +83,7 @@ class Proxy(object):
                 except socket.error, err:
                     if err[0] == errno.ECONNRESET or err[0] == errno.EPIPE:
                         # Connection reset by peer, or an error on the pipe...
-                        self._log.debug('rpc retry ...')
+                        self._log.info('rpc retry ...')
                         if _sock:
                             self._release_socket(_sock)
                         del _sock

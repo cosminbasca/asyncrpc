@@ -11,7 +11,8 @@ from multiprocessing.pool import ThreadPool
 
 __author__ = 'basca'
 
-set_level('warning')
+# set_level('warning')
+set_level('info')
 # set_level('debug')
 
 def main():
@@ -67,6 +68,7 @@ def main():
         func = getattr(to, to_call[i])
     print '[getattr             ] took {0} seconds'.format(time() - t0)
 
+import numpy as np
 
 class MyClass(object):
     def __init__(self, counter=0, wait=False):
@@ -82,7 +84,8 @@ class MyClass(object):
 
     def current_counter(self):
         # if self._w: sleep(random() * 0.8) # between 0 and .8 seconds
-        if self._w: self._c = sum([i ** 2 for i in xrange(int(random() * 250000))])  # a computation ...
+        # if self._w: self._c = sum([i ** 2 for i in xrange(int(random() * 100000))])  # a computation ...
+        if self._w: self._c = np.exp(np.arange(1000000)).sum()
         return self._c
 
 
@@ -92,11 +95,11 @@ def bench_gevent_man(async=False, pooled=False, wait=False):
 
     MyManager.register("MyClass", MyClass)
     manager = MyManager(async=async, async_pooled=pooled)
-    manager.start()
+    manager.start(threads=512)
 
     my1 = manager.MyClass(counter=10, wait=wait)
     calls = 10000
-    concurrent = 256
+    concurrent = 512
     t0 = time()
     if async:
         pool = Pool(concurrent)

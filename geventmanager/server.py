@@ -205,7 +205,8 @@ REGISTRY:
 class ThreadedRpcServer(RpcServer):
     def __init__(self, address, registry, threads=256, backlog=64):
         super(ThreadedRpcServer, self).__init__(address, registry)
-        self._semaphore = BoundedSemaphore(value=threads)  # to limit the number of concurrent threads ...
+        self._threads = threads
+        self._semaphore = BoundedSemaphore(value=self._threads)  # to limit the number of concurrent threads ...
         self._sock = InetRpcSocket()
         self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         # self._sock.settimeout(None)
@@ -218,7 +219,7 @@ class ThreadedRpcServer(RpcServer):
         self._sock.close()
 
     def start(self):
-        self._log.debug('starting server ... ')
+        self._log.info('starting server with {0} max connection / threads ... '.format(self._threads))
         try:
             self._sock.listen(self._backlog)
             while True:
@@ -228,16 +229,16 @@ class ThreadedRpcServer(RpcServer):
                 thread.daemon = True
                 thread.start()
         finally:
-            self._log.debug('closing the server ...')
+            self._log.info('closing the server ...')
             self.close()
-            self._log.debug('server shutdown complete')
+            self._log.info('server shutdown complete')
 
     def handle_request(self, sock):
         try:
             sock = InetRpcSocket(sock)
             self.receive(sock)
         except EOFError:
-            self._log.debug('eof error on handle_request')
+            self._log.error('eof error on handle_request')
         finally:
             sock.close()
             self._semaphore.release()
@@ -347,12 +348,12 @@ class BackgroundServerRunner(object):
             self._log.error(
                 'Rpc server exited. {0}'.format('Exception on exit: {0}'.format(err if err.message else '')))
 
-    def start(self, wait=True):
+    def start(self, wait=True, **kwargs):
         if self._state.value != State.INITIAL:
             raise InvalidStateException('[rpc manager] has already been initialized')
 
         reader, writer = Pipe(duplex=False)
-        self._process = Process(target=self._background_start, args=(writer,))
+        self._process = Process(target=self._background_start, args=(writer,), kwargs=kwargs)
         self._process.name = type(self).__name__ + '-' + self._process.name
         self._log.debug('starting background process: {0}'.format(self._process.name))
         self._process.start()
@@ -360,19 +361,19 @@ class BackgroundServerRunner(object):
         writer.close()
         self._bound_address = reader.recv()
         reader.close()
-        self._log.debug('server starting on {0}'.format(self._bound_address))
+        self._log.info('server starting on {0}'.format(self._bound_address))
         self._dispatch = Dispatcher(self._bound_address)
-        self._log.debug('server initialized dispatcher')
+        self._log.info('server initialized dispatcher')
         self._stop = Finalize(self, self._finalize, args=(), exitpriority=0)
 
         if wait:
             while True:
                 try:
                     if self._process.is_alive():
-                        self._log.debug("server process started, waiting for initialization ... ")
+                        self._log.info("server process started, waiting for initialization ... ")
                         self._dispatch("#PING")
                         self._state.value = State.STARTED
-                        self._log.debug('server started OK')
+                        self._log.info('server started OK')
                         return True
                     else:
                         return False
@@ -397,16 +398,16 @@ class BackgroundServerRunner(object):
         proc = psutil.Process(pid)
         kids = proc.get_children(recursive=False)
         if len(kids):
-            self._log.debug('signaling {0} request child processes'.format(len(kids)))
+            self._log.info('signaling {0} request child processes'.format(len(kids)))
             for kid in kids:
                 try:
-                    self._log.debug('\t signal request process [{0}]'.format(kid.pid))
+                    self._log.info('\t signal request process [{0}]'.format(kid.pid))
                     for sig in signals:
                         kid.send_signal(sig)
                 except psutil.NoSuchProcess:
                     self._log.error('\t process [{0}] no longer exists (skipping)'.format(kid.pid))
         else:
-            self._log.debug('no child processes to signal on stop')
+            self._log.info('no child processes to signal on stop')
 
     # noinspection PyBroadException
     def _finalize(self):
@@ -419,25 +420,25 @@ class BackgroundServerRunner(object):
             if not self._process.is_alive():
                 return
 
-            self._log.debug('sending shutdown message to server')
+            self._log.info('sending shutdown message to server')
             try:
                 self._dispatch("#SHUTDOWN")
             except Exception:
                 pass
 
-            self._log.debug('wait for server-starter process to terminate')
+            self._log.info('wait for server-starter process to terminate')
             self._process.join(timeout=10.0)
 
             if self._process.is_alive():
-                self._log.debug('manager still alive')
+                self._log.info('manager still alive')
                 if hasattr(self._process, 'terminate'):
-                    self._log.debug('trying to `terminate()` manager process')
+                    self._log.info('trying to `terminate()` manager process')
                     self._process.terminate()
                     self._process.join(timeout=10.0)
                     if self._process.is_alive():
-                        self._log.debug('manager still alive after terminate!')
+                        self._log.warn('manager still alive after terminate!')
             else:
-                self._log.debug('server-starter process has terminated')
+                self._log.info('server-starter process has terminated')
         self._state.value = State.SHUTDOWN
 
     def __enter__(self):

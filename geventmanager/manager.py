@@ -65,8 +65,8 @@ class GeventManager(object):
     def _server_class(self):
         return ThreadedRpcServer
 
-    def start(self, wait=True):
-        self._runner.start(wait=wait)
+    def start(self, wait=True, **kwargs):
+        self._runner.start(wait=wait, **kwargs)
 
     def stop(self):
         self._runner.stop()
