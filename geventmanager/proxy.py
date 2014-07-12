@@ -80,9 +80,7 @@ class Proxy(object):
                 try:
                     _sock = self._connect()
                     connected = True
-                    # _sock.setblocking(1)
                     _sock.write(dumps((name, self._id, args, kwargs)))
-
                     result = self._receive_result(_sock)
                     break
                 except socket.error, err:
@@ -100,7 +98,7 @@ class Proxy(object):
                             RETRIES_CONN += 1
                         print 'CONN RETRIES = {0}, WRITE RETRIES = {1}'.format(RETRIES_CONN, RETRIES_WRITE)
                     else:
-                        self._log.error('[__getattr__] exception encountered: {0} \nstack_trace = \n{1}'.format(
+                        self._log.error('[send] exception encountered: {0} \nstack_trace = \n{1}'.format(
                             err, traceback.format_exc()))
                         raise err
                 retries += 1

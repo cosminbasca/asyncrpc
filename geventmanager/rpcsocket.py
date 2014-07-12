@@ -20,7 +20,7 @@ __author__ = 'basca'
 _FORMAT = '!l'
 _STARTER = '#'
 _SIZE = calcsize(_FORMAT) + 1  # (the extra 1 comes from starter)
-RETRY_WAIT = 0.00005
+RETRY_WAIT = 0.0001
 
 def set_keepalive_linux(sock, after_idle_sec=1, interval_sec=1, max_fails=5):
     """Set TCP keepalive on an open socket.
