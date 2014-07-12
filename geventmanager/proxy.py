@@ -1,4 +1,4 @@
-from geventmanager.rpcsocket import GeventRpcSocket, InetRpcSocket, RpcSocket
+from geventmanager.rpcsocket import GeventRpcSocket, InetRpcSocket, RpcSocket, RETRY_WAIT
 from geventmanager.exceptions import get_exception
 from geventmanager.log import get_logger
 from geventhttpclient.connectionpool import ConnectionPool
@@ -14,9 +14,6 @@ import errno
 __author__ = 'basca'
 
 __all__ = ['Proxy', 'InetProxy', 'GeventProxy', 'GeventPooledProxy', 'Dispatcher', 'dispatch']
-
-_RETRY_WAIT = 0.01
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -89,7 +86,7 @@ class Proxy(object):
                             self._release_socket(_sock)
                         del _sock
                         _sock = None
-                        self.wait(_RETRY_WAIT)
+                        self.wait(RETRY_WAIT)
                     else:
                         self._log.error('[__getattr__] exception encountered: {0} \nstack_trace = \n{1}'.format(
                             err, traceback.format_exc()))
@@ -127,7 +124,7 @@ class Proxy(object):
                 if type(err.args) != tuple or err[0] != errno.ETIMEDOUT:
                     raise err
                 retries -= 1
-            self.wait(_RETRY_WAIT)
+            # self.wait(_RETRY_WAIT)
 
     def _release_socket(self, sock):
         sock.close()

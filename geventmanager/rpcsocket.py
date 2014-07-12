@@ -7,7 +7,7 @@ import socket
 import errno
 
 
-__all__ = ['RpcSocket', 'InetRpcSocket', 'GeventRpcSocket']
+__all__ = ['RpcSocket', 'InetRpcSocket', 'GeventRpcSocket', 'RETRY_WAIT']
 
 __author__ = 'basca'
 
@@ -20,6 +20,7 @@ __author__ = 'basca'
 _FORMAT = '!l'
 _STARTER = '#'
 _SIZE = calcsize(_FORMAT) + 1  # (the extra 1 comes from starter)
+RETRY_WAIT = 0.0005
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -36,17 +37,13 @@ def retry(max_retries, wait=None):
                 except socket.timeout:
                     _retries -= 1
                 except socket.error, err:
-                    # if type(err.args) != tuple or err[0] not in [errno.ETIMEDOUT, errno.EAGAIN]:
-                    # raise
                     if err[0] in [errno.ETIMEDOUT, errno.EAGAIN]:
                         _retries -= 1
                     else:
                         raise err
                 if hasattr(wait, '__call__'):
                     wait()
-
         return wrapper
-
     return _decorator
 
 
@@ -173,7 +170,7 @@ class InetRpcSocket(RpcSocket):
         self._sock.shutdown(socket.SHUT_RDWR)
 
     def _wait_read(self):
-        sleep(0.01)
+        sleep(RETRY_WAIT)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
