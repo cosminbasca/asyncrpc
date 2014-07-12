@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 from geventmanager.log import get_logger
 from geventmanager.exceptions import current_error, InvalidInstanceId, InvalidStateException
 from geventmanager.rpcsocket import InetRpcSocket, GeventRpcSocket, RpcSocket
+from SocketServer import ThreadingTCPServer, BaseRequestHandler
 from geventmanager.proxy import Dispatcher
 from multiprocessing.managers import State
 from multiprocessing.util import Finalize
@@ -54,39 +55,17 @@ def dict_to_str(dictionary):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class RpcHandler(object):
-    __metaclass__ = ABCMeta
+    public = ['receive']
 
-    @abstractmethod
-    def receive(self, sock):
-        pass
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-#
-# the actual rpc sever base api
-#
-# ----------------------------------------------------------------------------------------------------------------------
-class RpcServer(RpcHandler):
-    __metaclass__ = ABCMeta
-
-    public = ['port', 'host', 'address', 'close', 'bound_address', 'run', 'shutdown', 'receive']
-
-    def __init__(self, address, registry, **kwargs):
-        super(RpcServer, self).__init__()
-
-        if isinstance(address, (tuple, list)):
-            host, port = address
-        elif isinstance(address, (str, unicode)):
-            host, port = address.split(':')
-            port = int(port)
-        else:
-            raise ValueError('address, must be either a tuple/list or string of the name:port form')
-
+    def __init__(self, registry=None, shutdown_callback=None, **kwargs):
         if not isinstance(registry, dict):
             raise ValueError('registry must be a dictionary')
 
+        if shutdown_callback and not hasattr(shutdown_callback, '__call__'):
+            raise ValueError('shutdown_callback must be a callable instance')
+        self._shutdown_callback = shutdown_callback
+
         self._registry = registry
-        self._address = (host, port)
         self._mutex = RLock()
 
         self._log = get_logger(self.__class__.__name__)
@@ -101,39 +80,6 @@ class RpcServer(RpcHandler):
 
     def _get_handler(self, name):
         return self._handlers.get(name, None)
-
-    @property
-    def port(self):
-        return self._address[1]
-
-    @property
-    def host(self):
-        return self._address[0]
-
-    @property
-    def address(self):
-        return self._address
-
-    @abstractmethod
-    def close(self):
-        pass
-
-    @abstractproperty
-    def bound_address(self):
-        pass
-
-    @abstractmethod
-    def start(self):
-        pass
-
-    def shutdown(self, os_exit=True):
-        try:
-            self.close()
-        finally:
-            if os_exit:
-                os._exit(0)
-            else:
-                sys.exit(0)
 
     def _handler_init(self, name, type_id, *args, **kwargs):
         try:
@@ -155,7 +101,8 @@ class RpcServer(RpcHandler):
         return True
 
     def _handler_shutdown(self, name, instance_id, *args, **kwargs):
-        self.shutdown()
+        if self._shutdown_callback:
+            self._shutdown_callback()
         return True
 
     def _handler_debug(self, name, instance_id, *args, **kwargs):
@@ -197,6 +144,64 @@ REGISTRY:
         sock.write(response)
 
 
+class RpcServer(object):
+    __metaclass__ = ABCMeta
+
+    public = ['port', 'host', 'address', 'close', 'bound_address', 'run', 'shutdown']
+
+    def __init__(self, address, *args, **kwargs):
+        if isinstance(address, (tuple, list)):
+            host, port = address
+        elif isinstance(address, (str, unicode)):
+            host, port = address.split(':')
+            port = int(port)
+        else:
+            raise ValueError('address, must be either a tuple/list or string of the name:port form')
+
+        self._log = get_logger(self.__class__.__name__)
+        self._address = (host, port)
+
+    @property
+    def port(self):
+        return self._address[1]
+
+    @property
+    def host(self):
+        return self._address[0]
+
+    @property
+    def address(self):
+        return self._address
+
+    @abstractmethod
+    def close(self):
+        pass
+
+    @abstractproperty
+    def bound_address(self):
+        pass
+
+    @abstractmethod
+    def server_forever(self, *args, **kwargs):
+        pass
+
+    def start(self, *args, **kwargs):
+        # server_thread = Thread(target=self.serve_forever, args=args, kwargs=kwargs)
+        # # Exit the server thread when the main thread terminates
+        # server_thread.daemon = True
+        # server_thread.start()
+        self.server_forever(*args, **kwargs)
+
+    def shutdown(self, os_exit=True):
+        try:
+            self.close()
+        finally:
+            if os_exit:
+                os._exit(0)
+            else:
+                sys.exit(0)
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # Threaded RPC server - backed by an INET socket
@@ -204,7 +209,9 @@ REGISTRY:
 # ----------------------------------------------------------------------------------------------------------------------
 class ThreadedRpcServer(RpcServer):
     def __init__(self, address, registry, threads=256, backlog=64):
-        super(ThreadedRpcServer, self).__init__(address, registry)
+        super(ThreadedRpcServer, self).__init__(address)
+        self._registry = registry
+        self._handler = RpcHandler(registry=self._registry, shutdown_callback=self.shutdown)
         self._threads = threads
         self._semaphore = BoundedSemaphore(value=self._threads)  # to limit the number of concurrent threads ...
         self._sock = InetRpcSocket()
@@ -218,7 +225,7 @@ class ThreadedRpcServer(RpcServer):
     def close(self):
         self._sock.close()
 
-    def start(self):
+    def server_forever(self, *args, **kwargs):
         self._log.info('starting server with {0} max connection / threads ... '.format(self._threads))
         try:
             self._sock.listen(self._backlog)
@@ -236,7 +243,7 @@ class ThreadedRpcServer(RpcServer):
     def handle_request(self, sock):
         try:
             sock = InetRpcSocket(sock)
-            self.receive(sock)
+            self._handler.receive(sock)
         except EOFError:
             self._log.error('eof error on handle_request')
         finally:
@@ -250,28 +257,59 @@ class ThreadedRpcServer(RpcServer):
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
+# Threaded RPC Server based on the builtin SocketServer
+#
+# ----------------------------------------------------------------------------------------------------------------------
+# class DefaultRpcRequestHandler(BaseRequestHandler):
+# def __init__(self, request, client_address, server):
+# BaseRequestHandler.__init__(self, request, client_address, server)
+# self._handle = server.
+#
+#     def handle(self):
+#         pass
+#
+#
+# class DefaultThreadedRpcServer(RpcServer):
+#     def __init__(self, address, registry):
+#         super(DefaultThreadedRpcServer, self).__init__(address, registry)
+#         self._server = ThreadingTCPServer(address, DefaultRpcRequestHandler, bind_and_activate=True)
+#         self._bound_address = self._server.server_address
+#
+#     def start(self):
+#         server_thread = Thread(target=self._server.serve_forever, kwargs={'poll_interval': 0.5})
+#         # Exit the server thread when the main thread terminates
+#         server_thread.daemon = True
+#         server_thread.start()
+#
+#     @property
+#     def bound_address(self):
+#         return self._bound_address
+#
+#     def close(self):
+#         self._server.shutdown()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
 # preforked RPC Server (backed by Inet sockets)
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class RpcHandlerChild(pfs.BaseChild):
-    def __init__(self, server_socket, max_requests, child_conn, protocol, rpc_handler=None):
-        super(RpcHandlerChild, self).__init__(server_socket, max_requests, child_conn, protocol,
-                                              rpc_handler=rpc_handler)
-
-        if not isinstance(rpc_handler, RpcHandler):
-            raise ValueError('rpc_handler is not an instance of RpcHandler')
-        self.receive = rpc_handler.receive
+    def __init__(self, server_socket, max_requests, child_conn, protocol, registry=None, shutdown_callback=None):
+        super(RpcHandlerChild, self).__init__(server_socket, max_requests, child_conn, protocol)
+        self._handler = RpcHandler(registry=registry, shutdown_callback=shutdown_callback)
 
     def process_request(self):
         sock = InetRpcSocket(self.conn)
-        self.receive(sock)
+        self._handler.receive(sock)
 
 
 class PreforkedRpcServer(RpcServer):
     def __init__(self, host, registry, backlog=64, max_servers=cpu_count(), min_servers=cpu_count(),
                  min_spare_servers=cpu_count() / 2, max_spare_servers=cpu_count() / 2, max_requests=0):
         super(PreforkedRpcServer, self).__init__(host, registry)
-        self._manager = pfs.Manager(RpcHandlerChild, child_kwargs={'rpc_handler': self},
+        self._manager = pfs.Manager(RpcHandlerChild,
+                                    child_kwargs={'registry': registry, 'shutdown_callback': self.shutdown},
                                     max_servers=max_servers, min_servers=min_servers,
                                     min_spare_servers=min_spare_servers, max_spare_servers=max_spare_servers,
                                     max_requests=max_requests, bind_ip=self.host, port=self.port, protocol='tcp',
@@ -286,10 +324,9 @@ class PreforkedRpcServer(RpcServer):
         self._manager.close()
         self._log.info('exit')
 
-    def start(self):
+    def server_forever(self, *args, **kwargs):
         self._log.info('starting ... ')
         self._manager.run()
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
