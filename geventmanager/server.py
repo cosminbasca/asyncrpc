@@ -23,8 +23,6 @@ import errno
 import sys
 import os
 
-# from numba import jit
-
 __author__ = 'basca'
 
 __all__ = ['RpcHandler', 'RpcServer', 'ThreadedRpcServer', 'DefaultThreadedRpcServer', 'PreforkedRpcServer',
@@ -123,7 +121,6 @@ REGISTRY:
             raise NameError('instance does not have method "{0}"'.format(name))
         return func(*args, **kwargs)
 
-    # @jit
     def receive(self, sock):
         try:
             request = sock.read()
@@ -209,6 +206,8 @@ class RpcServer(object):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class ThreadedRpcServer(RpcServer):
+    daemon_threads = False
+
     def __init__(self, address, registry, threads=256, backlog=64):
         super(ThreadedRpcServer, self).__init__(address)
         self._registry = registry
@@ -229,12 +228,12 @@ class ThreadedRpcServer(RpcServer):
     def server_forever(self, *args, **kwargs):
         self._log.info('starting server with {0} max connection / threads ... '.format(self._threads))
         try:
-            self._sock.listen(self._backlog)
             while True:
+                self._sock.listen(self._backlog)
                 self._semaphore.acquire()
                 sock, addr = self._sock.accept()
                 thread = Thread(target=self.handle_request, args=(sock,))
-                thread.daemon = True
+                thread.daemon = self.daemon_threads
                 thread.start()
         finally:
             self._log.info('closing the server ...')

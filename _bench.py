@@ -12,7 +12,7 @@ from multiprocessing.pool import ThreadPool
 __author__ = 'basca'
 
 # set_level('warning')
-set_level('info')
+set_level('debug')
 # set_level('debug')
 
 def main():
@@ -118,46 +118,47 @@ def bench_gevent_man(async=False, pooled=False, wait=False):
     print 'done'
 
 
-def bench_prefork_man(async=False, pooled=False):
-    my_instance = MyClass(counter=10)
-    manager = PreforkedSingletonManager(my_instance, slots=['current_counter'], async=async, async_pooled=pooled)
-    manager.start()
 
-    manager.debug()
-
-    my_instance = manager.proxy
-    calls = 10000
-    t0 = time()
-    for i in xrange(calls):
-        my_instance.current_counter()
-    t1 = time() - t0
-    ncalls = long(float(calls) / float(t1))
-    print 'DID: {0} calls / second'.format(ncalls)
-
-    del manager
-    print 'done'
-
-
-def bench_old_geventman(async=False, pooled=False):
-    from geventmanager.__deprecated__.sockrpc import GeventManager as _GeventManager
-
-    manager = _GeventManager(MyClass, handler_args=(), handler_kwargs={'counter': 10},
-                             host=None, logger=get_logger(_GeventManager.__name__),
-                             prefork=False, async=async, pooled=pooled, gevent_patch=False, concurrency=32)
-    manager.start()
-
-    my1 = manager.proxy
-
-    calls = 10000
-    t0 = time()
-    for i in xrange(calls):
-        my1.current_counter()
-    t1 = time() - t0
-    ncalls = long(float(calls) / float(t1))
-    print 'DID: {0} calls / second'.format(ncalls)
-
-    del manager
-    print 'done'
+# def bench_prefork_man(async=False, pooled=False):
+#     my_instance = MyClass(counter=10)
+#     manager = PreforkedSingletonManager(my_instance, slots=['current_counter'], async=async, async_pooled=pooled)
+#     manager.start()
+#
+#     manager.debug()
+#
+#     my_instance = manager.proxy
+#     calls = 10000
+#     t0 = time()
+#     for i in xrange(calls):
+#         my_instance.current_counter()
+#     t1 = time() - t0
+#     ncalls = long(float(calls) / float(t1))
+#     print 'DID: {0} calls / second'.format(ncalls)
+#
+#     del manager
+#     print 'done'
+#
+#
+# def bench_old_geventman(async=False, pooled=False):
+#     from geventmanager.__deprecated__.sockrpc import GeventManager as _GeventManager
+#
+#     manager = _GeventManager(MyClass, handler_args=(), handler_kwargs={'counter': 10},
+#                              host=None, logger=get_logger(_GeventManager.__name__),
+#                              prefork=False, async=async, pooled=pooled, gevent_patch=False, concurrency=32)
+#     manager.start()
+#
+#     my1 = manager.proxy
+#
+#     calls = 10000
+#     t0 = time()
+#     for i in xrange(calls):
+#         my1.current_counter()
+#     t1 = time() - t0
+#     ncalls = long(float(calls) / float(t1))
+#     print 'DID: {0} calls / second'.format(ncalls)
+#
+#     del manager
+#     print 'done'
 
 
 if __name__ == '__main__':

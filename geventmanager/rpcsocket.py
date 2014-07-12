@@ -1,10 +1,11 @@
+from geventmanager.log import get_logger
 from abc import ABCMeta, abstractmethod
 from struct import pack, unpack, calcsize
 from gevent import socket as gevent_socket
+from time import sleep
 import socket
 import errno
 
-# from numba import jit
 
 __all__ = ['RpcSocket', 'InetRpcSocket', 'GeventRpcSocket']
 
@@ -40,7 +41,6 @@ def retry(max_retries, wait=None):
                     if err[0] in [errno.ETIMEDOUT, errno.EAGAIN]:
                         _retries -= 1
                     else:
-                        print 'RAISE ',err
                         raise err
                 if hasattr(wait, '__call__'):
                     wait()
@@ -59,6 +59,8 @@ class RpcSocket(object):
         self._sock = self._init_sock(sock)
         self._max_retries = mx_retries
         self._address = None
+
+        self._log = get_logger(self.__class__.__name__)
 
         # set fast retry-enabled internal socket operations
         @retry(self._max_retries, wait=self._wait_read)
@@ -119,7 +121,6 @@ class RpcSocket(object):
     def _wait_write(self):
         pass
 
-    # @jit
     def connect(self, address):
         if isinstance(address, (tuple, list)):
             host, port = address
@@ -132,7 +133,6 @@ class RpcSocket(object):
         self._sock.connect(self._address)
         return self
 
-    # @jit
     def write(self, data):
         size = pack(_FORMAT, len(data))
         self.sendall(size, data)
@@ -149,7 +149,6 @@ class RpcSocket(object):
             c_size += len(chunk)
         return ''.join(chunks)
 
-    # @jit
     def read(self):
         response = self._read_bytes(_SIZE)
         if response[0] != _STARTER:
@@ -172,6 +171,9 @@ class InetRpcSocket(RpcSocket):
 
     def _shutdown(self):
         self._sock.shutdown(socket.SHUT_RDWR)
+
+    def _wait_read(self):
+        sleep(0.01)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
