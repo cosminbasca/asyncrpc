@@ -22,6 +22,35 @@ _STARTER = '#'
 _SIZE = calcsize(_FORMAT) + 1  # (the extra 1 comes from starter)
 RETRY_WAIT = 0.00005
 
+def set_keepalive_linux(sock, after_idle_sec=1, interval_sec=1, max_fails=5):
+    """Set TCP keepalive on an open socket.
+
+    It activates after 1 second (after_idle_sec) of idleness,
+    then sends a keepalive ping once every 3 seconds (interval_sec),
+    and closes the connection after 5 failed ping (max_fails), or 15 seconds
+    """
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, after_idle_sec)
+    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, interval_sec)
+    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, max_fails)
+
+def set_keepalive_osx(sock, after_idle_sec=1, interval_sec=1, max_fails=5):
+    """Set TCP keepalive on an open socket.
+
+    sends a keepalive ping once every 3 seconds (interval_sec)
+    """
+    # scraped from /usr/include, not exported by python's socket module
+    TCP_KEEPALIVE = 0x10
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+    sock.setsockopt(socket.IPPROTO_TCP, TCP_KEEPALIVE, interval_sec)
+
+import sys
+
+set_keepalive = lambda sock, after_idle_sec=1, interval_sec=3, max_fails=5: True
+if sys.platform == 'linux2':
+    set_keepalive = set_keepalive_linux
+elif sys.platform == 'darwin':
+    set_keepalive = set_keepalive_osx
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # an RPC socket wrapper
@@ -164,7 +193,9 @@ class InetRpcSocket(RpcSocket):
     def _init_sock(self, sock):
         if isinstance(sock, socket.socket):
             return sock
-        return socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # set_keepalive(sock)
+        return sock
 
     def _shutdown(self):
         self._sock.shutdown(socket.SHUT_RDWR)
@@ -186,7 +217,9 @@ class GeventRpcSocket(RpcSocket):
     def _init_sock(self, sock):
         if isinstance(sock, gevent_socket.socket):
             return sock
-        return gevent_socket.socket(gevent_socket.AF_INET, gevent_socket.SOCK_STREAM)
+        sock = gevent_socket.socket(gevent_socket.AF_INET, gevent_socket.SOCK_STREAM)
+        # set_keepalive(sock)
+        return sock
 
     def _shutdown(self):
         self._sock.shutdown(gevent_socket.SHUT_RDWR)

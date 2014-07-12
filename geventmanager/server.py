@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 from geventmanager.log import get_logger
 from geventmanager.exceptions import current_error, InvalidInstanceId, InvalidStateException
-from geventmanager.rpcsocket import InetRpcSocket
+from geventmanager.rpcsocket import InetRpcSocket, set_keepalive
 from geventmanager.proxy import Dispatcher
 from multiprocessing.managers import State
 from multiprocessing.util import Finalize
@@ -214,7 +214,6 @@ class ThreadedRpcServer(RpcServer):
         self._semaphore = BoundedSemaphore(value=self._threads)  # to limit the number of concurrent threads ...
         self._sock = InetRpcSocket()
         self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        # self._sock.settimeout(None) # TODO: remove!?
         self._sock.setblocking(1)
         self._sock.bind(self._address)
         self._backlog = backlog
@@ -233,6 +232,8 @@ class ThreadedRpcServer(RpcServer):
                 thread = Thread(target=self.handle_request, args=(sock,))
                 thread.daemon = self.daemon_threads
                 thread.start()
+        except Exception, e:
+            self._log.error("exception in serve_forever: {0}".format(e))
         finally:
             self._log.info('closing the server ...')
             self.close()

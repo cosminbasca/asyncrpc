@@ -76,10 +76,10 @@ class Proxy(object):
         try:
             retries = 0
             while retries < self._retries:
-                # connected = False
+                connected = False
                 try:
                     _sock = self._connect()
-                    # connected = True
+                    connected = True
                     # _sock.setblocking(1)
                     _sock.write(dumps((name, self._id, args, kwargs)))
 
@@ -93,12 +93,12 @@ class Proxy(object):
                         del _sock
                         _sock = None
                         self.wait()
-                        # global RETRIES_CONN, RETRIES_WRITE
-                        # if connected:
-                        #     RETRIES_WRITE += 1
-                        # else:
-                        #     RETRIES_CONN += 1
-                        # print 'CONN RETRIES = {0}, WRITE RETRIES = {1}'.format(RETRIES_CONN, RETRIES_WRITE)
+                        global RETRIES_CONN, RETRIES_WRITE
+                        if connected:
+                            RETRIES_WRITE += 1
+                        else:
+                            RETRIES_CONN += 1
+                        print 'CONN RETRIES = {0}, WRITE RETRIES = {1}'.format(RETRIES_CONN, RETRIES_WRITE)
                     else:
                         self._log.error('[__getattr__] exception encountered: {0} \nstack_trace = \n{1}'.format(
                             err, traceback.format_exc()))
