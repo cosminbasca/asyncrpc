@@ -27,7 +27,8 @@ import os
 
 __author__ = 'basca'
 
-__all__ = ['RpcHandler', 'RpcServer', 'ThreadedRpcServer', 'PreforkedRpcServer', 'BackgroundServerRunner']
+__all__ = ['RpcHandler', 'RpcServer', 'ThreadedRpcServer', 'DefaultThreadedRpcServer', 'PreforkedRpcServer',
+           'BackgroundServerRunner']
 
 logger = get_logger(__name__)
 
@@ -260,33 +261,34 @@ class ThreadedRpcServer(RpcServer):
 # Threaded RPC Server based on the builtin SocketServer
 #
 # ----------------------------------------------------------------------------------------------------------------------
-# class DefaultRpcRequestHandler(BaseRequestHandler):
-# def __init__(self, request, client_address, server):
-# BaseRequestHandler.__init__(self, request, client_address, server)
-# self._handle = server.
-#
-#     def handle(self):
-#         pass
-#
-#
-# class DefaultThreadedRpcServer(RpcServer):
-#     def __init__(self, address, registry):
-#         super(DefaultThreadedRpcServer, self).__init__(address, registry)
-#         self._server = ThreadingTCPServer(address, DefaultRpcRequestHandler, bind_and_activate=True)
-#         self._bound_address = self._server.server_address
-#
-#     def start(self):
-#         server_thread = Thread(target=self._server.serve_forever, kwargs={'poll_interval': 0.5})
-#         # Exit the server thread when the main thread terminates
-#         server_thread.daemon = True
-#         server_thread.start()
-#
-#     @property
-#     def bound_address(self):
-#         return self._bound_address
-#
-#     def close(self):
-#         self._server.shutdown()
+class DefaultRpcRequestHandler(BaseRequestHandler):
+    def handle(self):
+        self.server.rpc_handler.receive(InetRpcSocket(self.request))
+
+
+class RpcThreadingTCPServer(ThreadingTCPServer):
+    def __init__(self, server_address, RequestHandlerClass, bind_and_activate=True, registry=None,
+                 shutdown_callback=None):
+        ThreadingTCPServer.__init__(self, server_address, RequestHandlerClass, bind_and_activate=bind_and_activate)
+        self.rpc_handler = RpcHandler(registry=registry, shutdown_callback=shutdown_callback)
+
+
+class DefaultThreadedRpcServer(RpcServer):
+    def __init__(self, address, registry):
+        super(DefaultThreadedRpcServer, self).__init__(address, registry)
+        self._server = RpcThreadingTCPServer(address, DefaultRpcRequestHandler, bind_and_activate=True,
+                                             registry=registry, shutdown_callback=self.shutdown)
+        self._bound_address = self._server.server_address
+
+    def server_forever(self, poll_interval=0.5):
+        self._server.serve_forever(poll_interval=poll_interval)
+
+    @property
+    def bound_address(self):
+        return self._bound_address
+
+    def close(self):
+        self._server.shutdown()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -327,6 +329,7 @@ class PreforkedRpcServer(RpcServer):
     def server_forever(self, *args, **kwargs):
         self._log.info('starting ... ')
         self._manager.run()
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
