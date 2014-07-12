@@ -1,4 +1,4 @@
-from geventmanager.server import PreforkedRpcServer, ThreadedRpcServer, DefaultThreadedRpcServer, BackgroundServerRunner
+from geventmanager.server import PreforkedRpcServer, ThreadedRpcServer,  BackgroundServerRunner
 from geventmanager.proxy import InetProxy, GeventProxy, GeventPooledProxy, Dispatcher
 from geventmanager.exceptions import RpcServerNotStartedException
 from geventmanager.log import get_logger
@@ -64,7 +64,6 @@ class GeventManager(object):
     @property
     def _server_class(self):
         return ThreadedRpcServer
-        # return DefaultThreadedRpcServer
 
     def start(self, wait=True, **kwargs):
         self._runner.start(wait=wait, **kwargs)

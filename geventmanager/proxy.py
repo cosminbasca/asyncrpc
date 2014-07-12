@@ -87,7 +87,6 @@ class Proxy(object):
                     break
                 except socket.error, err:
                     if err[0] == errno.ECONNRESET or err[0] == errno.EPIPE:
-                        # Connection reset by peer, or an error on the pipe...
                         self._log.info('rpc retry (due to: {0}) '.format(err))
                         if _sock:
                             self._release_socket(_sock)
@@ -127,21 +126,6 @@ class Proxy(object):
         sock = self._RpcSocketClass()
         sock.connect(self._address)
         return sock
-
-        # retries = 0
-        # while retries < self._retries:
-        #     try:
-        #         _sock = self._RpcSocketClass()
-        #         _sock.connect(self._address)
-        #         return _sock
-        #     except socket.timeout:
-        #         retries -= 1
-        #     except socket.error, err:
-        #         if type(err.args) != tuple or err[0] != errno.ETIMEDOUT:
-        #             raise err
-        #         retries -= 1
-        #     print 'INIT RETRY !'
-        #     self.wait(RETRY_WAIT)
 
     def _release_socket(self, sock):
         sock.close()

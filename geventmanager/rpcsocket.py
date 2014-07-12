@@ -164,7 +164,7 @@ class InetRpcSocket(RpcSocket):
     def _init_sock(self, sock):
         if isinstance(sock, socket.socket):
             return sock
-        return socket.socket(socket.AF_INET, socket.SOCK_STREAM, proto=0)
+        return socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def _shutdown(self):
         self._sock.shutdown(socket.SHUT_RDWR)
@@ -186,7 +186,7 @@ class GeventRpcSocket(RpcSocket):
     def _init_sock(self, sock):
         if isinstance(sock, gevent_socket.socket):
             return sock
-        return gevent_socket.socket(gevent_socket.AF_INET, gevent_socket.SOCK_STREAM, proto=0)
+        return gevent_socket.socket(gevent_socket.AF_INET, gevent_socket.SOCK_STREAM)
 
     def _shutdown(self):
         self._sock.shutdown(gevent_socket.SHUT_RDWR)
