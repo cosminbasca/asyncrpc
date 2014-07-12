@@ -247,8 +247,9 @@ class ThreadedRpcServer(RpcServer):
         except EOFError:
             self._log.error('eof error on handle_request')
         finally:
-            sock.close()
             self._semaphore.release()
+            # sleep(0.1)
+            sock.close()
 
     @property
     def bound_address(self):

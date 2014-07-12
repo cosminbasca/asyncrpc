@@ -11,8 +11,8 @@ from multiprocessing.pool import ThreadPool
 
 __author__ = 'basca'
 
-# set_level('warning')
-set_level('debug')
+set_level('warning')
+# set_level('debug')
 # set_level('debug')
 
 def main():
@@ -168,12 +168,12 @@ if __name__ == '__main__':
     # DID: 1852 calls / second, total 10000 results
 
     bench_gevent_man(async=True, pooled=False, wait=True)
-    # DID: 580 calls / second, total calls: 10000,              256 connections, wait
-    # DID: 44 calls / second, total calls: 10000                256 connections, computation
+    # DID: 1717 calls / second, total calls: 10000,             256 connections, wait
+    # DID: 152 calls / second, total calls: 10000               256 connections, computation
 
     # bench_gevent_man(async=False, pooled=False, wait=True)
-    # DID: 608 calls / second, total calls: 10000               256 connections, wait
-    # DID: 42 calls / second, total calls: 10000                256 connections, computation
+    # DID: 805 calls / second, total calls: 10000               256 connections, wait
+    # DID: 122 calls / second, total calls: 10000               256 connections, computation
 
     # :( manager server gets saturated ... :|
 

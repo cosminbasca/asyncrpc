@@ -7,7 +7,7 @@ import socket
 import errno
 
 
-__all__ = ['RpcSocket', 'InetRpcSocket', 'GeventRpcSocket', 'RETRY_WAIT']
+__all__ = ['RpcSocket', 'InetRpcSocket', 'GeventRpcSocket', 'RETRY_WAIT', 'retry']
 
 __author__ = 'basca'
 
@@ -20,7 +20,7 @@ __author__ = 'basca'
 _FORMAT = '!l'
 _STARTER = '#'
 _SIZE = calcsize(_FORMAT) + 1  # (the extra 1 comes from starter)
-RETRY_WAIT = 0.0005
+RETRY_WAIT = 0.00005
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -164,7 +164,7 @@ class InetRpcSocket(RpcSocket):
     def _init_sock(self, sock):
         if isinstance(sock, socket.socket):
             return sock
-        return socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        return socket.socket(socket.AF_INET, socket.SOCK_STREAM, proto=0)
 
     def _shutdown(self):
         self._sock.shutdown(socket.SHUT_RDWR)
@@ -186,7 +186,7 @@ class GeventRpcSocket(RpcSocket):
     def _init_sock(self, sock):
         if isinstance(sock, gevent_socket.socket):
             return sock
-        return gevent_socket.socket(gevent_socket.AF_INET, gevent_socket.SOCK_STREAM)
+        return gevent_socket.socket(gevent_socket.AF_INET, gevent_socket.SOCK_STREAM, proto=0)
 
     def _shutdown(self):
         self._sock.shutdown(gevent_socket.SHUT_RDWR)

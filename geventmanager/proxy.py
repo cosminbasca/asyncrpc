@@ -1,4 +1,4 @@
-from geventmanager.rpcsocket import GeventRpcSocket, InetRpcSocket, RpcSocket, RETRY_WAIT
+from geventmanager.rpcsocket import GeventRpcSocket, InetRpcSocket, RpcSocket, RETRY_WAIT, retry
 from geventmanager.exceptions import get_exception
 from geventmanager.log import get_logger
 from geventhttpclient.connectionpool import ConnectionPool
@@ -14,6 +14,8 @@ import errno
 __author__ = 'basca'
 
 __all__ = ['Proxy', 'InetProxy', 'GeventProxy', 'GeventPooledProxy', 'Dispatcher', 'dispatch']
+
+RETRIES_CONN, RETRIES_WRITE = 0, 0
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -47,6 +49,11 @@ class Proxy(object):
         if not issubclass(self._RpcSocketClass, RpcSocket):
             raise ValueError('SocketClass of type {0} is not an RpcSocket subclass'.format(self._RpcSocketClass))
 
+        @retry(self._retries, wait=self.wait)
+        def connect():
+            return self._init_socket()
+        self._connect = connect
+
     def __del__(self):
         # delete server-side instance
         self.send('#DEL')
@@ -69,10 +76,11 @@ class Proxy(object):
         try:
             retries = 0
             while retries < self._retries:
-                # wait until a connection becomes available
+                # connected = False
                 try:
-                    _sock = self._init_socket()
-                    _sock.setblocking(1)
+                    _sock = self._connect()
+                    # connected = True
+                    # _sock.setblocking(1)
                     _sock.write(dumps((name, self._id, args, kwargs)))
 
                     result = self._receive_result(_sock)
@@ -80,13 +88,18 @@ class Proxy(object):
                 except socket.error, err:
                     if err[0] == errno.ECONNRESET or err[0] == errno.EPIPE:
                         # Connection reset by peer, or an error on the pipe...
-                        self._log.info('rpc retry ... ')
-                        self._log.debug('err: {0}'.format(err))
+                        self._log.info('rpc retry (due to: {0}) '.format(err))
                         if _sock:
                             self._release_socket(_sock)
                         del _sock
                         _sock = None
-                        self.wait(RETRY_WAIT)
+                        self.wait()
+                        # global RETRIES_CONN, RETRIES_WRITE
+                        # if connected:
+                        #     RETRIES_WRITE += 1
+                        # else:
+                        #     RETRIES_CONN += 1
+                        # print 'CONN RETRIES = {0}, WRITE RETRIES = {1}'.format(RETRIES_CONN, RETRIES_WRITE)
                     else:
                         self._log.error('[__getattr__] exception encountered: {0} \nstack_trace = \n{1}'.format(
                             err, traceback.format_exc()))
@@ -104,27 +117,31 @@ class Proxy(object):
                 raise ValueError('access to function {0} is restricted'.format(func))
             return self.send(func, *args, **kwargs)
         func_wrapper.__name__ = func
-        setattr(self, 'func', func_wrapper)
-        # self.__dict__[func] = func_wrapper
+        self.__dict__[func] = func_wrapper
         return func_wrapper
 
-    def wait(self, seconds):
+    def wait(self, seconds=RETRY_WAIT):
         sleep(seconds)
 
     def _init_socket(self):
-        retries = 0
-        while retries < self._retries:
-            try:
-                _sock = self._RpcSocketClass()
-                _sock.connect(self._address)
-                return _sock
-            except socket.timeout:
-                retries -= 1
-            except socket.error, err:
-                if type(err.args) != tuple or err[0] != errno.ETIMEDOUT:
-                    raise err
-                retries -= 1
-            # self.wait(_RETRY_WAIT)
+        sock = self._RpcSocketClass()
+        sock.connect(self._address)
+        return sock
+
+        # retries = 0
+        # while retries < self._retries:
+        #     try:
+        #         _sock = self._RpcSocketClass()
+        #         _sock.connect(self._address)
+        #         return _sock
+        #     except socket.timeout:
+        #         retries -= 1
+        #     except socket.error, err:
+        #         if type(err.args) != tuple or err[0] != errno.ETIMEDOUT:
+        #             raise err
+        #         retries -= 1
+        #     print 'INIT RETRY !'
+        #     self.wait(RETRY_WAIT)
 
     def _release_socket(self, sock):
         sock.close()
@@ -160,7 +177,7 @@ class GeventProxy(Proxy):
     def _rpc_socket_impl(self):
         return GeventRpcSocket
 
-    def wait(self, seconds):
+    def wait(self, seconds=RETRY_WAIT):
         gevent_sleep(seconds=seconds)
 
 
