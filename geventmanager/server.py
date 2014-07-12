@@ -216,7 +216,7 @@ class ThreadedRpcServer(RpcServer):
         self._semaphore = BoundedSemaphore(value=self._threads)  # to limit the number of concurrent threads ...
         self._sock = InetRpcSocket()
         self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        # self._sock.settimeout(None)
+        self._sock.settimeout(None) # TODO: remove!?
         self._sock.setblocking(1)
         self._sock.bind(self._address)
         self._backlog = backlog
