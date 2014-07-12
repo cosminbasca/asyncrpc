@@ -123,6 +123,7 @@ class Proxy(object):
     def _init_socket(self):
         sock = self._RpcSocketClass()
         sock.connect(self._address)
+        sock.setblocking(0) # TODO: http://haridas.in/what-happens-when-we-hit-the-speed-limit-of-python.html
         return sock
 
     def _release_socket(self, sock):
