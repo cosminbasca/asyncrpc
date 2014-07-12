@@ -85,7 +85,7 @@ class MyClass(object):
     def current_counter(self):
         # if self._w: sleep(random() * 0.8) # between 0 and .8 seconds
         # if self._w: self._c = sum([i ** 2 for i in xrange(int(random() * 100000))])  # a computation ...
-        if self._w: self._c = np.exp(np.arange(1000000)).sum()
+        if self._w: self._c = np.exp(np.arange(100000)).sum()
         return self._c
 
 
