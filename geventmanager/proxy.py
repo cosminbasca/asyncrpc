@@ -1,4 +1,4 @@
-from geventmanager.rpcsocket import GeventRpcSocket, InetRpcSocket, RpcSocket, RETRY_WAIT, retry
+from geventmanager.rpcsocket import GeventRpcSocket, InetRpcSocket, RpcSocket, RETRY_WAIT, retry, set_keepalive
 from geventmanager.exceptions import get_exception
 from geventmanager.log import get_logger
 from geventhttpclient.connectionpool import ConnectionPool
