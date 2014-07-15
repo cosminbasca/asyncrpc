@@ -4,8 +4,6 @@ import inspect
 
 __author__ = 'basca'
 
-# predicates exposed by the methods, akin to cherrypy :)
-
 class WSGIRpcApplication(object):
     pass
 
