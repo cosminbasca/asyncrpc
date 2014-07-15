@@ -26,3 +26,6 @@ def get_routes(handler):
     return [(r'/%s' % method_name, route_handler(method_name, impl)) for method_name, impl in methods]
 
 
+# http://rhodesmill.org/brandon/2011/wsgi-under-cherrypy/
+# http://docs.python-requests.org/en/latest/
+# https://github.com/kennethreitz/grequests
