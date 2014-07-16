@@ -1,31 +1,62 @@
-from geventmanager.log import get_logger
-from abc import ABCMeta
-import inspect
-
-__author__ = 'basca'
-
-class HttpRpcHandler(object):
-    pass
-
-class AsyncHttpRpcHandler(object):
-    pass
-
-def get_routes(handler):
-    if handler is None:
-        raise ValueError('handler cannot be None')
-
-    methods = [(method_name, impl) for method_name, impl in inspect.getmembers(handler, predicate=inspect.ismethod)
-               if not method_name.startswith('_') and getattr(impl, 'exposed', False) == True]
-
-    def route_handler(method_name, impl):
-        HandlerClass = AsyncHttpRpcHandler if getattr(impl, 'async', False) else HttpRpcHandler
-        class_name = '{0}_{1}'.format(HandlerClass.__name__, method_name.upper())
-        return type(class_name, (HandlerClass,), {'do': getattr(handler, method_name), })
+from geventmanager.httprpc.wsgi import RpcServer, RpcRegistry
+from cherrypy.wsgiserver import CherryPyWSGIServer, WSGIPathInfoDispatcher
+from tornado.wsgi import WSGIContainer
+from tornado.httpserver import HTTPServer
+from tornado.ioloop import IOLoop
 
 
-    return [(r'/%s' % method_name, route_handler(method_name, impl)) for method_name, impl in methods]
+class CherrypyRpcServer(RpcServer):
+    def __init__(self, address, registry, minthreads=10, maxthreads=-1, **kwargs):
+        super(CherrypyRpcServer, self).__init__(address)
+        self._minthreads = minthreads
+        self._maxthreads = maxthreads
+        self._registry_app = RpcRegistry(registry, shutdown_callback=None)
+        self._server = CherryPyWSGIServer(address, WSGIPathInfoDispatcher({'/': self._registry_app}),
+                                          minthreads=self._minthreads, maxthreads=self._maxthreads)
+
+    def close(self):
+        self._server.stop()
+
+    def server_forever(self, *args, **kwargs):
+        self._log.info('starting cherrypy server with {0} min threads and {1} max threads'.format(self._minthreads,
+                                                                                                  self._maxthreads))
+        try:
+            self._server.start()
+        except Exception, e:
+            self._log.error("exception in serve_forever: {0}".format(e))
+        finally:
+            self._log.info('closing the server ...')
+            self.close()
+            self._log.info('server shutdown complete')
+
+    @property
+    def bound_address(self):
+        return self._server.bind_addr
 
 
-# http://rhodesmill.org/brandon/2011/wsgi-under-cherrypy/
-# http://docs.python-requests.org/en/latest/
-# https://github.com/kennethreitz/grequests
+class TornadoRpcServer(RpcServer):
+    def __init__(self, address, registry, **kwargs):
+        super(TornadoRpcServer, self).__init__(address)
+        self._registry_app = RpcRegistry(registry, shutdown_callback=None)
+        self._server = HTTPServer(address, WSGIContainer(WSGIPathInfoDispatcher({'/': self._registry_app})))
+        port, host = address
+        self._server.listen(port, address=host)
+
+    def close(self):
+        IOLoop.instance().stop()
+
+    def server_forever(self, *args, **kwargs):
+        self._log.info('starting tornado server')
+        try:
+            IOLoop.instance().start()
+        except Exception, e:
+            self._log.error("exception in serve_forever: {0}".format(e))
+        finally:
+            self._log.info('closing the server ...')
+            self.close()
+            self._log.info('server shutdown complete')
+
+    @property
+    def bound_address(self):
+        # return self._server.bind_addr
+        return None
