@@ -1,5 +1,3 @@
-import traceback
-
 try:
     __import__('builtins')
 except ImportError:

@@ -2,11 +2,11 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 import os
 import sys
 from tornado.netutil import bind_sockets
-from asyncrpc.wsgi import RpcRegistryMiddleware
 from cherrypy.wsgiserver import CherryPyWSGIServer, WSGIPathInfoDispatcher
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
+from asyncrpc.wsgi import RpcRegistryMiddleware
 from asyncrpc.log import get_logger
 
 
@@ -17,8 +17,6 @@ from asyncrpc.log import get_logger
 # ----------------------------------------------------------------------------------------------------------------------
 class RpcServer(object):
     __metaclass__ = ABCMeta
-
-    public = ['port', 'host', 'address', 'close', 'bound_address', 'start', 'shutdown']
 
     def __init__(self, address, *args, **kwargs):
         if isinstance(address, (tuple, list)):
