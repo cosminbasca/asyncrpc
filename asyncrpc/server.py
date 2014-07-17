@@ -1,8 +1,67 @@
-from asyncrpc.wsgi import RpcServer, RpcRegistry
+from abc import ABCMeta, abstractmethod, abstractproperty
+import os
+import sys
+from tornado.netutil import bind_sockets
+from asyncrpc.wsgi import RpcRegistryMiddleware
 from cherrypy.wsgiserver import CherryPyWSGIServer, WSGIPathInfoDispatcher
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
+from asyncrpc.log import get_logger
+
+
+class RpcServer(object):
+    __metaclass__ = ABCMeta
+
+    public = ['port', 'host', 'address', 'close', 'bound_address', 'start', 'shutdown']
+
+    def __init__(self, address, *args, **kwargs):
+        if isinstance(address, (tuple, list)):
+            host, port = address
+        elif isinstance(address, (str, unicode)):
+            host, port = address.split(':')
+            port = int(port)
+        else:
+            raise ValueError('address, must be either a tuple/list or string of the name:port form')
+
+        self._log = get_logger(self.__class__.__name__)
+        self._address = (host, port)
+
+    @property
+    def port(self):
+        return self._address[1]
+
+    @property
+    def host(self):
+        return self._address[0]
+
+    @property
+    def address(self):
+        return self._address
+
+    @abstractmethod
+    def close(self):
+        pass
+
+    @abstractproperty
+    def bound_address(self):
+        pass
+
+    @abstractmethod
+    def server_forever(self, *args, **kwargs):
+        pass
+
+    def start(self, *args, **kwargs):
+        self.server_forever(*args, **kwargs)
+
+    def shutdown(self, os_exit=True):
+        try:
+            self.close()
+        finally:
+            if os_exit:
+                os._exit(0)
+            else:
+                sys.exit(0)
 
 
 class CherrypyRpcServer(RpcServer):
@@ -10,7 +69,7 @@ class CherrypyRpcServer(RpcServer):
         super(CherrypyRpcServer, self).__init__(address)
         self._minthreads = minthreads
         self._maxthreads = maxthreads
-        self._registry_app = RpcRegistry(registry, shutdown_callback=None)
+        self._registry_app = RpcRegistryMiddleware(registry, shutdown_callback=None)
         self._server = CherryPyWSGIServer(address, WSGIPathInfoDispatcher({'/': self._registry_app}),
                                           minthreads=self._minthreads, maxthreads=self._maxthreads)
 
@@ -35,12 +94,13 @@ class CherrypyRpcServer(RpcServer):
 
 
 class TornadoRpcServer(RpcServer):
-    def __init__(self, address, registry, **kwargs):
+    def __init__(self, address, registry, multiprocess=False, **kwargs):
         super(TornadoRpcServer, self).__init__(address)
-        self._registry_app = RpcRegistry(registry, shutdown_callback=None)
+        self._registry_app = RpcRegistryMiddleware(registry, shutdown_callback=None)
         self._server = HTTPServer(address, WSGIContainer(WSGIPathInfoDispatcher({'/': self._registry_app})))
-        port, host = address
-        self._server.listen(port, address=host)
+        sockets = bind_sockets(address[0], address=address[1])
+        self._server.add_sockets(sockets)
+        self._bound_address = sockets[0].getsockname()
 
     def close(self):
         IOLoop.instance().stop()
@@ -58,5 +118,4 @@ class TornadoRpcServer(RpcServer):
 
     @property
     def bound_address(self):
-        # return self._server.bind_addr
-        return None
+        return self._bound_address

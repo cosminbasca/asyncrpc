@@ -18,7 +18,7 @@ def dict_to_str(dictionary):
         for i, (k, v) in enumerate(dictionary.iteritems())
     ])
 
-class RpcRegistry(object):
+class RpcRegistryMiddleware(object):
     """
     wsgi application that handles rpc calls to multiple registered objects
     """
@@ -104,59 +104,4 @@ REGISTRY:
 
         response = Response(dumps((result, error)), mimetype='text/plain')
         return response(environ, start_response)
-
-
-
-class RpcServer(object):
-    __metaclass__ = ABCMeta
-
-    public = ['port', 'host', 'address', 'close', 'bound_address', 'run', 'shutdown']
-
-    def __init__(self, address, *args, **kwargs):
-        if isinstance(address, (tuple, list)):
-            host, port = address
-        elif isinstance(address, (str, unicode)):
-            host, port = address.split(':')
-            port = int(port)
-        else:
-            raise ValueError('address, must be either a tuple/list or string of the name:port form')
-
-        self._log = get_logger(self.__class__.__name__)
-        self._address = (host, port)
-
-    @property
-    def port(self):
-        return self._address[1]
-
-    @property
-    def host(self):
-        return self._address[0]
-
-    @property
-    def address(self):
-        return self._address
-
-    @abstractmethod
-    def close(self):
-        pass
-
-    @abstractproperty
-    def bound_address(self):
-        pass
-
-    @abstractmethod
-    def server_forever(self, *args, **kwargs):
-        pass
-
-    def start(self, *args, **kwargs):
-        self.server_forever(*args, **kwargs)
-
-    def shutdown(self, os_exit=True):
-        try:
-            self.close()
-        finally:
-            if os_exit:
-                os._exit(0)
-            else:
-                sys.exit(0)
 
