@@ -98,9 +98,10 @@ class TornadoRpcServer(RpcServer):
         super(TornadoRpcServer, self).__init__(address)
         self._registry_app = RpcRegistryMiddleware(registry, shutdown_callback=None)
         self._server = HTTPServer(address, WSGIContainer(WSGIPathInfoDispatcher({'/': self._registry_app})))
-        sockets = bind_sockets(address[0], address=address[1])
-        self._server.add_sockets(sockets)
-        self._bound_address = sockets[0].getsockname()
+        self._sockets = bind_sockets(address[0], address=address[1])
+        self._server.add_sockets(self._sockets)
+        self._bound_address = self._sockets[0].getsockname()  # get the bound address of the first socket ...
+        self._multiprocess = multiprocess
 
     def close(self):
         IOLoop.instance().stop()
@@ -108,6 +109,8 @@ class TornadoRpcServer(RpcServer):
     def server_forever(self, *args, **kwargs):
         self._log.info('starting tornado server')
         try:
+            if self._multiprocess:
+                self._server.start(0)  # fork multiple processes
             IOLoop.instance().start()
         except Exception, e:
             self._log.error("exception in serve_forever: {0}".format(e))
