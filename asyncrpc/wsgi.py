@@ -12,16 +12,28 @@ from werkzeug.wrappers import Response, Request
 
 __author__ = 'basca'
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# utility method ...
+#
+# ----------------------------------------------------------------------------------------------------------------------
 def dict_to_str(dictionary):
     return '\n'.join([
         '[{0}]\t{1} => {2}'.format(i, k, pformat(v))
         for i, (k, v) in enumerate(dictionary.iteritems())
     ])
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# WSGI RPC Registry Middleware - a wsgi app
+#
+# ----------------------------------------------------------------------------------------------------------------------
 class RpcRegistryMiddleware(object):
     """
     wsgi application that handles rpc calls to multiple registered objects
     """
+
     def __init__(self, registry, shutdown_callback=None):
         if shutdown_callback and not hasattr(shutdown_callback, '__call__'):
             raise ValueError('shutdown_callback must be a callable instance')

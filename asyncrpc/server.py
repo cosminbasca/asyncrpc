@@ -10,6 +10,11 @@ from tornado.ioloop import IOLoop
 from asyncrpc.log import get_logger
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# Base RPC Server
+#
+# ----------------------------------------------------------------------------------------------------------------------
 class RpcServer(object):
     __metaclass__ = ABCMeta
 
@@ -64,6 +69,11 @@ class RpcServer(object):
                 sys.exit(0)
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# Cherrypy RPC implementation
+#
+# ----------------------------------------------------------------------------------------------------------------------
 class CherrypyRpcServer(RpcServer):
     def __init__(self, address, registry, minthreads=10, maxthreads=-1, **kwargs):
         super(CherrypyRpcServer, self).__init__(address)
@@ -93,6 +103,11 @@ class CherrypyRpcServer(RpcServer):
         return self._server.bind_addr
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# Tornado RPC implementation
+#
+# ----------------------------------------------------------------------------------------------------------------------
 class TornadoRpcServer(RpcServer):
     def __init__(self, address, registry, multiprocess=False, **kwargs):
         super(TornadoRpcServer, self).__init__(address)
