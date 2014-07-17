@@ -1,9 +1,32 @@
 from abc import ABCMeta, abstractmethod
+import traceback
+from asyncrpc.log import get_logger
 
 __author__ = 'basca'
 
-class RpcClient(object):
+class RpcProxy(object):
     __metaclass__ = ABCMeta
+
+    def __init__(self, instance_id, address, slots=None, owner=True):
+        if isinstance(address, (tuple, list)):
+            host, port = address
+        elif isinstance(address, (str, unicode)):
+            host, port = address.split(':')
+            port = int(port)
+        else:
+            raise ValueError(
+                'address, must be either a tuple/list or string of the name:port form, got {0}'.format(address))
+
+        self._id = instance_id
+        self._address = (host, port)
+        self._slots = slots
+        self._owner = owner
+        self._log = get_logger(self.__class__.__name__)
+
+    def __del__(self):
+        if self._owner:
+            self._log.debug('releasing server-side instance {0}'.format(self._id))
+            self.send('#DEL')
 
     @abstractmethod
     def _body(self, response):
@@ -16,6 +39,25 @@ class RpcClient(object):
     @abstractmethod
     def _httpcall(self, *args, **kwargs):
         pass
+
+    @classmethod
+    def instance(cls, host):
+        """return a client instance for a particular HOST, a client factory!"""
+        return cls(host)
+
+    def __init__(self, address, func=None):
+        self._address = address
+        self._func = func
+
+    def __getattr__(self, func):
+        _callable = self.__class__(self._host, use_proxy=self._use_proxy, func=func)
+        self.__dict__[func] = _callable
+        return _callable
+
+    @abstractmethod
+    def __call__(self, *args, **kwargs):
+        pass
+
 
     def _rpc(self, body):
         if body is None:
