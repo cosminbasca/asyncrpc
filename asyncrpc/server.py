@@ -1,4 +1,4 @@
-from geventmanager.httprpc.wsgi import RpcServer, RpcRegistry
+from asyncrpc.wsgi import RpcServer, RpcRegistry
 from cherrypy.wsgiserver import CherryPyWSGIServer, WSGIPathInfoDispatcher
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer

@@ -9,7 +9,7 @@ from gevent import reinit
 from gevent.monkey import patch_all
 import psutil
 from geventmanager import InvalidStateException
-from geventmanager.log import get_logger
+from asyncrpc.log import get_logger
 from time import sleep
 
 __author__ = 'basca'
