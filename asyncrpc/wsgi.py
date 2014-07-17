@@ -4,6 +4,7 @@ from pprint import pformat
 from threading import RLock
 import traceback
 import sys
+from asyncrpc.exceptions import CommandNotFoundException
 from geventmanager.exceptions import current_error, InvalidInstanceId
 from asyncrpc.log import get_logger
 from msgpackutil import dumps, loads
@@ -84,13 +85,17 @@ REGISTRY:
         try:
             request = Request(environ)
             object_id, name, args, kwargs = loads(request.get_data(cache=True))
-            handler = self._handlers.get(name, None)
-            if not handler:
-                handler = self._handle_rpc_call
-                self._log.debug('calling function: "{0}"'.format(name))
+            if name.startswith('#'):
+                command_handler = self._handlers.get(name, None)
+                if command_handler:
+                    self._log.info('received: "{0}"'.format(name))
+                    result = command_handler(object_id, name, *args, **kwargs)
+                else:
+                    self._log.error('command "{0}" not found'.format(name))
+                    raise CommandNotFoundException('command {0} not defined'.format(name[1:]))
             else:
-                self._log.info('received: "{0}"'.format(name))
-            result = handler(object_id, name, *args, **kwargs)
+                self._log.debug('calling function: "{0}"'.format(name))
+                result = self._handle_rpc_call(object_id, name, *args, **kwargs)
             error = None
         except Exception, e:
             error = current_error()
