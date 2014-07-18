@@ -8,7 +8,9 @@ from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from asyncrpc.wsgi import RpcRegistryMiddleware
 from asyncrpc.log import get_logger, set_level
-
+from asyncrpc.__version__ import str_version
+from werkzeug.wsgi import DispatcherMiddleware
+from werkzeug.wrappers import Request, Response
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -67,6 +69,13 @@ class RpcServer(object):
                 sys.exit(0)
 
 
+def default(environ, start_response):
+    request = Request(environ)
+    text = 'Welcome to asyncrpc version {0}'.format(str_version)
+    response = Response(text, mimetype='text/plain')
+    return response(environ, start_response)
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # Cherrypy RPC implementation
@@ -76,7 +85,8 @@ class CherrypyRpcServer(RpcServer):
     def __init__(self, address, registry, **kwargs):
         super(CherrypyRpcServer, self).__init__(address)
         self._registry_app = RpcRegistryMiddleware(registry, shutdown_callback=self.shutdown)
-        self._server = CherryPyWSGIServer(address, WSGIPathInfoDispatcher({'/rpc': self._registry_app}), **kwargs)
+        # self._server = CherryPyWSGIServer(address, WSGIPathInfoDispatcher({'/rpc': self._registry_app}), **kwargs)
+        self._server = CherryPyWSGIServer(address, DispatcherMiddleware(default, {'/rpc': self._registry_app}))
 
     def close(self):
         self._server.stop()
@@ -107,8 +117,9 @@ class TornadoRpcServer(RpcServer):
     def __init__(self, address, registry, multiprocess=False, **kwargs):
         super(TornadoRpcServer, self).__init__(address)
         self._registry_app = RpcRegistryMiddleware(registry, shutdown_callback=self.shutdown)
-        self._server = HTTPServer(address, WSGIContainer(WSGIPathInfoDispatcher({'/rpc': self._registry_app})))
-        self._sockets = bind_sockets(address[0], address=address[1])
+        # self._server = HTTPServer(address, WSGIContainer(WSGIPathInfoDispatcher({'/rpc': self._registry_app})))
+        self._server = HTTPServer(address, WSGIContainer(DispatcherMiddleware(default, {'/rpc': self._registry_app})))
+        self._sockets = bind_sockets(address[1], address=address[0])
         self._server.add_sockets(self._sockets)
         self._bound_address = self._sockets[0].getsockname()  # get the bound address of the first socket ...
         self._multiprocess = multiprocess
@@ -159,5 +170,6 @@ if __name__ == '__main__':
 
     registry = {'MyClass': MyClass}
     cpsrv = CherrypyRpcServer(('127.0.0.1', 8080), registry)
+    # cpsrv = TornadoRpcServer(('127.0.0.1', 8080), registry)
     # print 'BOUND to PORT = {0}'.format(cpsrv.bound_address)
     cpsrv.server_forever()
