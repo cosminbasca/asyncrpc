@@ -78,7 +78,7 @@ class CherrypyRpcServer(RpcServer):
         self._minthreads = minthreads
         self._maxthreads = maxthreads
         self._registry_app = RpcRegistryMiddleware(registry, shutdown_callback=self.shutdown)
-        self._server = CherryPyWSGIServer(address, WSGIPathInfoDispatcher({'/': self._registry_app}),
+        self._server = CherryPyWSGIServer(address, WSGIPathInfoDispatcher({'/rpc': self._registry_app}),
                                           minthreads=self._minthreads, maxthreads=self._maxthreads)
 
     def close(self):
@@ -110,7 +110,7 @@ class TornadoRpcServer(RpcServer):
     def __init__(self, address, registry, multiprocess=False, **kwargs):
         super(TornadoRpcServer, self).__init__(address)
         self._registry_app = RpcRegistryMiddleware(registry, shutdown_callback=self.shutdown)
-        self._server = HTTPServer(address, WSGIContainer(WSGIPathInfoDispatcher({'/': self._registry_app})))
+        self._server = HTTPServer(address, WSGIContainer(WSGIPathInfoDispatcher({'/rpc': self._registry_app})))
         self._sockets = bind_sockets(address[0], address=address[1])
         self._server.add_sockets(self._sockets)
         self._bound_address = self._sockets[0].getsockname()  # get the bound address of the first socket ...
