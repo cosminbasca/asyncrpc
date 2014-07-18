@@ -158,7 +158,7 @@ class MyClass(object):
 
 
 if __name__ == '__main__':
-    set_level('critical')
+    # set_level('critical')
 
     registry = {'MyClass': MyClass}
     cpsrv = CherrypyRpcServer(('127.0.0.1', 8080), registry)

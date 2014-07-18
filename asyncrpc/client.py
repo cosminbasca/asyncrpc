@@ -36,13 +36,17 @@ class RpcProxy(object):
         self._owner = owner
         self._log = get_logger(self.__class__.__name__)
         self._url = 'http://{0}:{1}/rpc'.format(host, port)
+        self._released = False
 
     def __del__(self):
-        print 'deleting proxy ... '
+        if not self._released:
+            self.release()
+
+    def release(self):
         if self._owner:
-            print 'proxy is owner '
             self._log.debug('releasing server-side instance {0}'.format(self._id))
             self.dispatch('#DEL')
+            self._released = True
 
     @abstractmethod
     def _content(self, response):
@@ -143,7 +147,7 @@ if __name__ == '__main__':
     from time import time
     from multiprocessing.pool import ThreadPool
 
-    set_level('critical')
+    # set_level('critical')
 
     oid = dispatch(('127.0.0.1', 8080), '#INIT', typeid='MyClass')
     print 'have OID={0}'.format(oid)
@@ -151,19 +155,19 @@ if __name__ == '__main__':
     print proxy.current_counter()
     proxy.add(value=30)
     print proxy.current_counter()
-    # del proxy
+    del proxy
 
-    calls = 10000
-    concurrent = 512
-    t0 = time()
-    pool = ThreadPool(concurrent)
-    [pool.apply_async(proxy.current_counter) for i in xrange(calls)]
-    pool.close()
-    pool.join()
-    t1 = time() - t0
-    ncalls = long(float(calls) / float(t1))
-    print 'DID: {0} calls / second, total calls: {1}'.format(ncalls, calls)
+    # calls = 10000
+    # concurrent = 512
+    # t0 = time()
+    # pool = ThreadPool(concurrent)
+    # [pool.apply_async(proxy.current_counter) for i in xrange(calls)]
+    # pool.close()
+    # pool.join()
+    # t1 = time() - t0
+    # ncalls = long(float(calls) / float(t1))
+    # print 'DID: {0} calls / second, total calls: {1}'.format(ncalls, calls)
 
     dispatch(('127.0.0.1', 8080), '#DEBUG')
-    dispatch(('127.0.0.1', 8080), '#CLEAR')
-    dispatch(('127.0.0.1', 8080), '#DEBUG')
+    # dispatch(('127.0.0.1', 8080), '#CLEAR')
+    # dispatch(('127.0.0.1', 8080), '#DEBUG')
