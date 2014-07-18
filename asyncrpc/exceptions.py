@@ -73,6 +73,10 @@ class ConnectionClosedException(RpcServerException):
     __description__ = 'Connection closed'
 
 
+class ConnectionTimeoutException(RpcServerException):
+    __description__ = 'Connection timeout'
+
+
 class RpcRemoteException(RpcServerException):
     __description__ = 'RPC Remote Exception'
 
@@ -121,3 +125,15 @@ def current_error():
         name=__exception_name__(exc_type),
         args=exc_value.args,
         traceback=format_exception(exc_type, exc_value, exc_traceback))
+
+
+def get_exception(exc_decriptor, address):
+    if not isinstance(exc_decriptor, RemoteExceptionDescriptor):
+        exc = MalformedResponseException(exc_decriptor, address=address)
+    elif exc_decriptor.name in BUILTIN_EXCEPTIONS_NAMES:
+        exc = getattr(builtins, exc_decriptor.name)()
+        exc.args = exc_decriptor.args
+    else:
+        _Exception = __REMOTE_EXCEPTIONS__[exc_decriptor.kind]
+        exc = _Exception(exc_decriptor.name, exc_decriptor.args, exc_decriptor.traceback, host=address)
+    return exc
