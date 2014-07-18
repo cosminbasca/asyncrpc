@@ -25,7 +25,11 @@ class Command(object):
     DEBUG = '#DEBUG'
 
 
-
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# a default simplistic wsgi application
+#
+# ----------------------------------------------------------------------------------------------------------------------
 def default_application(environ, start_response):
     request = Request(environ)
     text = 'Welcome to asyncrpc version {0}'.format(version)
