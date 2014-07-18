@@ -3,6 +3,7 @@ from threading import RLock
 import traceback
 from asyncrpc.exceptions import CommandNotFoundException, InvalidInstanceId, current_error
 from asyncrpc.log import get_logger
+from asyncrpc.__version__ import version
 from msgpackutil import dumps, loads
 from werkzeug.wrappers import Response, Request
 from inspect import isclass
@@ -22,6 +23,14 @@ class Command(object):
     PING = '#PING'
     SHUTDOWN = '#SHUTDOWN'
     DEBUG = '#DEBUG'
+
+
+
+def default_application(environ, start_response):
+    request = Request(environ)
+    text = 'Welcome to asyncrpc version {0}'.format(version)
+    response = Response(text, mimetype='text/plain')
+    return response(environ, start_response)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
