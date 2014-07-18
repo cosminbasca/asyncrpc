@@ -139,7 +139,6 @@ import numpy as np
 
 class MyClass(object):
     def __init__(self, counter=0, wait=False):
-    # def __init__(self, counter=0, wait=True):
         self._c = counter
         self._w = wait
         print 'with wait = ', True if self._w else False

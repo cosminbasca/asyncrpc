@@ -5,7 +5,7 @@ import traceback
 import errno
 from asyncrpc.log import get_logger, set_level
 from asyncrpc.exceptions import get_exception, ConnectionDownException, ConnectionTimeoutException
-from asyncrpc.wsgi import Commmand
+from asyncrpc.wsgi import Command
 from werkzeug.exceptions import abort
 from msgpackutil import loads, dumps
 import requests
@@ -42,7 +42,7 @@ class RpcProxy(object):
     def release(self):
         if self._owner:
             self._log.debug('releasing server-side instance {0}'.format(self._id))
-            self.dispatch(Commmand.RELASE)
+            self.dispatch(Command.RELASE)
 
     @abstractmethod
     def _content(self, response):
@@ -81,9 +81,9 @@ class RpcProxy(object):
         else:
             abort(status_code)
 
-    def _rpccall(self, instance_id, name, *args, **kwargs):
+    def _rpccall(self, name, *args, **kwargs):
         try:
-            message = dumps((instance_id, name, args, kwargs))
+            message = dumps((self._id, name, args, kwargs))
             response = self._httpcall(message)
             return self._get_result(response)
         except socket.timeout:
@@ -99,10 +99,10 @@ class RpcProxy(object):
             else:
                 raise err
 
-    def dispatch(self, command):
+    def dispatch(self, command, *args, **kwargs):
         if not command.startswith('#'):
             raise ValueError('{0} is not a valid formed command'.format(command))
-        self._rpccall(self._id, command)
+        self._rpccall(command, *args, **kwargs)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -138,13 +138,13 @@ class ProxyFactory(object):
     def _cached_proxy(self, address, typeid):
         _proxy = self._cache.get((address, typeid), None)
         if not _proxy:
-            _proxy = RequestsProxy(address, typeid)
+            _proxy = RequestsProxy(typeid, address)
             self._cache[(address, typeid)] = _proxy
         return _proxy
 
-    def create(self, address, typeid, slots=None):
+    def create(self, address, typeid, slots=None, *args, **kwargs):
         creator = self._cached_proxy(address, typeid)
-        return RequestsProxy(creator.dispatch(Commmand.NEW), address, slots=slots)
+        return RequestsProxy(creator.dispatch(Command.NEW, *args, **kwargs), address, slots=slots)
 
     def dispatch(self, address, command):
         if not command.startswith('#'):
@@ -157,8 +157,8 @@ class ProxyFactory(object):
         self._cache.clear()
 
 
-def create(address, typeid, slots=None):
-    return ProxyFactory.instance().create(address, typeid, slots=slots)
+def create(address, typeid, slots=None, *args, **kwargs):
+    return ProxyFactory.instance().create(address, typeid, slots, *args, **kwargs)
 
 
 def dispatch(address, command):
@@ -166,29 +166,13 @@ def dispatch(address, command):
 
 
 if __name__ == '__main__':
-    from time import time
-    from multiprocessing.pool import ThreadPool
-
-    # set_level('critical')
-
-    proxy = create(('127.0.0.1', 8080), 'MyClass')
+    proxy = create(('127.0.0.1', 8080), 'MyClass', counter=100)
     print proxy.current_counter()
     proxy.add(value=30)
     print proxy.current_counter()
     proxy.release()
     del proxy
 
-    # calls = 10000
-    # concurrent = 512
-    # t0 = time()
-    # pool = ThreadPool(concurrent)
-    # [pool.apply_async(proxy.current_counter) for i in xrange(calls)]
-    # pool.close()
-    # pool.join()
-    # t1 = time() - t0
-    # ncalls = long(float(calls) / float(t1))
-    # print 'DID: {0} calls / second, total calls: {1}'.format(ncalls, calls)
-
-    dispatch(('127.0.0.1', 8080), Commmand.DEBUG)
-    # dispatch(('127.0.0.1', 8080), Command.CLEAR)
-    # dispatch(('127.0.0.1', 8080), Commmand.DEBUG)
+    dispatch(('127.0.0.1', 8080), Command.DEBUG)
+    dispatch(('127.0.0.1', 8080), Command.CLEAR)
+    dispatch(('127.0.0.1', 8080), Command.DEBUG)

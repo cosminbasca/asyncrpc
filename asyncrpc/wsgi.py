@@ -14,7 +14,7 @@ __author__ = 'basca'
 # Accepted commands on the registry
 #
 # ----------------------------------------------------------------------------------------------------------------------
-class Commmand(object):
+class Command(object):
     NEW = '#NEW'
     RELASE = '#RELEASE'
     CLEAR = '#CLEAR'
@@ -44,13 +44,13 @@ class RpcRegistryMiddleware(object):
         self._log = get_logger(self.__class__.__name__)
 
         self._handlers = {
-            Commmand.NEW: self._handler_init,
-            Commmand.RELASE: self._handler_release,
-            Commmand.CLEAR: self._handler_clear,
-            Commmand.CLEAR_ALL: self._handler_clear_all,
-            Commmand.PING: self._handler_ping,
-            Commmand.SHUTDOWN: self._handler_shutdown,
-            Commmand.DEBUG: self._handler_debug,
+            Command.NEW: self._handler_init,
+            Command.RELASE: self._handler_release,
+            Command.CLEAR: self._handler_clear,
+            Command.CLEAR_ALL: self._handler_clear_all,
+            Command.PING: self._handler_ping,
+            Command.SHUTDOWN: self._handler_shutdown,
+            Command.DEBUG: self._handler_debug,
         }
 
     def _handler_init(self, type_id, name, *args, **kwargs):
@@ -100,7 +100,7 @@ REGISTRY:
     def _handle_rpc_call(self, instance_id, name, *args, **kwargs):
         instance = self._registry.get(instance_id, None)
         if not instance:
-            raise InvalidInstanceId('insance with id:{0} not registered'.format(instance_id))
+            raise InvalidInstanceId('instance with id:{0} not registered'.format(instance_id))
         func = getattr(instance, name, None)
         if not func:
             raise NameError('instance does not have method "{0}"'.format(name))
