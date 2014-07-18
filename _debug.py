@@ -2,6 +2,7 @@ from multiprocessing.pool import ThreadPool
 from time import time
 from gevent.pool import Pool
 import numpy as np
+from asyncrpc.manager import AsyncManager
 
 __author__ = 'basca'
 
@@ -18,20 +19,16 @@ class MyClass(object):
         self._c -= value
 
     def current_counter(self):
-        # if self._w: sleep(random() * 0.8) # between 0 and .8 seconds
-        # if self._w: self._c = sum([i ** 2 for i in xrange(int(random() * 100000))])  # a computation ...
         if self._w: self._c = np.exp(np.arange(1000000)).sum()
         return self._c
 
-
-
-def bench_gevent_man(async=False, pooled=False, wait=False):
-    class MyManager(GeventManager):
+def bench_gevent_man(async=False, wait=False):
+    class MyManager(AsyncManager):
         pass
 
     MyManager.register("MyClass", MyClass)
-    manager = MyManager(async=async, async_pooled=pooled)
-    manager.start(threads=512)
+    manager = MyManager(async=async)
+    manager.start()
 
     my1 = manager.MyClass(counter=10, wait=wait)
     calls = 10000
@@ -52,3 +49,6 @@ def bench_gevent_man(async=False, pooled=False, wait=False):
 
     del manager
     print 'done'
+
+if __name__ == '__main__':
+    bench_gevent_man(async=False)
