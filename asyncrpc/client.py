@@ -11,6 +11,7 @@ from msgpackutil import loads, dumps
 import requests
 
 __author__ = 'basca'
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # base RPC proxy specification
@@ -102,7 +103,7 @@ class RpcProxy(object):
     def dispatch(self, command, *args, **kwargs):
         if not command.startswith('#'):
             raise ValueError('{0} is not a valid formed command'.format(command))
-        self._rpccall(command, *args, **kwargs)
+        return self._rpccall(command, *args, **kwargs)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -125,6 +126,11 @@ class RequestsProxy(RpcProxy):
         return response.status_code
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# A proxy creation factory ...
+#
+# ----------------------------------------------------------------------------------------------------------------------
 class ProxyFactory(object):
     def __init__(self):
         self._cache = dict()
@@ -135,7 +141,7 @@ class ProxyFactory(object):
             ProxyFactory._instance = ProxyFactory()
         return ProxyFactory._instance
 
-    def _cached_proxy(self, address, typeid):
+    def _proxy(self, address, typeid):
         _proxy = self._cache.get((address, typeid), None)
         if not _proxy:
             _proxy = RequestsProxy(typeid, address)
@@ -143,19 +149,26 @@ class ProxyFactory(object):
         return _proxy
 
     def create(self, address, typeid, slots=None, *args, **kwargs):
-        creator = self._cached_proxy(address, typeid)
-        return RequestsProxy(creator.dispatch(Command.NEW, *args, **kwargs), address, slots=slots)
+        creator = self._proxy(address, typeid)
+        instance_id = creator.dispatch(Command.NEW, *args, **kwargs)
+        return RequestsProxy(instance_id, address, slots=slots)
 
     def dispatch(self, address, command):
         if not command.startswith('#'):
             raise ValueError('{0} is not a valid command'.format(command))
-        return self._cached_proxy(address, None).dispatch(command)
+        return self._proxy(address, None).dispatch(command)
 
     def clear(self):
         for k, creator in self._cache:
             creator.release()
         self._cache.clear()
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# wrapper methods that use the singleton proxy factory
+#
+# ----------------------------------------------------------------------------------------------------------------------
 
 def create(address, typeid, slots=None, *args, **kwargs):
     return ProxyFactory.instance().create(address, typeid, slots, *args, **kwargs)
