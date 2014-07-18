@@ -15,7 +15,7 @@ __author__ = 'basca'
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class Commmand(object):
-    INIT = '#INIT'
+    NEW = '#NEW'
     RELASE = '#RELEASE'
     CLEAR = '#CLEAR'
     CLEAR_ALL = '#CLEAR_ALL'
@@ -44,7 +44,7 @@ class RpcRegistryMiddleware(object):
         self._log = get_logger(self.__class__.__name__)
 
         self._handlers = {
-            Commmand.INIT: self._handler_init,
+            Commmand.NEW: self._handler_init,
             Commmand.RELASE: self._handler_release,
             Commmand.CLEAR: self._handler_clear,
             Commmand.CLEAR_ALL: self._handler_clear_all,

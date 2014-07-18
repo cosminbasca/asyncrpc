@@ -11,7 +11,6 @@ from msgpackutil import loads, dumps
 import requests
 
 __author__ = 'basca'
-
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # base RPC proxy specification
@@ -129,15 +128,24 @@ class RequestsProxy(RpcProxy):
         return response.status_code
 
 
-def dispatch(address, command, typeid=None):
-    if not command.startswith('#'):
-        raise ValueError('{0} is not a valid formed command'.format(command))
+def _dispatch(address, oid, name, *args, **kwargs):
     post = partial(requests.post, 'http://{0}:{1}/rpc'.format(address[0], address[1]))
-    response = post(data=dumps((typeid, command, [], {})))
+    response = post(data=dumps((oid, name, args, kwargs)))
     result, error = loads(response.content)
     if not error:
         return result
     raise get_exception(error, address[0])
+
+
+def new(address, typeid, slots=None):
+    instance_id = _dispatch(address, typeid, Commmand.NEW)
+    return RequestsProxy(instance_id, address, slots=slots)
+
+
+def dispatch(address, command):
+    if not command.startswith('#'):
+        raise ValueError('{0} is not a valid command'.format(command))
+    return _dispatch(address, None, command)
 
 
 if __name__ == '__main__':
@@ -146,9 +154,7 @@ if __name__ == '__main__':
 
     # set_level('critical')
 
-    oid = dispatch(('127.0.0.1', 8080), Commmand.INIT, typeid='MyClass')
-    print 'have OID={0}'.format(oid)
-    proxy = RequestsProxy(oid, ('127.0.0.1', 8080), async=False)
+    proxy = new(('127.0.0.1', 8080), 'MyClass')
     print proxy.current_counter()
     proxy.add(value=30)
     print proxy.current_counter()
