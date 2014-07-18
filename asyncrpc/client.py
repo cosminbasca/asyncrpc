@@ -73,20 +73,17 @@ class RpcProxy(object):
             if content is None:
                 raise ConnectionDownException('http response does not have a body', None, traceback.format_exc(),
                                               host=self._host)
-
             result, error = loads(content)
             if not error:
                 return result
 
-            exception = get_exception(error, self._host)
-            self._log.error('exception: {0}, {1}'.format(type(exception), exception))
-            raise exception
+            raise get_exception(error, self._host)
         else:
             abort(status_code)
 
-    def _rpccall(self, name, *args, **kwargs):
+    def _rpccall(self, instance_id, name, *args, **kwargs):
         try:
-            message = dumps((self._id, name, args, kwargs))
+            message = dumps((instance_id, name, args, kwargs))
             response = self._httpcall(message)
             return self._get_result(response)
         except socket.timeout:
@@ -98,24 +95,24 @@ class RpcProxy(object):
                 elif err[0] in [errno.ECONNRESET, errno.ECONNREFUSED]:
                     raise ConnectionDownException(repr(socket.error), err, traceback.format_exc(), host=self._host)
                 else:
-                    raise
+                    raise err
             else:
-                raise
+                raise err
 
     def dispatch(self, command):
         if not command.startswith('#'):
             raise ValueError('{0} is not a valid formed command'.format(command))
-        self._rpccall(command)
+        self._rpccall(self._id, command)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
-# Requests / GRequests proxy implementation
+# Requests proxy implementation
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class RequestsProxy(RpcProxy):
     def __init__(self, instance_id, address, slots=None, owner=True, **kwargs):
-        super(RequestsProxy, self).__init__(instance_id, address, slots=None, owner=True)
+        super(RequestsProxy, self).__init__(instance_id, address, slots=slots, owner=owner)
         self._post = partial(requests.post, self._url)
 
     def _httpcall(self, message):
@@ -128,24 +125,44 @@ class RequestsProxy(RpcProxy):
         return response.status_code
 
 
-def _dispatch(address, oid, name, *args, **kwargs):
-    post = partial(requests.post, 'http://{0}:{1}/rpc'.format(address[0], address[1]))
-    response = post(data=dumps((oid, name, args, kwargs)))
-    result, error = loads(response.content)
-    if not error:
-        return result
-    raise get_exception(error, address[0])
+class ProxyFactory(object):
+    def __init__(self):
+        self._cache = dict()
+
+    @staticmethod
+    def instance():
+        if not hasattr(ProxyFactory, "_instance"):
+            ProxyFactory._instance = ProxyFactory()
+        return ProxyFactory._instance
+
+    def _cached_proxy(self, address, typeid):
+        _proxy = self._cache.get((address, typeid), None)
+        if not _proxy:
+            _proxy = RequestsProxy(address, typeid)
+            self._cache[(address, typeid)] = _proxy
+        return _proxy
+
+    def create(self, address, typeid, slots=None):
+        creator = self._cached_proxy(address, typeid)
+        return RequestsProxy(creator.dispatch(Commmand.NEW), address, slots=slots)
+
+    def dispatch(self, address, command):
+        if not command.startswith('#'):
+            raise ValueError('{0} is not a valid command'.format(command))
+        return self._cached_proxy(address, None).dispatch(command)
+
+    def clear(self):
+        for k, creator in self._cache:
+            creator.release()
+        self._cache.clear()
 
 
-def new(address, typeid, slots=None):
-    instance_id = _dispatch(address, typeid, Commmand.NEW)
-    return RequestsProxy(instance_id, address, slots=slots)
+def create(address, typeid, slots=None):
+    return ProxyFactory.instance().create(address, typeid, slots=slots)
 
 
 def dispatch(address, command):
-    if not command.startswith('#'):
-        raise ValueError('{0} is not a valid command'.format(command))
-    return _dispatch(address, None, command)
+    return ProxyFactory.instance().dispatch(address, command)
 
 
 if __name__ == '__main__':
@@ -154,7 +171,7 @@ if __name__ == '__main__':
 
     # set_level('critical')
 
-    proxy = new(('127.0.0.1', 8080), 'MyClass')
+    proxy = create(('127.0.0.1', 8080), 'MyClass')
     print proxy.current_counter()
     proxy.add(value=30)
     print proxy.current_counter()
