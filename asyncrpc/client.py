@@ -32,7 +32,7 @@ class RpcProxy(object):
     def __del__(self):
         if self._owner:
             self._log.debug('releasing server-side instance {0}'.format(self._id))
-            self.send('#DEL')
+            self.dispatch('#DEL')
 
     @abstractmethod
     def _body(self, response):
@@ -43,7 +43,7 @@ class RpcProxy(object):
         return 500
 
     @abstractmethod
-    def _httpcall(self, *args, **kwargs):
+    def _httpcall(self, message):
         pass
 
     def __getattr__(self, func):
@@ -74,10 +74,10 @@ class RpcProxy(object):
         else:
             abort(http_code)
 
-
-    def _rpccall(self, *args, **kwargs):
+    def _rpccall(self, name, *args, **kwargs):
         try:
-            response = self._httpcall(*args, **kwargs)
+            message = dumps((self._id, name, args, kwargs))
+            response = self._httpcall(message)
             return self._get_result(response)
         except socket.timeout:
             raise ConnectionTimeoutException(self._address)
@@ -91,3 +91,10 @@ class RpcProxy(object):
                     raise
             else:
                 raise
+
+    def dispatch(self, command):
+        if not command.startswith('#'):
+            raise ValueError('{0} is not a valid formed command'.format(command))
+        self._httpcall(command)
+
+        # class Sync
