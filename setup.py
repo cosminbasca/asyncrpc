@@ -16,7 +16,6 @@ pip_deps = [
     'psutil>=2.1.1',
     'py-prefork-server>=0.2.2',
     'requests>=2.3.0',
-    'grequests>=0.2.0',
     'cherrypy>=3.5.0',
     'Werkzeug>=0.9.6',
 ]

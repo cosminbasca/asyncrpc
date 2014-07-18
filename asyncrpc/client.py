@@ -9,6 +9,7 @@ from asyncrpc.wsgi import Command
 from werkzeug.exceptions import abort
 from msgpackutil import loads, dumps
 import requests
+from geventhttpclient import HTTPClient
 
 __author__ = 'basca'
 
@@ -35,7 +36,12 @@ class RpcProxy(object):
         self._slots = slots
         self._owner = owner
         self._log = get_logger(self.__class__.__name__)
-        self._url = 'http://{0}:{1}/rpc'.format(host, port)
+        self._url_base = 'http://{0}:{1}'.format(host, port)
+        self._url_path = '/rpc'
+
+    @property
+    def url(self):
+        return '{0}{1}'.format(self._url_base, self._url_path)
 
     def __del__(self):
         self.release()
@@ -111,10 +117,10 @@ class RpcProxy(object):
 # Requests proxy implementation
 #
 # ----------------------------------------------------------------------------------------------------------------------
-class RequestsProxy(RpcProxy):
+class Proxy(RpcProxy):
     def __init__(self, instance_id, address, slots=None, owner=True, **kwargs):
-        super(RequestsProxy, self).__init__(instance_id, address, slots=slots, owner=owner)
-        self._post = partial(requests.post, self._url)
+        super(Proxy, self).__init__(instance_id, address, slots=slots, owner=owner)
+        self._post = partial(requests.post, self.url)
 
     def _httpcall(self, message):
         return self._post(data=message)
@@ -124,6 +130,31 @@ class RequestsProxy(RpcProxy):
 
     def _status_code(self, response):
         return response.status_code
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# Requests proxy implementation
+#
+# ----------------------------------------------------------------------------------------------------------------------
+class AsyncProxy(RpcProxy):
+    def __init__(self, instance_id, address, slots=None, owner=True, concurrency=1, timeout=10, **kwargs):
+        super(AsyncProxy, self).__init__(instance_id, address, slots=slots, owner=owner)
+        self._http = HTTPClient.from_url(self._url_base, concurrency=concurrency, connection_timeout=timeout,
+                                         network_timeout=timeout)
+
+    def _httpcall(self, message):
+        return self._http.post(self._url_path, body=message)
+
+    def _content(self, response):
+        return response.read()
+
+    def _status_code(self, response):
+        return response.status_code
+
+    def release(self):
+        super(AsyncProxy, self).release()
+        self._http.close()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -144,14 +175,16 @@ class ProxyFactory(object):
     def _proxy(self, address, typeid):
         _proxy = self._cache.get((address, typeid), None)
         if not _proxy:
-            _proxy = RequestsProxy(typeid, address)
+            _proxy = Proxy(typeid, address)
             self._cache[(address, typeid)] = _proxy
         return _proxy
 
-    def create(self, address, typeid, slots=None, *args, **kwargs):
+    def create(self, address, typeid, slots=None, async=False, *args, **kwargs):
         creator = self._proxy(address, typeid)
         instance_id = creator.dispatch(Command.NEW, *args, **kwargs)
-        return RequestsProxy(instance_id, address, slots=slots)
+        if async:
+            return AsyncProxy(instance_id, address, slots=slots)
+        return Proxy(instance_id, address, slots=slots)
 
     def dispatch(self, address, command):
         if not command.startswith('#'):
@@ -170,8 +203,8 @@ class ProxyFactory(object):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-def create(address, typeid, slots=None, *args, **kwargs):
-    return ProxyFactory.instance().create(address, typeid, slots, *args, **kwargs)
+def create(address, typeid, slots=None, async=False, *args, **kwargs):
+    return ProxyFactory.instance().create(address, typeid, slots, async, *args, **kwargs)
 
 
 def dispatch(address, command):
@@ -179,7 +212,9 @@ def dispatch(address, command):
 
 
 if __name__ == '__main__':
-    proxy = create(('127.0.0.1', 8080), 'MyClass', counter=100)
+    proxy = create(('127.0.0.1', 8080), 'MyClass', counter=100, async=True)
+    # proxy = create(('127.0.0.1', 8080), 'MyClass', counter=100, async=False)
+    print proxy
     print proxy.current_counter()
     proxy.add(value=30)
     print proxy.current_counter()
