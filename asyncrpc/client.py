@@ -183,6 +183,7 @@ if __name__ == '__main__':
     print proxy.current_counter()
     proxy.add(value=30)
     print proxy.current_counter()
+    dispatch(('127.0.0.1', 8080), Command.DEBUG)
     proxy.release()
     del proxy
 

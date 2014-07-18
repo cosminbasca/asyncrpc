@@ -82,8 +82,8 @@ class CherrypyRpcServer(RpcServer):
         self._server.stop()
 
     def server_forever(self, *args, **kwargs):
-        self._log.info('starting cherrypy server with {0} min threads and {1} max threads'.format(
-            self._server.numthreads, self._server.maxthreads))
+        self._log.info('starting cherrypy server with a minimum of {0} threads and {1} max threads'.format(
+            self._server.numthreads, self._server.maxthreads if self._server.maxthreads else 'no'))
         try:
             self._server.start()
         except Exception, e:
@@ -117,7 +117,8 @@ class TornadoRpcServer(RpcServer):
         IOLoop.instance().stop()
 
     def server_forever(self, *args, **kwargs):
-        self._log.info('starting tornado server')
+        self._log.info(
+            'starting tornado server in {0} mode'.format('multi-process' if self._multiprocess else 'single-process'))
         try:
             if self._multiprocess:
                 self._server.start(0)  # fork multiple processes
@@ -134,32 +135,29 @@ class TornadoRpcServer(RpcServer):
         return self._bound_address
 
 
-import numpy as np
-
-
-class MyClass(object):
-    def __init__(self, counter=0, wait=False):
-        self._c = counter
-        self._w = wait
-        print 'with wait = ', True if self._w else False
-
-    def add(self, value=1):
-        self._c += value
-
-    def dec(self, value=1):
-        self._c -= value
-
-    def current_counter(self):
-        # if self._w: sleep(random() * 0.8) # between 0 and .8 seconds
-        # if self._w: self._c = sum([i ** 2 for i in xrange(int(random() * 100000))])  # a computation ...
-        if self._w: self._c = np.exp(np.arange(1000000)).sum()
-        return self._c
-
-
 if __name__ == '__main__':
     # set_level('critical')
+    import numpy as np
+
+    class MyClass(object):
+        def __init__(self, counter=0, wait=False):
+            self._c = counter
+            self._w = wait
+            # print 'with wait = ', True if self._w else False
+
+        def add(self, value=1):
+            self._c += value
+
+        def dec(self, value=1):
+            self._c -= value
+
+        def current_counter(self):
+            # if self._w: sleep(random() * 0.8) # between 0 and .8 seconds
+            # if self._w: self._c = sum([i ** 2 for i in xrange(int(random() * 100000))])  # a computation ...
+            if self._w: self._c = np.exp(np.arange(1000000)).sum()
+            return self._c
 
     registry = {'MyClass': MyClass}
     cpsrv = CherrypyRpcServer(('127.0.0.1', 8080), registry)
-    print 'BOUND to PORT = {0}'.format(cpsrv.bound_address)
+    # print 'BOUND to PORT = {0}'.format(cpsrv.bound_address)
     cpsrv.server_forever()

@@ -88,12 +88,7 @@ class RpcRegistryMiddleware(object):
         return True
 
     def _handler_debug(self, instance_id, name, *args, **kwargs):
-        self._log.info('''
-------------------------------------------------------------------------------------------------------------------------
-REGISTRY:
-{0}
-------------------------------------------------------------------------------------------------------------------------
-'''.format('\n'.join([
+        self._log.info('''REGISTRY: \n{0}'''.format('\n'.join([
             '[{0}]\t{1} => {2}'.format(i, k, pformat(v)) for i, (k, v) in enumerate(self._registry.iteritems())])
         ))
 
