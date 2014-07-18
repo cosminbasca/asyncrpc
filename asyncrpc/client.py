@@ -5,10 +5,10 @@ import traceback
 import errno
 from asyncrpc.log import get_logger, set_level
 from asyncrpc.exceptions import get_exception, ConnectionDownException, ConnectionTimeoutException
+from asyncrpc.wsgi import Commmand
 from werkzeug.exceptions import abort
 from msgpackutil import loads, dumps
 import requests
-import grequests
 
 __author__ = 'basca'
 
@@ -36,17 +36,14 @@ class RpcProxy(object):
         self._owner = owner
         self._log = get_logger(self.__class__.__name__)
         self._url = 'http://{0}:{1}/rpc'.format(host, port)
-        self._released = False
 
     def __del__(self):
-        if not self._released:
-            self.release()
+        self.release()
 
     def release(self):
         if self._owner:
             self._log.debug('releasing server-side instance {0}'.format(self._id))
-            self.dispatch('#DEL')
-            self._released = True
+            self.dispatch(Commmand.RELASE)
 
     @abstractmethod
     def _content(self, response):
@@ -109,7 +106,7 @@ class RpcProxy(object):
     def dispatch(self, command):
         if not command.startswith('#'):
             raise ValueError('{0} is not a valid formed command'.format(command))
-        self._httpcall(command)
+        self._rpccall(command)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -149,12 +146,13 @@ if __name__ == '__main__':
 
     # set_level('critical')
 
-    oid = dispatch(('127.0.0.1', 8080), '#INIT', typeid='MyClass')
+    oid = dispatch(('127.0.0.1', 8080), Commmand.INIT, typeid='MyClass')
     print 'have OID={0}'.format(oid)
     proxy = RequestsProxy(oid, ('127.0.0.1', 8080), async=False)
     print proxy.current_counter()
     proxy.add(value=30)
     print proxy.current_counter()
+    proxy.release()
     del proxy
 
     # calls = 10000
@@ -168,6 +166,6 @@ if __name__ == '__main__':
     # ncalls = long(float(calls) / float(t1))
     # print 'DID: {0} calls / second, total calls: {1}'.format(ncalls, calls)
 
-    dispatch(('127.0.0.1', 8080), '#DEBUG')
-    # dispatch(('127.0.0.1', 8080), '#CLEAR')
-    # dispatch(('127.0.0.1', 8080), '#DEBUG')
+    dispatch(('127.0.0.1', 8080), Commmand.DEBUG)
+    # dispatch(('127.0.0.1', 8080), Command.CLEAR)
+    # dispatch(('127.0.0.1', 8080), Commmand.DEBUG)

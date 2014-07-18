@@ -1,3 +1,5 @@
+import sys
+
 __author__ = 'Cosmin Basca'
 __email__ = 'basca@ifi.uzh.ch; cosmin.basca@gmail.com'
 
@@ -18,6 +20,9 @@ pip_deps = [
     'cherrypy>=3.5.0',
     'Werkzeug>=0.9.6',
 ]
+
+# if sys.version_info < (3, 0):
+#     pip_deps += ['enum34>=1.0']
 
 manual_deps = [
     'msgpackutil>=0.1.12'

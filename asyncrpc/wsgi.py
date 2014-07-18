@@ -11,14 +11,17 @@ __author__ = 'basca'
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
-# utility method ...
+# Accepted commands on the registry
 #
 # ----------------------------------------------------------------------------------------------------------------------
-def dict_to_str(dictionary):
-    return '\n'.join([
-        '[{0}]\t{1} => {2}'.format(i, k, pformat(v))
-        for i, (k, v) in enumerate(dictionary.iteritems())
-    ])
+class Commmand(object):
+    INIT = '#INIT'
+    RELASE = '#RELEASE'
+    CLEAR = '#CLEAR'
+    CLEAR_ALL = '#CLEAR_ALL'
+    PING = '#PING'
+    SHUTDOWN = '#SHUTDOWN'
+    DEBUG = '#DEBUG'
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -41,13 +44,13 @@ class RpcRegistryMiddleware(object):
         self._log = get_logger(self.__class__.__name__)
 
         self._handlers = {
-            '#INIT': self._handler_init,
-            '#DEL': self._handler_del,
-            '#CLEAR': self._handler_clear,
-            '#CLEAR_ALL': self._handler_clear_all,
-            '#PING': self._handler_ping,
-            '#SHUTDOWN': self._handler_shutdown,
-            '#DEBUG': self._handler_debug,
+            Commmand.INIT: self._handler_init,
+            Commmand.RELASE: self._handler_release,
+            Commmand.CLEAR: self._handler_clear,
+            Commmand.CLEAR_ALL: self._handler_clear_all,
+            Commmand.PING: self._handler_ping,
+            Commmand.SHUTDOWN: self._handler_shutdown,
+            Commmand.DEBUG: self._handler_debug,
         }
 
     def _handler_init(self, type_id, name, *args, **kwargs):
@@ -62,9 +65,11 @@ class RpcRegistryMiddleware(object):
         finally:
             self._mutex.release()
 
-    def _handler_del(self, instance_id, name, *args, **kwargs):
-        del self._registry[instance_id]
-        return True
+    def _handler_release(self, instance_id, name, *args, **kwargs):
+        if instance_id in self._registry:
+            del self._registry[instance_id]
+            return True
+        return False
 
     def _handler_clear(self, instance_id, name, *args, **kwargs):
         to_remove = [oid for oid, v in self._registry.iteritems() if not isclass(v)]
@@ -88,7 +93,9 @@ class RpcRegistryMiddleware(object):
 REGISTRY:
 {0}
 ------------------------------------------------------------------------------------------------------------------------
-'''.format(dict_to_str(self._registry)))
+'''.format('\n'.join([
+            '[{0}]\t{1} => {2}'.format(i, k, pformat(v)) for i, (k, v) in enumerate(self._registry.iteritems())])
+        ))
 
     def _handle_rpc_call(self, instance_id, name, *args, **kwargs):
         instance = self._registry.get(instance_id, None)
@@ -107,7 +114,7 @@ REGISTRY:
             if name.startswith('#'):
                 command_handler = self._handlers.get(name, None)
                 if command_handler:
-                    self._log.info('received: "{0}"'.format(name))
+                    self._log.info('command: "{0}"'.format(name[1:]))
                     result = command_handler(object_id, name, *args, **kwargs)
                 else:
                     self._log.error('command "{0}" not found'.format(name))
