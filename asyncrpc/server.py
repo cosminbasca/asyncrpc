@@ -73,20 +73,17 @@ class RpcServer(object):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class CherrypyRpcServer(RpcServer):
-    def __init__(self, address, registry, minthreads=10, maxthreads=-1, **kwargs):
+    def __init__(self, address, registry, **kwargs):
         super(CherrypyRpcServer, self).__init__(address)
-        self._minthreads = minthreads
-        self._maxthreads = maxthreads
         self._registry_app = RpcRegistryMiddleware(registry, shutdown_callback=self.shutdown)
-        self._server = CherryPyWSGIServer(address, WSGIPathInfoDispatcher({'/rpc': self._registry_app}),
-                                          minthreads=self._minthreads, maxthreads=self._maxthreads)
+        self._server = CherryPyWSGIServer(address, WSGIPathInfoDispatcher({'/rpc': self._registry_app}), **kwargs)
 
     def close(self):
         self._server.stop()
 
     def server_forever(self, *args, **kwargs):
-        self._log.info('starting cherrypy server with {0} min threads and {1} max threads'.format(self._minthreads,
-                                                                                                  self._maxthreads))
+        self._log.info('starting cherrypy server with {0} min threads and {1} max threads'.format(
+            self._server.numthreads, self._server.maxthreads))
         try:
             self._server.start()
         except Exception, e:
@@ -138,11 +135,13 @@ class TornadoRpcServer(RpcServer):
 
 
 import numpy as np
+
+
 class MyClass(object):
     def __init__(self, counter=0, wait=False):
         self._c = counter
         self._w = wait
-        print 'with wait = ',True if self._w else False
+        print 'with wait = ', True if self._w else False
 
     def add(self, value=1):
         self._c += value
@@ -155,6 +154,7 @@ class MyClass(object):
         # if self._w: self._c = sum([i ** 2 for i in xrange(int(random() * 100000))])  # a computation ...
         if self._w: self._c = np.exp(np.arange(1000000)).sum()
         return self._c
+
 
 if __name__ == '__main__':
     registry = {'MyClass', MyClass}

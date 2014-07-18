@@ -130,3 +130,6 @@ class RequestsProxy(RpcProxy):
     def _status_code(self, response):
         return response.status_code
 
+
+if __name__ == '__main__':
+    pass
