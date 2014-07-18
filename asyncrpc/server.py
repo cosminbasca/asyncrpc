@@ -7,7 +7,7 @@ from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from asyncrpc.wsgi import RpcRegistryMiddleware
-from asyncrpc.log import get_logger
+from asyncrpc.log import get_logger, set_level
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -139,6 +139,7 @@ import numpy as np
 
 class MyClass(object):
     def __init__(self, counter=0, wait=False):
+    # def __init__(self, counter=0, wait=True):
         self._c = counter
         self._w = wait
         print 'with wait = ', True if self._w else False
@@ -157,6 +158,8 @@ class MyClass(object):
 
 
 if __name__ == '__main__':
+    set_level('critical')
+
     registry = {'MyClass': MyClass}
     cpsrv = CherrypyRpcServer(('127.0.0.1', 8080), registry)
     print 'BOUND to PORT = {0}'.format(cpsrv.bound_address)
