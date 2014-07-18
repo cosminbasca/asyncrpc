@@ -6,6 +6,8 @@ from asyncrpc.log import get_logger
 from asyncrpc.exceptions import get_exception, ConnectionDownException, ConnectionTimeoutException
 from werkzeug.exceptions import abort
 from msgpackutil import loads, dumps
+import requests
+import grequests
 
 __author__ = 'basca'
 
@@ -13,7 +15,7 @@ __author__ = 'basca'
 class RpcProxy(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, instance_id, address, slots=None, owner=True):
+    def __init__(self, instance_id, address, slots=None, owner=True, **kwargs):
         if isinstance(address, (tuple, list)):
             host, port = address
         elif isinstance(address, (str, unicode)):
@@ -28,6 +30,7 @@ class RpcProxy(object):
         self._slots = slots
         self._owner = owner
         self._log = get_logger(self.__class__.__name__)
+        self._url = 'http://{0}:{1}/rpc'.format(host, port)
 
     def __del__(self):
         if self._owner:
@@ -35,11 +38,11 @@ class RpcProxy(object):
             self.dispatch('#DEL')
 
     @abstractmethod
-    def _body(self, response):
+    def _content(self, response):
         return None
 
     @abstractmethod
-    def _code(self, response):
+    def _status_code(self, response):
         return 500
 
     @abstractmethod
@@ -57,14 +60,14 @@ class RpcProxy(object):
         return func_wrapper
 
     def _get_result(self, response):
-        http_code = self._code(response)
-        if http_code == 200:
-            body = self._body(response)
-            if body is None:
+        status_code = self._status_code(response)
+        if status_code == 200:
+            content = self._content(response)
+            if content is None:
                 raise ConnectionDownException('http response does not have a body', None, traceback.format_exc(),
                                               host=self._host)
 
-            result, error = loads(body)
+            result, error = loads(content)
             if not error:
                 return result
 
@@ -72,7 +75,7 @@ class RpcProxy(object):
             self._log.error('exception: {0}, {1}'.format(type(exception), exception))
             raise exception
         else:
-            abort(http_code)
+            abort(status_code)
 
     def _rpccall(self, name, *args, **kwargs):
         try:
@@ -97,4 +100,24 @@ class RpcProxy(object):
             raise ValueError('{0} is not a valid formed command'.format(command))
         self._httpcall(command)
 
-        # class Sync
+
+class RequestsProxy(RpcProxy):
+    def __init__(self, instance_id, address, slots=None, owner=True, async=True, **kwargs):
+        super(RequestsProxy, self).__init__(instance_id, address, slots=None, owner=True)
+        self._async = async
+
+        self._post = grequests.post if self._async else requests.post
+
+    @property
+    def async(self):
+        return self._async
+
+    def _httpcall(self, message):
+        self._post(self._url, data=message)
+
+    def _content(self, response):
+        return response.text
+
+    def _status_code(self, response):
+        return response.status_code
+
