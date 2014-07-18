@@ -11,7 +11,11 @@ import grequests
 
 __author__ = 'basca'
 
-
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# base RPC proxy specification
+#
+# ----------------------------------------------------------------------------------------------------------------------
 class RpcProxy(object):
     __metaclass__ = ABCMeta
 
@@ -101,6 +105,11 @@ class RpcProxy(object):
         self._httpcall(command)
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# Requests / GRequests proxy implementation
+#
+# ----------------------------------------------------------------------------------------------------------------------
 class RequestsProxy(RpcProxy):
     def __init__(self, instance_id, address, slots=None, owner=True, async=True, **kwargs):
         super(RequestsProxy, self).__init__(instance_id, address, slots=None, owner=True)
