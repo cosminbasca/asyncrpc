@@ -157,6 +157,7 @@ class MyClass(object):
 
 
 if __name__ == '__main__':
-    registry = {'MyClass', MyClass}
-    cpsrv = CherrypyRpcServer(('127.0.0.1', 0), registry)
+    registry = {'MyClass': MyClass}
+    cpsrv = CherrypyRpcServer(('127.0.0.1', 8080), registry)
+    print 'BOUND to PORT = {0}'.format(cpsrv.bound_address)
     cpsrv.server_forever()

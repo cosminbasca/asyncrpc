@@ -110,6 +110,6 @@ REGISTRY:
             result = None
             self._log.error('[_handle_request] error: {0}, traceback: \n{1}'.format(e, traceback.format_exc()))
 
-        response = Response(dumps((result, error)), mimetype='text/plain')
+        response = Response(dumps((result, error, )), mimetype='text/plain')
         return response(environ, start_response)
 

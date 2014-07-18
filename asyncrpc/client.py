@@ -131,5 +131,22 @@ class RequestsProxy(RpcProxy):
         return response.status_code
 
 
+def dispatch(address, command, typeid=None, async=True):
+    if not command.startswith('#'):
+        raise ValueError('{0} is not a valid formed command'.format(command))
+    post = grequests.post if async else requests.post
+    response = post('http://{0}:{1}/rpc'.format(address[0], address[1]), data=dumps((typeid, command, [], {})))
+    result, error = loads(response.text)
+    if not error:
+        return result
+    raise get_exception(error, address[0])
+
+
 if __name__ == '__main__':
-    pass
+    oid = dispatch(('127.0.0.1', 8080), '#INIT', typeid='MyClass', async=False)
+    print 'have OID={0}'.format(oid)
+    proxy = RequestsProxy(oid, ('127.0.0.1', 8080), async=False)
+    print proxy.current_counter()
+    proxy.add(value=30)
+    print proxy.current_counter()
+    del proxy
