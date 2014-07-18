@@ -5,7 +5,7 @@ from tornado.netutil import bind_sockets
 from cherrypy.wsgiserver import CherryPyWSGIServer, WSGIPathInfoDispatcher
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
+from tornado import ioloop
 from asyncrpc.wsgi import RpcRegistryMiddleware
 from asyncrpc.log import get_logger, set_level
 from asyncrpc.__version__ import str_version
@@ -117,15 +117,14 @@ class TornadoRpcServer(RpcServer):
     def __init__(self, address, registry, multiprocess=False, **kwargs):
         super(TornadoRpcServer, self).__init__(address)
         self._registry_app = RpcRegistryMiddleware(registry, shutdown_callback=self.shutdown)
-        # self._server = HTTPServer(address, WSGIContainer(WSGIPathInfoDispatcher({'/rpc': self._registry_app})))
-        self._server = HTTPServer(address, WSGIContainer(DispatcherMiddleware(default, {'/rpc': self._registry_app})))
+        self._server = HTTPServer(WSGIContainer(DispatcherMiddleware(default, {'/rpc': self._registry_app})))
         self._sockets = bind_sockets(address[1], address=address[0])
         self._server.add_sockets(self._sockets)
         self._bound_address = self._sockets[0].getsockname()  # get the bound address of the first socket ...
         self._multiprocess = multiprocess
 
     def close(self):
-        IOLoop.instance().stop()
+        ioloop.IOLoop.instance().stop()
 
     def server_forever(self, *args, **kwargs):
         self._log.info(
@@ -133,7 +132,7 @@ class TornadoRpcServer(RpcServer):
         try:
             if self._multiprocess:
                 self._server.start(0)  # fork multiple processes
-            IOLoop.instance().start()
+            ioloop.IOLoop.instance().start()
         except Exception, e:
             self._log.error("exception in serve_forever: {0}".format(e))
         finally:
@@ -169,7 +168,7 @@ if __name__ == '__main__':
             return self._c
 
     registry = {'MyClass': MyClass}
-    cpsrv = CherrypyRpcServer(('127.0.0.1', 8080), registry)
-    # cpsrv = TornadoRpcServer(('127.0.0.1', 8080), registry)
+    # cpsrv = CherrypyRpcServer(('127.0.0.1', 8080), registry)
+    cpsrv = TornadoRpcServer(('127.0.0.1', 8080), registry, multiprocess=False)
     # print 'BOUND to PORT = {0}'.format(cpsrv.bound_address)
     cpsrv.server_forever()
