@@ -5,6 +5,7 @@ from asyncrpc.exceptions import CommandNotFoundException, InvalidInstanceId, cur
 from asyncrpc.log import get_logger
 from msgpackutil import dumps, loads
 from werkzeug.wrappers import Response, Request
+from inspect import isclass
 
 __author__ = 'basca'
 
@@ -42,6 +43,8 @@ class RpcRegistryMiddleware(object):
         self._handlers = {
             '#INIT': self._handler_init,
             '#DEL': self._handler_del,
+            '#CLEAR': self._handler_clear,
+            '#CLEAR_ALL': self._handler_clear_all,
             '#PING': self._handler_ping,
             '#SHUTDOWN': self._handler_shutdown,
             '#DEBUG': self._handler_debug,
@@ -62,6 +65,14 @@ class RpcRegistryMiddleware(object):
     def _handler_del(self, instance_id, name, *args, **kwargs):
         del self._registry[instance_id]
         return True
+
+    def _handler_clear(self, instance_id, name, *args, **kwargs):
+        to_remove = [oid for oid, v in self._registry.iteritems() if not isclass(v)]
+        for oid in to_remove:
+            del self._registry[oid]
+
+    def _handler_clear_all(self, instance_id, name, *args, **kwargs):
+        self._registry.iteritems.clear()
 
     def _handler_ping(self, instance_id, name, *args, **kwargs):
         return True

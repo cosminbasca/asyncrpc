@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from functools import partial
 import socket
 import traceback
 import errno
@@ -37,7 +38,9 @@ class RpcProxy(object):
         self._url = 'http://{0}:{1}/rpc'.format(host, port)
 
     def __del__(self):
+        print 'deleting proxy ... '
         if self._owner:
+            print 'proxy is owner '
             self._log.debug('releasing server-side instance {0}'.format(self._id))
             self.dispatch('#DEL')
 
@@ -111,42 +114,40 @@ class RpcProxy(object):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class RequestsProxy(RpcProxy):
-    def __init__(self, instance_id, address, slots=None, owner=True, async=True, **kwargs):
+    def __init__(self, instance_id, address, slots=None, owner=True, **kwargs):
         super(RequestsProxy, self).__init__(instance_id, address, slots=None, owner=True)
-        self._async = async
-
-        self._post = grequests.post if self._async else requests.post
-
-    @property
-    def async(self):
-        return self._async
+        self._post = partial(requests.post, self._url)
 
     def _httpcall(self, message):
-        self._post(self._url, data=message)
+        return self._post(data=message)
 
     def _content(self, response):
-        return response.text
+        return response.content
 
     def _status_code(self, response):
         return response.status_code
 
 
-def dispatch(address, command, typeid=None, async=True):
+def dispatch(address, command, typeid=None):
     if not command.startswith('#'):
         raise ValueError('{0} is not a valid formed command'.format(command))
-    post = grequests.post if async else requests.post
-    response = post('http://{0}:{1}/rpc'.format(address[0], address[1]), data=dumps((typeid, command, [], {})))
-    result, error = loads(response.text)
+    post = partial(requests.post, 'http://{0}:{1}/rpc'.format(address[0], address[1]))
+    response = post(data=dumps((typeid, command, [], {})))
+    result, error = loads(response.content)
     if not error:
         return result
     raise get_exception(error, address[0])
 
 
 if __name__ == '__main__':
-    oid = dispatch(('127.0.0.1', 8080), '#INIT', typeid='MyClass', async=False)
+    oid = dispatch(('127.0.0.1', 8080), '#INIT', typeid='MyClass')
     print 'have OID={0}'.format(oid)
     proxy = RequestsProxy(oid, ('127.0.0.1', 8080), async=False)
     print proxy.current_counter()
     proxy.add(value=30)
     print proxy.current_counter()
     del proxy
+
+    dispatch(('127.0.0.1', 8080), '#DEBUG')
+    dispatch(('127.0.0.1', 8080), '#CLEAR')
+    dispatch(('127.0.0.1', 8080), '#DEBUG')
