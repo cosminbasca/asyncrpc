@@ -53,6 +53,14 @@ class InvalidInstanceId(Exception):
     pass
 
 
+class InvalidStateException(Exception):
+    pass
+
+
+class RpcServerNotStartedException(Exception):
+    pass
+
+
 class RpcServerException(Exception):
     __metaclass__ = ABCMeta
     __description__ = abstractproperty

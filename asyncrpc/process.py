@@ -1,4 +1,3 @@
-from abc import ABCMeta, abstractproperty
 from multiprocessing import Pipe, Process
 from multiprocessing.managers import State
 from multiprocessing.util import Finalize
@@ -8,33 +7,26 @@ import signal
 from gevent import reinit
 from gevent.monkey import patch_all
 import psutil
-from geventmanager import InvalidStateException
+from asyncrpc.exceptions import InvalidStateException
 from asyncrpc.log import get_logger
+from asyncrpc.server import RpcServer
+from asyncrpc.client import dispatch
+from asyncrpc.wsgi import Command
 from time import sleep
 
 __author__ = 'basca'
-
-class Server(object):
-    __metaclass__ = ABCMeta
-
-    def __init__(self, address):
-        self._address = address
-
-    @abstractproperty
-    def bound_address(self):
-        return self._address
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # Background server runner
 #
 # ----------------------------------------------------------------------------------------------------------------------
-class ServerRunner(object):
+class BackgroundRunner(object):
     public = ['start', 'stop', 'restart', 'bound_address', 'dispatch', 'is_running']
 
     def __init__(self, server_class=None, address=('127.0.0.1', 0), gevent_patch=False, retries=2000):
-        if not issubclass(server_class, Server):
-            raise ValueError('server_class must be a subclass of Server')
+        if not issubclass(server_class, RpcServer):
+            raise ValueError('server_class must be a subclass of RpcServer')
 
         self._address = address if address else ('127.0.0.1', 0)
         self._server_class = server_class
@@ -45,7 +37,6 @@ class ServerRunner(object):
         self._state.value = State.INITIAL
         self._process = None
         self._bound_address = None
-        self._dispatch = None
 
         self._stop = lambda: None
 
@@ -80,12 +71,12 @@ class ServerRunner(object):
             self._log.error(
                 'Rpc server exited. {0}'.format('Exception on exit: {0}'.format(err if err.message else '')))
 
-    def start(self, wait=True, **kwargs):
+    def start(self, wait=True, *args, **kwargs):
         if self._state.value != State.INITIAL:
             raise InvalidStateException('server starter has already been initialized')
 
         reader, writer = Pipe(duplex=False)
-        self._process = Process(target=self._background_start, args=(writer,), kwargs=kwargs)
+        self._process = Process(target=self._background_start, args=(writer,) + args, kwargs=kwargs)
         self._process.name = type(self).__name__ + '-' + self._process.name
         self._log.debug('starting background process: {0}'.format(self._process.name))
         self._process.start()
@@ -94,7 +85,6 @@ class ServerRunner(object):
         self._bound_address = reader.recv()
         reader.close()
         self._log.info('server starting on {0}'.format(self._bound_address))
-        self._dispatch = Dispatcher(self._bound_address)
         self._log.info('server initialized dispatcher')
         self._stop = Finalize(self, self._finalize, args=(), exitpriority=0)
 
@@ -103,7 +93,7 @@ class ServerRunner(object):
                 try:
                     if self._process.is_alive():
                         self._log.info("server process started, waiting for initialization ... ")
-                        self._dispatch("#PING")
+                        dispatch(self._bound_address, Command.PING)
                         self._state.value = State.STARTED
                         self._log.info('server started OK')
                         return True
@@ -154,7 +144,7 @@ class ServerRunner(object):
 
             self._log.info('sending shutdown message to server')
             try:
-                self._dispatch("#SHUTDOWN")
+                dispatch(self._bound_address, Command.SHUTDOWN)
             except Exception:
                 pass
 

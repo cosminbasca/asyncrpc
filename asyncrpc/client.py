@@ -40,6 +40,10 @@ class RpcProxy(object):
         self._url_path = '/rpc'
 
     @property
+    def id(self):
+        return self._id
+
+    @property
     def url(self):
         return '{0}{1}'.format(self._url_base, self._url_path)
 
