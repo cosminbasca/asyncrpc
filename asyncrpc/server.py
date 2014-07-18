@@ -11,6 +11,7 @@ from asyncrpc.log import get_logger, set_level
 from asyncrpc.__version__ import str_version
 from werkzeug.wsgi import DispatcherMiddleware
 from werkzeug.wrappers import Request, Response
+from werkzeug.debug import DebuggedApplication
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -85,8 +86,8 @@ class CherrypyRpcServer(RpcServer):
     def __init__(self, address, registry, **kwargs):
         super(CherrypyRpcServer, self).__init__(address)
         self._registry_app = RpcRegistryMiddleware(registry, shutdown_callback=self.shutdown)
-        # self._server = CherryPyWSGIServer(address, WSGIPathInfoDispatcher({'/rpc': self._registry_app}), **kwargs)
-        self._server = CherryPyWSGIServer(address, DispatcherMiddleware(default, {'/rpc': self._registry_app}))
+        wsgi_app = DispatcherMiddleware(default, {'/rpc': self._registry_app})
+        self._server = CherryPyWSGIServer(address, wsgi_app)
 
     def close(self):
         self._server.stop()
@@ -117,7 +118,8 @@ class TornadoRpcServer(RpcServer):
     def __init__(self, address, registry, multiprocess=False, **kwargs):
         super(TornadoRpcServer, self).__init__(address)
         self._registry_app = RpcRegistryMiddleware(registry, shutdown_callback=self.shutdown)
-        self._server = HTTPServer(WSGIContainer(DispatcherMiddleware(default, {'/rpc': self._registry_app})))
+        wsgi_app = DispatcherMiddleware(default, {'/rpc': self._registry_app})
+        self._server = HTTPServer(WSGIContainer(wsgi_app))
         self._sockets = bind_sockets(address[1], address=address[0])
         self._server.add_sockets(self._sockets)
         self._bound_address = self._sockets[0].getsockname()  # get the bound address of the first socket ...
