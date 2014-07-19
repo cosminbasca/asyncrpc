@@ -83,8 +83,7 @@ def async_vs_blocking():
     manager = MyManager(async=False)
     manager.start()
 
-    calls = 3
-
+    calls = 30
 
     t0 = time()
     proxy = manager.MyClass(counter=10)
@@ -92,7 +91,7 @@ def async_vs_blocking():
     pool = Pool()
     [pool.apply_async(proxy.wait_op) for i in xrange(calls)]
     pool.join()
-    print 'BLOCKING TOOK {0} seconds'.format(time()-t0)
+    print 'BLOCKING TOOK {0} seconds'.format(time() - t0)
 
     del manager
 
@@ -104,8 +103,7 @@ def async_vs_blocking():
     pool = Pool()
     [pool.apply_async(proxy.wait_op) for i in xrange(calls)]
     pool.join()
-    print 'ASYNC    TOOK {0} seconds'.format(time()-t0)
-
+    print 'ASYNC    TOOK {0} seconds'.format(time() - t0)
 
     del manager
 
