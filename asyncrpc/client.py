@@ -30,9 +30,11 @@ def asynchronous(func):
     return func
 
 
-def exposed_methods(obj):
+def exposed_methods(obj, with_private=False):
     def exposed(func_name, func):
-        if not hasattr(func, '__call__') or func_name.startswith('_') or hasattr(func, 'hidden'):
+        if not hasattr(func, '__call__') or \
+                func_name.startswith('__' if with_private else '_') or \
+                hasattr(func, 'hidden'):
             return False
         return True
 
@@ -132,8 +134,8 @@ class RpcProxy(object):
 
     # def _rpccall(self, name, *args, **kwargs):
     # try:
-    #         message = dumps((self._id, name, args, kwargs))
-    #         response = self._httpcall(message)
+    # message = dumps((self._id, name, args, kwargs))
+    # response = self._httpcall(message)
     #         return self._get_result(response)
     #     except socket.timeout:
     #         raise ConnectionTimeoutException(self._address)

@@ -17,12 +17,12 @@ class AsyncManager(object):
     _registry = OrderedDict()
 
     @classmethod
-    def register(cls, type_id, initialiser):
+    def register(cls, type_id, initialiser, with_private=False):
         if '_registry' not in cls.__dict__:
             cls._registry = cls._registry.copy()
 
         cls._registry[type_id] = initialiser
-        slots = exposed_methods(initialiser).keys()
+        slots = exposed_methods(initialiser, with_private=with_private).keys()
 
         def proxy_creator(self, *args, **kwargs):
             if not self._runner.is_running:
