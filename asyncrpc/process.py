@@ -66,9 +66,10 @@ class BackgroundRunner(object):
                 def port_check(_port, _server):
                     self._log.debug('started port checker')
                     while _port == _server.bound_address[1]:
-                        sleep(0.001)
+                        sleep(0.01)
                     writer.send(_server.bound_address)
                     writer.close()
+                    self._log.debug('port checker finalized')
 
                 port = self._address[1]
                 if port == 0: # find out the bound port if the initial port is 0

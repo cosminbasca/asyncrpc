@@ -3,7 +3,7 @@ from asyncrpc.log import get_logger
 from asyncrpc.client import dispatch, create
 from asyncrpc.wsgi import Command
 from asyncrpc.process import BackgroundRunner
-from asyncrpc.server import CherrypyRpcServer
+from asyncrpc.server import CherrypyRpcServer, TornadoRpcServer
 from collections import OrderedDict
 
 __author__ = 'basca'
@@ -36,9 +36,10 @@ class AsyncManager(object):
         setattr(cls, type_id, proxy_creator)
 
 
-    def __init__(self, address=None, async=False, gevent_patch=False, retries=100, **kwargs):
+    def __init__(self, address=None, async=False, gevent_patch=False, retries=100, backend=None, **kwargs):
         self._log = get_logger(self.__class__.__name__)
         self._async = async
+        self._backend = backend
         self._runner = BackgroundRunner(server_class=self._server_class, address=address, gevent_patch=gevent_patch,
                                         retries=retries)
 
@@ -47,7 +48,10 @@ class AsyncManager(object):
 
     @property
     def _server_class(self):
-        return CherrypyRpcServer
+        if self._backend == 'tornado':
+            return TornadoRpcServer
+        else:
+            return CherrypyRpcServer
 
     def start(self, wait=True, **kwargs):
         self._runner.start(wait, self._registry, **kwargs)
