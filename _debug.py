@@ -3,14 +3,17 @@ from time import time
 from gevent.pool import Pool
 import numpy as np
 from asyncrpc.manager import AsyncManager
+from asyncrpc.log import set_level
+
+set_level('critical')
 
 __author__ = 'basca'
 
 class MyClass(object):
-    def __init__(self, counter=0, wait=False):
+    def __init__(self, counter=0, workload=False):
         self._c = counter
-        self._w = wait
-        print 'with wait = ',True if self._w else False
+        self._w = workload
+        print 'with workload = ',True if self._w else False
 
     def add(self, value=1):
         self._c += value
@@ -22,7 +25,7 @@ class MyClass(object):
         if self._w: self._c = np.exp(np.arange(1000000)).sum()
         return self._c
 
-def bench_gevent_man(async=False, wait=False):
+def bench_gevent_man(async=False, workload=False):
     class MyManager(AsyncManager):
         pass
 
@@ -30,7 +33,7 @@ def bench_gevent_man(async=False, wait=False):
     manager = MyManager(async=async)
     manager.start()
 
-    my1 = manager.MyClass(counter=10, wait=wait)
+    my1 = manager.MyClass(counter=10, workload=workload)
     calls = 10000
     concurrent = 512
     t0 = time()
@@ -51,4 +54,11 @@ def bench_gevent_man(async=False, wait=False):
     print 'done'
 
 if __name__ == '__main__':
-    bench_gevent_man(async=False)
+    # cherrypy ...
+    # no workload
+    # bench_gevent_man(async=False, workload=False) # DID: 387 calls / second, total calls: 10000
+    # bench_gevent_man(async=True, workload=False)  # DID: 2158 calls / second, total calls: 10000
+
+    # with workload
+    # bench_gevent_man(async=False, workload=True)    # DID: 195 calls / second, total calls: 10000
+    bench_gevent_man(async=True, workload=True)     # DID: 90 calls / second, total calls: 10000

@@ -104,7 +104,8 @@ class RpcProxy(object):
                 if err[0] == errno.ETIMEDOUT:
                     raise ConnectionTimeoutException(self._address)
                 elif err[0] in [errno.ECONNRESET, errno.ECONNREFUSED]:
-                    raise ConnectionDownException(repr(socket.error), err, traceback.format_exc(), host=self._host)
+                    raise ConnectionDownException(repr(socket.error), err, traceback.format_exc(),
+                                                  address=self._address)
                 else:
                     raise err
             else:
@@ -142,13 +143,16 @@ class Proxy(RpcProxy):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class AsyncProxy(RpcProxy):
-    def __init__(self, instance_id, address, slots=None, owner=True, concurrency=1, timeout=10, **kwargs):
+    def __init__(self, instance_id, address, slots=None, owner=True, timeout=10, **kwargs):
         super(AsyncProxy, self).__init__(instance_id, address, slots=slots, owner=owner)
-        self._http = HTTPClient.from_url(self._url_base, concurrency=concurrency, connection_timeout=timeout,
-                                         network_timeout=timeout)
+        self._timeout = timeout
 
     def _httpcall(self, message):
-        return self._http.post(self._url_path, body=message)
+        http = HTTPClient.from_url(self._url_base, concurrency=1, connection_timeout=self._timeout,
+                                   network_timeout=self._timeout)
+        response = http.post(self._url_path, body=message)
+        http.close()
+        return response
 
     def _content(self, response):
         return response.read()
@@ -156,9 +160,9 @@ class AsyncProxy(RpcProxy):
     def _status_code(self, response):
         return response.status_code
 
-    def release(self):
-        super(AsyncProxy, self).release()
-        self._http.close()
+        # def release(self):
+        # super(AsyncProxy, self).release()
+        #     self._http.close()
 
 
 # ----------------------------------------------------------------------------------------------------------------------

@@ -88,8 +88,8 @@ class ConnectionTimeoutException(RpcServerException):
 class RpcRemoteException(RpcServerException):
     __description__ = 'RPC Remote Exception'
 
-    def __init__(self, name, args, traceback, host=None):
-        super(RpcServerException, self).__init__(args, host=host)
+    def __init__(self, name, args, traceback, address=None):
+        super(RpcServerException, self).__init__(args, address=address)
         self.name = name
         self.traceback = traceback
 
