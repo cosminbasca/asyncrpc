@@ -78,14 +78,15 @@ class RpcServer(object):
 class WsgiRpcServer(RpcServer):
     __metaclass__ = ABCMeta
 
-    def __init__(self, address, registry, debug=False, *args, **kwargs):
+    def __init__(self, address, registry, debug=True, *args, **kwargs):
         super(WsgiRpcServer, self).__init__(address, *args, **kwargs)
         registry_app = RpcRegistryMiddleware(registry, shutdown_callback=self.shutdown)
-        self._wsgi_app = DispatcherMiddleware(RpcRegistryViewer(registry, with_static=True),
-                                              {'/rpc': registry_app})
+        registry_viewer = RpcRegistryViewer(registry, with_static=True)
         if debug:
-            self._wsgi_app = DebuggedApplication(self._wsgi_app, evalex=True)
-        self._init_wsgi_server(self.address, self._wsgi_app, *args, **kwargs)
+            registry_viewer = DebuggedApplication(registry_viewer, evalex=True)
+
+        wsgi_app = DispatcherMiddleware(registry_viewer, {'/rpc': registry_app})
+        self._init_wsgi_server(self.address, wsgi_app, *args, **kwargs)
 
     @abstractmethod
     def _init_wsgi_server(self, address, wsgi_app, *args, **kwargs):
