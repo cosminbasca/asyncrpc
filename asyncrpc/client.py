@@ -13,9 +13,15 @@ from retrying import retry
 __author__ = 'basca'
 
 
-def retry_if_connection_error(exception):
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# general utility functions & constants
+#
+# ----------------------------------------------------------------------------------------------------------------------
+def _if_connection_error(exception):
     return isinstance(exception, ConnectionError)
 
+_MAX_RETRIES = 100
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -135,7 +141,7 @@ class Proxy(RpcProxy):
         super(Proxy, self).__init__(instance_id, address, slots=slots, owner=owner)
         self._post = partial(requests.post, self.url)
 
-    @retry(retry_on_exception=retry_if_connection_error, stop_max_attempt_number=100)
+    @retry(retry_on_exception=_if_connection_error, stop_max_attempt_number=_MAX_RETRIES)
     def _httpcall(self, message):
         return self._post(data=message)
 
