@@ -111,11 +111,11 @@ def async_vs_blocking():
 if __name__ == '__main__':
     # cherrypy ...
     # no workload
-    # bench_gevent_man(async=False, workload=False) # DID: 387 calls / second, total calls: 10000
-    # bench_gevent_man(async=True, workload=False)  # DID: 2158 calls / second, total calls: 10000
+    # bench_gevent_man(async=False, workload=False) # DID: 414 calls / second, total calls: 10000
+    # bench_gevent_man(async=True, workload=False)  # DID: 384 calls / second, total calls: 10000
 
     # with workload
-    # bench_gevent_man(async=False, workload=True)    # DID: 195 calls / second, total calls: 10000
-    # bench_gevent_man(async=True, workload=True)  # DID: 170 calls / second, total calls: 10000
+    # bench_gevent_man(async=False, workload=True)    # DID: 180 calls / second, total calls: 10000
+    # bench_gevent_man(async=True, workload=True)  # DID: 181 calls / second, total calls: 10000
 
     async_vs_blocking()
