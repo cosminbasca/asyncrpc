@@ -3,15 +3,13 @@ import os
 import socket
 import sys
 from tornado.netutil import bind_sockets
-from cherrypy.wsgiserver import CherryPyWSGIServer, WSGIPathInfoDispatcher
+from cherrypy.wsgiserver import CherryPyWSGIServer
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado import ioloop
 from asyncrpc.wsgi import RpcRegistryMiddleware, RpcRegistryViewer
-from asyncrpc.log import get_logger, set_level
-from asyncrpc.__version__ import str_version
+from asyncrpc.log import get_logger
 from werkzeug.wsgi import DispatcherMiddleware
-from werkzeug.wrappers import Request, Response
 from werkzeug.debug import DebuggedApplication
 
 # ----------------------------------------------------------------------------------------------------------------------

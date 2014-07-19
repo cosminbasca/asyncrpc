@@ -61,4 +61,4 @@ if __name__ == '__main__':
 
     # with workload
     # bench_gevent_man(async=False, workload=True)    # DID: 195 calls / second, total calls: 10000
-    bench_gevent_man(async=True, workload=True)     # DID: 169 calls / second, total calls: 10000
+    bench_gevent_man(async=True, workload=True)     # DID: 170 calls / second, total calls: 10000

@@ -21,15 +21,16 @@ with open('README') as f:
 
 pip_deps = [
     'gevent>=1.0.1',
-    'geventhttpclient>=1.1',
     'nose>=1.3.0',
     'rednose>=0.3',
     'psutil>=2.1.1',
     'py-prefork-server>=0.2.2',
     'requests>=2.3.0',
+    'grequests>=0.2.0',
     'cherrypy>=3.5.0',
     'Werkzeug>=0.9.6',
-    'Jinja2>=2.7.3'
+    'Jinja2>=2.7.3',
+    'retrying>=1.2.2',
 ]
 
 manual_deps = [
