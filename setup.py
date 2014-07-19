@@ -1,12 +1,23 @@
-import sys
+#!/usr/bin/env python
 
-__author__ = 'Cosmin Basca'
-__email__ = 'basca@ifi.uzh.ch; cosmin.basca@gmail.com'
+try:
+    from setuptools import setup
+except ImportError:
+    from ez_setup import use_setuptools
 
-from setuptools import setup, find_packages
+    use_setuptools()
+    from setuptools import setup
+
+import os
 
 str_version = None
-execfile('geventmanager/__version__.py')
+execfile('asyncrpc/__version__.py')
+
+NAME = 'asyncrpc'
+
+# Load up the description from README
+with open('README') as f:
+    DESCRIPTION = f.read()
 
 pip_deps = [
     'gevent>=1.0.1',
@@ -18,26 +29,45 @@ pip_deps = [
     'requests>=2.3.0',
     'cherrypy>=3.5.0',
     'Werkzeug>=0.9.6',
+    'Jinja2>=2.7.3'
 ]
-
-# if sys.version_info < (3, 0):
-#     pip_deps += ['enum34>=1.0']
 
 manual_deps = [
     'msgpackutil>=0.1.12'
 ]
 
 setup(
-    name='geventmanager',
+    name=NAME,
     version=str_version,
-    description='a gevent manager similar to the multiprocessing manager',
     author='Cosmin Basca',
-    author_email='basca@ifi.uzh.ch',
-    packages = ["geventmanager", "geventmanager/test"],
-    include_package_data = True,
-    zip_safe = False,
-    install_requires=manual_deps + pip_deps,
-    scripts=[
-        # 'scripts/?.py',
+    author_email='cosmin.basca@gmail.com; basca@ifi.uzh.ch',
+    # url=None,
+    description='A http rpc library, providing a manager similar to the '
+                'multiprocessing.Basemanager with gevent support',
+    long_description=DESCRIPTION,
+    classifiers=[
+        'Intended Audience :: Developers',
+        # 'License :: OSI Approved :: BSD License',
+        'Natural Language :: English',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Programming Language :: JavaScript',
+        'Topic :: Software Development'
     ],
+    packages=['asyncrpc', 'asyncrpc/test'],
+    package_data={
+        'asyncrpc': ['static/*.ico',
+                     'static/bootstrap/js/*.js',
+                     'static/bootstrap/css/*.css',
+                     'static/bootstrap/img/*.png',
+                     'static/tooltip/*.js',
+                     'static/tooltip/*.css',
+                     'static/viz/*.js',
+                     'static/*.js',
+                     'templates/*.html']
+    },
+    install_requires=manual_deps + pip_deps,
+    entry_points={
+        # 'console_scripts': ['asyncrpc = asyncrpc.cli:main']
+    }
 )

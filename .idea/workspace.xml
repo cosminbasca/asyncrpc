@@ -2,9 +2,51 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="5afc6fb3-898e-4aae-a67e-6f6d4cf5c5f1" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/bootstrap" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/bootstrap/css" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/favicon.ico" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/bootstrap/img/glyphicons-halflings-white.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/bootstrap/img/glyphicons-halflings.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/bootstrap/img" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/bootstrap/js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/templates" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/tooltip" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/bootstrap/css/bootstrap.css" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/bootstrap/js/bootstrap.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/bootstrap/css/bootstrap.min.css" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/bootstrap/js/bootstrap.min.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/ez_setup.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/templates/registry.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/tooltip/tooltip.css" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/tooltip/tooltip.js" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__deprecated__/__init__.py" afterPath="$PROJECT_DIR$/__deprecated__/__deprecated__/__init__.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__deprecated__/base.py" afterPath="$PROJECT_DIR$/__deprecated__/__deprecated__/base.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__deprecated__/general.py" afterPath="$PROJECT_DIR$/__deprecated__/__deprecated__/general.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__deprecated__/host.py" afterPath="$PROJECT_DIR$/__deprecated__/__deprecated__/host.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__deprecated__/log.py" afterPath="$PROJECT_DIR$/__deprecated__/__deprecated__/log.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__deprecated__/remote.py" afterPath="$PROJECT_DIR$/__deprecated__/__deprecated__/remote.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__deprecated__/rpcsocket.py" afterPath="$PROJECT_DIR$/__deprecated__/__deprecated__/rpcsocket.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__deprecated__/sockrpc.py" afterPath="$PROJECT_DIR$/__deprecated__/__deprecated__/sockrpc.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__init__.py" afterPath="$PROJECT_DIR$/__deprecated__/__init__.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__version__.py" afterPath="$PROJECT_DIR$/__deprecated__/__version__.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/exceptions.py" afterPath="$PROJECT_DIR$/__deprecated__/exceptions.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/log.py" afterPath="$PROJECT_DIR$/__deprecated__/log.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/logging.ini" afterPath="$PROJECT_DIR$/__deprecated__/logging.ini" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/manager.py" afterPath="$PROJECT_DIR$/__deprecated__/manager.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/proxy.py" afterPath="$PROJECT_DIR$/__deprecated__/proxy.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/rpcsocket.py" afterPath="$PROJECT_DIR$/__deprecated__/rpcsocket.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/server.py" afterPath="$PROJECT_DIR$/__deprecated__/server.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/test/__init__.py" afterPath="$PROJECT_DIR$/__deprecated__/test/__init__.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/test/test_manager.py" afterPath="$PROJECT_DIR$/__deprecated__/test/test_manager.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/__version__.py" afterPath="$PROJECT_DIR$/asyncrpc/__version__.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/server.py" afterPath="$PROJECT_DIR$/asyncrpc/server.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/setup.py" afterPath="$PROJECT_DIR$/setup.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/wsgi.py" afterPath="$PROJECT_DIR$/asyncrpc/wsgi.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__deprecated__" afterPath="$PROJECT_DIR$/__deprecated__/__deprecated__" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager" afterPath="$PROJECT_DIR$/__deprecated__" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/test" afterPath="$PROJECT_DIR$/__deprecated__/test" />
     </list>
     <ignored path="trunk.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -19,9 +61,9 @@
     <SUITE FILE_PATH="coverage/trunk$Unittests_in_test.coverage" NAME="Unittests in test Coverage Results" MODIFIED="1403963792488" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/geventmanager/test" />
     <SUITE FILE_PATH="coverage/trunk$_profile.coverage" NAME="_profile Coverage Results" MODIFIED="1405003626725" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/trunk$_bench.coverage" NAME="_bench Coverage Results" MODIFIED="1405194215486" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/trunk$client.coverage" NAME="client Coverage Results" MODIFIED="1405720288276" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/asyncrpc" />
+    <SUITE FILE_PATH="coverage/trunk$client.coverage" NAME="client Coverage Results" MODIFIED="1405766681977" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/asyncrpc" />
     <SUITE FILE_PATH="coverage/trunk$immutable.coverage" NAME="immutable Coverage Results" MODIFIED="1403883530547" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/geventmanager" />
-    <SUITE FILE_PATH="coverage/trunk$server.coverage" NAME="server Coverage Results" MODIFIED="1405720280685" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/asyncrpc" />
+    <SUITE FILE_PATH="coverage/trunk$server.coverage" NAME="server Coverage Results" MODIFIED="1405766663520" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/asyncrpc" />
     <SUITE FILE_PATH="coverage/trunk$_debug.coverage" NAME="_debug Coverage Results" MODIFIED="1405711959064" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="CreatePatchCommitExecutor">
@@ -56,14 +98,24 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="wsgi.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="wsgi.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/asyncrpc/wsgi.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.3572519" vertical-offset="288" max-vertical-offset="2646">
-              <caret line="29" column="28" selection-start-line="29" selection-start-column="28" selection-end-line="29" selection-end-column="28" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="723" max-vertical-offset="3024">
+              <caret line="47" column="36" selection-start-line="47" selection-start-column="36" selection-end-line="47" selection-end-column="36" />
               <folding>
-                <element signature="e#0#26#0" expanded="true" />
+                <element signature="e#0#9#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="registry.html" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/asyncrpc/templates/registry.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.40095088" vertical-offset="647" max-vertical-offset="1278">
+              <caret line="50" column="23" selection-start-line="50" selection-start-column="23" selection-end-line="50" selection-end-column="23" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -71,8 +123,8 @@
       <file leaf-file-name="server.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/asyncrpc/server.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="1145" max-vertical-offset="3384">
-              <caret line="73" column="23" selection-start-line="73" selection-start-column="23" selection-end-line="73" selection-end-column="23" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="1384" max-vertical-offset="3420">
+              <caret line="86" column="0" selection-start-line="86" selection-start-column="0" selection-end-line="86" selection-end-column="0" />
               <folding>
                 <element signature="e#0#57#0" expanded="true" />
               </folding>
@@ -110,7 +162,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/msgpackutil/test/test_hooks.py" />
         <option value="$PROJECT_DIR$/msgpackutil/__init__.py" />
         <option value="$PROJECT_DIR$/msgpackutil/__version__.py" />
         <option value="$PROJECT_DIR$/build.sh" />
@@ -150,16 +201,18 @@
         <option value="$PROJECT_DIR$/asyncrpc/test/test_manager.py" />
         <option value="$PROJECT_DIR$/geventmanager/exceptions.py" />
         <option value="$USER_HOME$/env/lib/python2.7/site-packages/cherrypy/wsgiserver/__init__.py" />
-        <option value="$PROJECT_DIR$/setup.py" />
         <option value="$PROJECT_DIR$/dependencies.txt" />
         <option value="$PROJECT_DIR$/asyncrpc/exceptions.py" />
         <option value="$PROJECT_DIR$/asyncrpc/manager.py" />
         <option value="$PROJECT_DIR$/_debug.py" />
         <option value="$PROJECT_DIR$/asyncrpc/process.py" />
         <option value="$PROJECT_DIR$/asyncrpc/client.py" />
-        <option value="$PROJECT_DIR$/asyncrpc/__version__.py" />
+        <option value="$PROJECT_DIR$/setup.py" />
+        <option value="$PROJECT_DIR$/asyncrpc/templates/viz.html" />
         <option value="$PROJECT_DIR$/asyncrpc/server.py" />
         <option value="$PROJECT_DIR$/asyncrpc/wsgi.py" />
+        <option value="$PROJECT_DIR$/asyncrpc/templates/registry.html" />
+        <option value="$PROJECT_DIR$/asyncrpc/__version__.py" />
       </list>
     </option>
   </component>
@@ -227,6 +280,24 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="trunk" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="trunk" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="asyncrpc" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="templates" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
       <pane id="Scope" />
@@ -242,6 +313,7 @@
     <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.searchVisible" value="true" />
     <property name="FullScreen" value="false" />
+    <property name="LayoutCode.rearrangeEntriesHTML" value="false" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
@@ -251,8 +323,8 @@
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/asyncrpc" />
-      <recent name="$PROJECT_DIR$/geventmanager/__deprecated__" />
       <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/geventmanager/__deprecated__" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
@@ -1062,7 +1134,11 @@
       <created>1405720346028</created>
       <updated>1405720346028</updated>
     </task>
-    <option name="localTasksCounter" value="129" />
+    <task id="LOCAL-00129" summary="asyncrpc version 0.3.9&#10;&#10;- tornado multi-process still fails">
+      <created>1405720566026</created>
+      <updated>1405720566026</updated>
+    </task>
+    <option name="localTasksCounter" value="130" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -1071,7 +1147,7 @@
     <layout>
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32796487" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4006047" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39970717" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -1157,27 +1233,6 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/Library/Caches/PyCharm30/python_stubs/1324786722/_socket.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.27725857" vertical-offset="10964" max-vertical-offset="13122">
-          <caret line="619" column="12" selection-start-line="619" selection-start-column="12" selection-end-line="619" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/geventmanager/__deprecated__/sockrpc.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.27480915" vertical-offset="774" max-vertical-offset="13608">
-          <caret line="53" column="0" selection-start-line="53" selection-start-column="0" selection-end-line="53" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/env/lib/python2.7/site-packages/socketpool/pool.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33282444" vertical-offset="2014" max-vertical-offset="3654">
-          <caret line="128" column="8" selection-start-line="128" selection-start-column="8" selection-end-line="128" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/env/lib/python2.7/site-packages/socketpool/conn.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.38778627" vertical-offset="214" max-vertical-offset="1476">
@@ -1234,7 +1289,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/geventmanager/__version__.py">
+    <entry file="file://$PROJECT_DIR$/__deprecated__/__version__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="162">
           <caret line="2" column="19" selection-start-line="2" selection-start-column="19" selection-end-line="2" selection-end-column="19" />
@@ -1248,14 +1303,14 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/geventmanager/server.py">
+    <entry file="file://$PROJECT_DIR$/__deprecated__/server.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.5281853" vertical-offset="3042" max-vertical-offset="8388">
           <caret line="207" column="87" selection-start-line="207" selection-start-column="87" selection-end-line="207" selection-end-column="87" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/geventmanager/test/test_manager.py">
+    <entry file="file://$PROJECT_DIR$/__deprecated__/test/test_manager.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.4030888" vertical-offset="0" max-vertical-offset="1998">
           <caret line="31" column="33" selection-start-line="31" selection-start-column="33" selection-end-line="31" selection-end-column="33" />
@@ -1276,7 +1331,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/geventmanager/rpcsocket.py">
+    <entry file="file://$PROJECT_DIR$/__deprecated__/rpcsocket.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-0.8903475" vertical-offset="2881" max-vertical-offset="4176">
           <caret line="102" column="0" selection-start-line="102" selection-start-column="0" selection-end-line="102" selection-end-column="0" />
@@ -1294,13 +1349,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.33333334" vertical-offset="1208" max-vertical-offset="2268">
           <caret line="79" column="4" selection-start-line="79" selection-start-column="4" selection-end-line="79" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/README">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.30229008" vertical-offset="0" max-vertical-offset="655">
-          <caret line="11" column="1" selection-start-line="11" selection-start-column="1" selection-end-line="11" selection-end-column="1" />
         </state>
       </provider>
     </entry>
@@ -1325,7 +1373,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/geventmanager/proxy.py">
+    <entry file="file://$PROJECT_DIR$/__deprecated__/proxy.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.5480916" vertical-offset="1117" max-vertical-offset="3852">
           <caret line="82" column="69" selection-start-line="82" selection-start-column="32" selection-end-line="82" selection-end-column="69" />
@@ -1336,6 +1384,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-0.18931298" vertical-offset="7576" max-vertical-offset="32202">
           <caret line="439" column="25" selection-start-line="439" selection-start-column="25" selection-end-line="439" selection-end-column="25" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1382,14 +1431,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/env/lib/python2.7/site-packages/werkzeug/wsgi.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.55267173" vertical-offset="10798" max-vertical-offset="18666">
-          <caret line="636" column="37" selection-start-line="636" selection-start-column="37" selection-end-line="636" selection-end-column="37" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/env/lib/python2.7/site-packages/requests/models.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.33282444" vertical-offset="3022" max-vertical-offset="14148">
@@ -1411,15 +1452,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/setup.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="155" max-vertical-offset="864">
-          <caret line="19" column="22" selection-start-line="19" selection-start-column="22" selection-end-line="19" selection-end-column="22" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/geventmanager/exceptions.py">
+    <entry file="file://$PROJECT_DIR$/__deprecated__/exceptions.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.578626" vertical-offset="647" max-vertical-offset="2700">
           <caret line="57" column="0" selection-start-line="57" selection-start-column="0" selection-end-line="63" selection-end-column="0" />
@@ -1434,14 +1467,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/_bench.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="983" max-vertical-offset="3204">
-          <caret line="74" column="25" selection-start-line="74" selection-start-column="25" selection-end-line="74" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/geventmanager/manager.py">
+    <entry file="file://$PROJECT_DIR$/__deprecated__/manager.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.5648855" vertical-offset="440" max-vertical-offset="2160">
           <caret line="49" column="28" selection-start-line="49" selection-start-column="28" selection-end-line="49" selection-end-column="28" />
@@ -1502,18 +1528,50 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/asyncrpc/__version__.py">
+    <entry file="file://$PROJECT_DIR$/_bench.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.05496183" vertical-offset="0" max-vertical-offset="655">
-          <caret line="2" column="18" selection-start-line="2" selection-start-column="18" selection-end-line="2" selection-end-column="18" />
+        <state vertical-scroll-proportion="0.60458016" vertical-offset="0" max-vertical-offset="3204">
+          <caret line="31" column="22" selection-start-line="31" selection-start-column="22" selection-end-line="31" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.21984732" vertical-offset="0" max-vertical-offset="655">
+          <caret line="8" column="21" selection-start-line="8" selection-start-column="21" selection-end-line="8" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ez_setup.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.4946565" vertical-offset="0" max-vertical-offset="6426">
+          <caret line="28" column="30" selection-start-line="28" selection-start-column="30" selection-end-line="28" selection-end-column="30" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/setup.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.35514018" vertical-offset="780" max-vertical-offset="1422">
+          <caret line="56" column="43" selection-start-line="56" selection-start-column="43" selection-end-line="56" selection-end-column="43" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/env/lib/python2.7/site-packages/werkzeug/wsgi.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.4783784" vertical-offset="8229" max-vertical-offset="18666">
+          <caret line="483" column="25" selection-start-line="483" selection-start-column="25" selection-end-line="483" selection-end-column="25" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/asyncrpc/server.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="1145" max-vertical-offset="3384">
-          <caret line="73" column="23" selection-start-line="73" selection-start-column="23" selection-end-line="73" selection-end-column="23" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="1384" max-vertical-offset="3420">
+          <caret line="86" column="0" selection-start-line="86" selection-start-column="0" selection-end-line="86" selection-end-column="0" />
           <folding>
             <element signature="e#0#57#0" expanded="true" />
           </folding>
@@ -1522,11 +1580,27 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/asyncrpc/wsgi.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.3572519" vertical-offset="288" max-vertical-offset="2646">
-          <caret line="29" column="28" selection-start-line="29" selection-start-column="28" selection-end-line="29" selection-end-column="28" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="723" max-vertical-offset="3024">
+          <caret line="47" column="36" selection-start-line="47" selection-start-column="36" selection-end-line="47" selection-end-column="36" />
           <folding>
-            <element signature="e#0#26#0" expanded="true" />
+            <element signature="e#0#9#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/asyncrpc/__version__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.056962024" vertical-offset="0" max-vertical-offset="632">
+          <caret line="2" column="19" selection-start-line="2" selection-start-column="19" selection-end-line="2" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/asyncrpc/templates/registry.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.40095088" vertical-offset="647" max-vertical-offset="1278">
+          <caret line="50" column="23" selection-start-line="50" selection-start-column="23" selection-end-line="50" selection-end-column="23" />
+          <folding />
         </state>
       </provider>
     </entry>

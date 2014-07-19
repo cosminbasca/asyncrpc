@@ -6,7 +6,7 @@ from cherrypy.wsgiserver import CherryPyWSGIServer, WSGIPathInfoDispatcher
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado import ioloop
-from asyncrpc.wsgi import RpcRegistryMiddleware, default_application
+from asyncrpc.wsgi import RpcRegistryMiddleware, RpcRegistryViewer
 from asyncrpc.log import get_logger, set_level
 from asyncrpc.__version__ import str_version
 from werkzeug.wsgi import DispatcherMiddleware
@@ -69,6 +69,7 @@ class RpcServer(object):
             else:
                 sys.exit(0)
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # Wsgi RPC server setup
@@ -80,7 +81,8 @@ class WsgiRpcServer(RpcServer):
     def __init__(self, address, registry, debug=False, *args, **kwargs):
         super(WsgiRpcServer, self).__init__(address, *args, **kwargs)
         registry_app = RpcRegistryMiddleware(registry, shutdown_callback=self.shutdown)
-        self._wsgi_app = DispatcherMiddleware(default_application, {'/rpc': registry_app})
+        self._wsgi_app = DispatcherMiddleware(RpcRegistryViewer(registry, with_static=True),
+                                              {'/rpc': registry_app})
         if debug:
             self._wsgi_app = DebuggedApplication(self._wsgi_app, evalex=True)
         self._init_wsgi_server(self.address, self._wsgi_app, *args, **kwargs)

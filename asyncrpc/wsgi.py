@@ -1,12 +1,15 @@
+import os
 from pprint import pformat
 from threading import RLock
 import traceback
+from werkzeug.wsgi import SharedDataMiddleware
 from asyncrpc.exceptions import CommandNotFoundException, InvalidInstanceId, current_error
 from asyncrpc.log import get_logger
 from asyncrpc.__version__ import version
 from msgpackutil import dumps, loads
 from werkzeug.wrappers import Response, Request
 from inspect import isclass
+from jinja2 import Environment, FileSystemLoader
 
 __author__ = 'basca'
 
@@ -27,14 +30,32 @@ class Command(object):
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
-# a default simplistic wsgi application
+# WSGI RPC Registry viewer - a wsgi app
 #
 # ----------------------------------------------------------------------------------------------------------------------
-def default_application(environ, start_response):
-    request = Request(environ)
-    text = 'Welcome to asyncrpc version {0}'.format(version)
-    response = Response(text, mimetype='text/plain')
-    return response(environ, start_response)
+class RpcRegistryViewer(object):
+    def __init__(self, registry, with_static=True):
+        self._registry = registry
+        self._with_static = with_static
+        template_dir = os.path.join(os.path.dirname(__file__), 'templates')
+        self._jinja_env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
+
+    def render_template(self, template, **params):
+        t = self._jinja_env.get_template(template)
+        return t.render(params)
+
+    def registry_wsgi_app(self, environ, start_response):
+        # request = Request(environ)
+        response = Response(self.render_template('registry.html', version=version), mimetype='text/html')
+        return response(environ, start_response)
+
+    def __call__(self, environ, start_response):
+        app = self.registry_wsgi_app
+        if self._with_static:
+            app = SharedDataMiddleware(app, {
+                '/static': os.path.join(os.path.dirname(__file__), 'static')
+            })
+        return app(environ, start_response)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
