@@ -58,13 +58,13 @@ setup(
     packages=['asyncrpc', 'asyncrpc/test'],
     package_data={
         'asyncrpc': ['static/*.ico',
+                     'static/*.js',
                      'static/bootstrap/js/*.js',
                      'static/bootstrap/css/*.css',
                      'static/bootstrap/img/*.png',
                      'static/tooltip/*.js',
                      'static/tooltip/*.css',
-                     'static/viz/*.js',
-                     'static/*.js',
+                     'static/css/*.css',
                      'templates/*.html']
     },
     install_requires=manual_deps + pip_deps,

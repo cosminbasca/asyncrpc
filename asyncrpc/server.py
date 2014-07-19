@@ -187,9 +187,9 @@ if __name__ == '__main__':
             return self._c
 
     registry = {'MyClass': MyClass}
-    # cpsrv = CherrypyRpcServer(('127.0.0.1', 8080), registry)
+    cpsrv = CherrypyRpcServer(('127.0.0.1', 8080), registry)
     # cpsrv = CherrypyRpcServer(('127.0.0.1', 0), registry)
-    cpsrv = TornadoRpcServer(('127.0.0.1', 8080), registry)
+    # cpsrv = TornadoRpcServer(('127.0.0.1', 8080), registry)
     # cpsrv = TornadoRpcServer(('127.0.0.1', 8080), registry, multiprocess=True)
     # print 'BOUND to PORT = {0}'.format(cpsrv.bound_address)
-    cpsrv.server_forever()
+    cpsrv.start()
