@@ -3,7 +3,7 @@ from functools import partial
 import socket
 import traceback
 import errno
-from asyncrpc.log import get_logger, set_level
+from asyncrpc.log import get_logger
 from asyncrpc.exceptions import get_exception, ConnectionDownException, ConnectionTimeoutException
 from asyncrpc.wsgi import Command
 from werkzeug.exceptions import abort
@@ -83,7 +83,7 @@ class RpcProxy(object):
             content = self._content(response)
             if content is None:
                 raise ConnectionDownException('http response does not have a body', None, traceback.format_exc(),
-                                              host=self._host)
+                                              self._address)
             result, error = loads(content)
             if not error:
                 return result
@@ -104,8 +104,7 @@ class RpcProxy(object):
                 if err[0] == errno.ETIMEDOUT:
                     raise ConnectionTimeoutException(self._address)
                 elif err[0] in [errno.ECONNRESET, errno.ECONNREFUSED]:
-                    raise ConnectionDownException(repr(socket.error), err, traceback.format_exc(),
-                                                  address=self._address)
+                    raise ConnectionDownException(repr(socket.error), err, traceback.format_exc(), self._address)
                 else:
                     raise err
             else:
@@ -142,27 +141,38 @@ class Proxy(RpcProxy):
 # Requests proxy implementation
 #
 # ----------------------------------------------------------------------------------------------------------------------
+# class AsyncProxy(RpcProxy):
+#     def __init__(self, instance_id, address, slots=None, owner=True, timeout=10, **kwargs):
+#         super(AsyncProxy, self).__init__(instance_id, address, slots=slots, owner=owner)
+#         self._timeout = timeout
+#
+#     def _httpcall(self, message):
+#         http = HTTPClient.from_url(self._url_base, concurrency=1, connection_timeout=self._timeout,
+#                                    network_timeout=self._timeout)
+#         response = http.post(self._url_path, body=message)
+#         http.close()
+#         return response
+#
+#     def _content(self, response):
+#         return response.read()
+#
+#     def _status_code(self, response):
+#         return response.status_code
+
 class AsyncProxy(RpcProxy):
-    def __init__(self, instance_id, address, slots=None, owner=True, timeout=10, **kwargs):
+    def __init__(self, instance_id, address, slots=None, owner=True, **kwargs):
         super(AsyncProxy, self).__init__(instance_id, address, slots=slots, owner=owner)
-        self._timeout = timeout
+        from grequests import post
+        self._post = partial(post, self.url)
 
     def _httpcall(self, message):
-        http = HTTPClient.from_url(self._url_base, concurrency=1, connection_timeout=self._timeout,
-                                   network_timeout=self._timeout)
-        response = http.post(self._url_path, body=message)
-        http.close()
-        return response
+        return self._post(data=message).send()
 
     def _content(self, response):
-        return response.read()
+        return response.content
 
     def _status_code(self, response):
         return response.status_code
-
-        # def release(self):
-        # super(AsyncProxy, self).release()
-        #     self._http.close()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
