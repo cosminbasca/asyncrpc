@@ -10,6 +10,8 @@ from abc import ABCMeta, abstractproperty
 
 __author__ = 'basca'
 
+# TODO: proper remote exception reporting and handling ...
+
 # noinspection PyBroadException
 def _isbuiltin_exception(e):
     try:
