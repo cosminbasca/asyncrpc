@@ -88,7 +88,7 @@ class RpcProxy(object):
     def release(self):
         if self._owner:
             self._log.debug('releasing server-side instance {0}'.format(self._id))
-            self.dispatch(Command.RELASE)
+            self.dispatch(Command.RELEASE)
 
     @abstractmethod
     def _content(self, response):
