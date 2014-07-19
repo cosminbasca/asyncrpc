@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 import os
+import socket
 import sys
 from tornado.netutil import bind_sockets
 from cherrypy.wsgiserver import CherryPyWSGIServer, WSGIPathInfoDispatcher
@@ -101,6 +102,7 @@ class WsgiRpcServer(RpcServer):
 class CherrypyRpcServer(WsgiRpcServer):
     def _init_wsgi_server(self, address, wsgi_app, *args, **kwargs):
         self._server = CherryPyWSGIServer(address, wsgi_app)
+        self._bound_address = None
 
     def close(self):
         self._server.stop()
@@ -119,7 +121,13 @@ class CherrypyRpcServer(WsgiRpcServer):
 
     @property
     def bound_address(self):
-        return self._server.bind_addr
+        if not self._bound_address:
+            sock = getattr(self._server, 'socket', None)
+            if sock:
+                self._bound_address = sock.getsockname()
+            else:
+                return self._address
+        return self._bound_address
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -180,7 +188,8 @@ if __name__ == '__main__':
             return self._c
 
     registry = {'MyClass': MyClass}
-    cpsrv = CherrypyRpcServer(('127.0.0.1', 8080), registry, debug=True)
+    # cpsrv = CherrypyRpcServer(('127.0.0.1', 8080), registry)
+    cpsrv = CherrypyRpcServer(('127.0.0.1', 0), registry)
     # cpsrv = TornadoRpcServer(('127.0.0.1', 8080), registry, multiprocess=False)
     # print 'BOUND to PORT = {0}'.format(cpsrv.bound_address)
     cpsrv.server_forever()

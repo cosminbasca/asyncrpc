@@ -3,8 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="5afc6fb3-898e-4aae-a67e-6f6d4cf5c5f1" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/__version__.py" afterPath="$PROJECT_DIR$/asyncrpc/__version__.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/manager.py" afterPath="$PROJECT_DIR$/asyncrpc/manager.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/process.py" afterPath="$PROJECT_DIR$/asyncrpc/process.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/server.py" afterPath="$PROJECT_DIR$/asyncrpc/server.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="trunk.iws" />
@@ -22,8 +21,8 @@
     <SUITE FILE_PATH="coverage/trunk$_bench.coverage" NAME="_bench Coverage Results" MODIFIED="1405194215486" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/trunk$client.coverage" NAME="client Coverage Results" MODIFIED="1405772158171" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/asyncrpc" />
     <SUITE FILE_PATH="coverage/trunk$immutable.coverage" NAME="immutable Coverage Results" MODIFIED="1403883530547" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/geventmanager" />
-    <SUITE FILE_PATH="coverage/trunk$server.coverage" NAME="server Coverage Results" MODIFIED="1405772853740" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/asyncrpc" />
-    <SUITE FILE_PATH="coverage/trunk$_debug.coverage" NAME="_debug Coverage Results" MODIFIED="1405776300300" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/trunk$server.coverage" NAME="server Coverage Results" MODIFIED="1405776886743" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/asyncrpc" />
+    <SUITE FILE_PATH="coverage/trunk$_debug.coverage" NAME="_debug Coverage Results" MODIFIED="1405777348271" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
@@ -49,11 +48,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="manager.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="manager.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/asyncrpc/manager.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.45038167" vertical-offset="587" max-vertical-offset="1242">
-              <caret line="55" column="41" selection-start-line="55" selection-start-column="41" selection-end-line="55" selection-end-column="41" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="587" max-vertical-offset="1242">
+              <caret line="67" column="36" selection-start-line="67" selection-start-column="36" selection-end-line="67" selection-end-column="36" />
               <folding />
             </state>
           </provider>
@@ -74,11 +73,21 @@
       <file leaf-file-name="server.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/asyncrpc/server.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="1834" max-vertical-offset="3438">
-              <caret line="111" column="28" selection-start-line="111" selection-start-column="28" selection-end-line="111" selection-end-column="28" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="1775" max-vertical-offset="3600">
+              <caret line="123" column="35" selection-start-line="123" selection-start-column="35" selection-end-line="123" selection-end-column="35" />
               <folding>
                 <element signature="e#0#57#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="__version__.py" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/asyncrpc/__version__.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.05496183" vertical-offset="0" max-vertical-offset="655">
+              <caret line="2" column="19" selection-start-line="2" selection-start-column="19" selection-end-line="2" selection-end-column="19" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -160,9 +169,9 @@
         <option value="$PROJECT_DIR$/asyncrpc/client.py" />
         <option value="$PROJECT_DIR$/asyncrpc/wsgi.py" />
         <option value="$PROJECT_DIR$/asyncrpc/templates/registry.html" />
-        <option value="$PROJECT_DIR$/asyncrpc/server.py" />
         <option value="$PROJECT_DIR$/asyncrpc/process.py" />
         <option value="$PROJECT_DIR$/asyncrpc/manager.py" />
+        <option value="$PROJECT_DIR$/asyncrpc/server.py" />
         <option value="$PROJECT_DIR$/asyncrpc/__version__.py" />
       </list>
     </option>
@@ -1091,7 +1100,11 @@
       <created>1405776007029</created>
       <updated>1405776007029</updated>
     </task>
-    <option name="localTasksCounter" value="135" />
+    <task id="LOCAL-00135" summary="asyncrpc version 0.3.12&#10;&#10;- tornado based manager works ... &#10;- cherrypy based manager does not report bound port ... &#10;- tornado multi-process still fails">
+      <created>1405776354026</created>
+      <updated>1405776354026</updated>
+    </task>
+    <option name="localTasksCounter" value="136" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -1108,7 +1121,7 @@
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.44948757" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.35285506" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32796487" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -1155,7 +1168,6 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="geventmanager version 0.1.17&#10;&#10;- with single instance preforked manager" />
     <MESSAGE value="geventmanager version 0.1.17&#10;&#10;- renamed to geventutil&#10;" />
     <MESSAGE value="geventutil version 0.1.18&#10;&#10;- no testing, but microbenchmarks (seem to) work&#10;" />
     <MESSAGE value="geventutil version 0.1.19&#10;&#10;- microbench works" />
@@ -1180,7 +1192,8 @@
     <MESSAGE value="asyncrpc version 0.3.9&#10;&#10;- tornado multi-process still fails" />
     <MESSAGE value="asyncrpc version 0.3.10&#10;&#10;- wsgi app: registry viewer on /&#10;- tornado multi-process still fails" />
     <MESSAGE value="asyncrpc version 0.3.11&#10;&#10;- registry viewer / editor is included by default (with debug enabled)&#10;- tornado multi-process still fails" />
-    <option name="LAST_COMMIT_MESSAGE" value="asyncrpc version 0.3.11&#10;&#10;- registry viewer / editor is included by default (with debug enabled)&#10;- tornado multi-process still fails" />
+    <MESSAGE value="asyncrpc version 0.3.12&#10;&#10;- tornado based manager works ... &#10;- cherrypy based manager does not report bound port ... &#10;- tornado multi-process still fails" />
+    <option name="LAST_COMMIT_MESSAGE" value="asyncrpc version 0.3.12&#10;&#10;- tornado based manager works ... &#10;- cherrypy based manager does not report bound port ... &#10;- tornado multi-process still fails" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -1519,40 +1532,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/__deprecated__/server.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.7241379" vertical-offset="3852" max-vertical-offset="8388">
-          <caret line="228" column="28" selection-start-line="228" selection-start-column="28" selection-end-line="228" selection-end-column="28" />
-          <folding>
-            <element signature="e#0#57#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/env/lib/python2.7/site-packages/cherrypy/wsgiserver/wsgiserver2.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-4.8390803" vertical-offset="35434" max-vertical-offset="44766">
-          <caret line="1875" column="8" selection-start-line="1875" selection-start-column="8" selection-end-line="1875" selection-end-column="8" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/asyncrpc/process.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="1152" max-vertical-offset="3546">
           <caret line="71" column="59" selection-start-line="71" selection-start-column="59" selection-end-line="71" selection-end-column="59" />
           <folding>
             <element signature="e#0#41#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/asyncrpc/server.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="1870" max-vertical-offset="3438">
-          <caret line="111" column="28" selection-start-line="111" selection-start-column="28" selection-end-line="111" selection-end-column="28" />
-          <folding>
-            <element signature="e#0#57#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1565,18 +1550,46 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/asyncrpc/__version__.py">
+    <entry file="file://$PROJECT_DIR$/asyncrpc/manager.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.05496183" vertical-offset="0" max-vertical-offset="655">
-          <caret line="2" column="19" selection-start-line="2" selection-start-column="19" selection-end-line="2" selection-end-column="19" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="587" max-vertical-offset="1242">
+          <caret line="67" column="36" selection-start-line="67" selection-start-column="36" selection-end-line="67" selection-end-column="36" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/asyncrpc/manager.py">
+    <entry file="file://$PROJECT_DIR$/__deprecated__/server.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.45038167" vertical-offset="587" max-vertical-offset="1242">
-          <caret line="55" column="41" selection-start-line="55" selection-start-column="41" selection-end-line="55" selection-end-column="41" />
+        <state vertical-scroll-proportion="0.60458016" vertical-offset="3474" max-vertical-offset="8388">
+          <caret line="215" column="52" selection-start-line="215" selection-start-column="41" selection-end-line="215" selection-end-column="52" />
+          <folding>
+            <element signature="e#0#57#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/env/lib/python2.7/site-packages/cherrypy/wsgiserver/wsgiserver2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.1091314" vertical-offset="35869" max-vertical-offset="44766">
+          <caret line="1990" column="8" selection-start-line="1990" selection-start-column="8" selection-end-line="1990" selection-end-column="8" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/asyncrpc/server.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="1775" max-vertical-offset="3600">
+          <caret line="123" column="35" selection-start-line="123" selection-start-column="35" selection-end-line="123" selection-end-column="35" />
+          <folding>
+            <element signature="e#0#57#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/asyncrpc/__version__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.05496183" vertical-offset="0" max-vertical-offset="655">
+          <caret line="2" column="19" selection-start-line="2" selection-start-column="19" selection-end-line="2" selection-end-column="19" />
           <folding />
         </state>
       </provider>
