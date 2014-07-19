@@ -1,3 +1,3 @@
 #!/bin/sh
 clear
-nosetests --rednose -v -s ./geventmanager/test/
+nosetests --rednose -v -s ./asyncrpc/test/

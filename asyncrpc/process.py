@@ -99,7 +99,7 @@ class BackgroundRunner(object):
         self._log.debug('waiting for bound address .. ')
         self._bound_address = reader.recv()
         reader.close()
-        self._log.critical('server started on {0}'.format(self._bound_address))
+        self._log.info('server started on {0}'.format(self._bound_address))
         self._stop = Finalize(self, self._finalize, args=(), exitpriority=0)
 
         if wait:
