@@ -1,6 +1,7 @@
 from multiprocessing import Pipe, Process
 from multiprocessing.managers import State
 from multiprocessing.util import Finalize
+from threading import Thread
 import socket
 import errno
 import signal
@@ -42,7 +43,7 @@ class BackgroundRunner(object):
 
         self._log = get_logger(server_class.__name__)
 
-    def _background_start(self, writer, **kwargs):
+    def _background_start(self, writer, *args, **kwargs):
         try:
             if self._gevent_patch:
                 reinit()
@@ -52,7 +53,7 @@ class BackgroundRunner(object):
             retries = 0
             while retries < self._retries:
                 try:
-                    server = self._server_class(self._address, **kwargs)
+                    server = self._server_class(self._address, *args, **kwargs)
                     break
                 except socket.timeout:
                     retries -= 1
@@ -62,8 +63,20 @@ class BackgroundRunner(object):
                     retries -= 1
 
             if server:
-                writer.send(server.bound_address)
-                writer.close()
+                def port_check(_port, _server):
+                    self._log.debug('started port checker')
+                    while _port == _server.bound_address[1]:
+                        sleep(0.001)
+                    writer.send(_server.bound_address)
+                    writer.close()
+
+                port = self._address[1]
+                if port == 0: # find out the bound port if the initial port is 0
+                    self._log.debug('port is 0, start waiting thread for bound port ... ')
+                    checker = Thread(target=port_check, args=(port, server))
+                    checker.daemon = True
+                    checker.start()
+
                 server.start()
             else:
                 writer.close()
@@ -82,10 +95,10 @@ class BackgroundRunner(object):
         self._process.start()
 
         writer.close()
+        self._log.debug('waiting for bound address .. ')
         self._bound_address = reader.recv()
         reader.close()
-        self._log.info('server starting on {0}'.format(self._bound_address))
-        self._log.info('server initialized dispatcher')
+        self._log.info('server started on {0}'.format(self._bound_address))
         self._stop = Finalize(self, self._finalize, args=(), exitpriority=0)
 
         if wait:
