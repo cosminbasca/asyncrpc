@@ -1,5 +1,6 @@
 recursive-exclude build *
 recursive-exclude dist *
+recursive-exclude __deprecated__ *
 exclude *.sh
 exclude *.csv
 exclude *.prof
