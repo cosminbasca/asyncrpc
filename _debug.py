@@ -35,7 +35,7 @@ def bench_gevent_man(async=False, workload=False):
 
     my1 = manager.MyClass(counter=10, workload=workload)
     calls = 10000
-    concurrent = 512
+    concurrent = 12
     t0 = time()
     if async:
         pool = Pool(concurrent)
@@ -61,4 +61,4 @@ if __name__ == '__main__':
 
     # with workload
     # bench_gevent_man(async=False, workload=True)    # DID: 195 calls / second, total calls: 10000
-    bench_gevent_man(async=True, workload=True)     # DID: 90 calls / second, total calls: 10000
+    bench_gevent_man(async=True, workload=True)     # DID: 169 calls / second, total calls: 10000

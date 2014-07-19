@@ -21,7 +21,7 @@ __author__ = 'basca'
 class RpcProxy(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, instance_id, address, slots=None, owner=True, **kwargs):
+    def __init__(self, instance_id, address, slots=None, owner=True, retries=2000, **kwargs):
         if isinstance(address, (tuple, list)):
             host, port = address
         elif isinstance(address, (str, unicode)):
@@ -31,6 +31,7 @@ class RpcProxy(object):
             raise ValueError(
                 'address, must be either a tuple/list or string of the name:port form, got {0}'.format(address))
 
+        self._retries = retries
         self._id = instance_id
         self._address = (host, port)
         self._slots = slots
@@ -141,39 +142,23 @@ class Proxy(RpcProxy):
 # Requests proxy implementation
 #
 # ----------------------------------------------------------------------------------------------------------------------
-# class AsyncProxy(RpcProxy):
-#     def __init__(self, instance_id, address, slots=None, owner=True, timeout=10, **kwargs):
-#         super(AsyncProxy, self).__init__(instance_id, address, slots=slots, owner=owner)
-#         self._timeout = timeout
-#
-#     def _httpcall(self, message):
-#         http = HTTPClient.from_url(self._url_base, concurrency=1, connection_timeout=self._timeout,
-#                                    network_timeout=self._timeout)
-#         response = http.post(self._url_path, body=message)
-#         http.close()
-#         return response
-#
-#     def _content(self, response):
-#         return response.read()
-#
-#     def _status_code(self, response):
-#         return response.status_code
-
 class AsyncProxy(RpcProxy):
-    def __init__(self, instance_id, address, slots=None, owner=True, **kwargs):
+    def __init__(self, instance_id, address, slots=None, owner=True, timeout=10, **kwargs):
         super(AsyncProxy, self).__init__(instance_id, address, slots=slots, owner=owner)
-        from grequests import post
-        self._post = partial(post, self.url)
+        self._timeout = timeout
 
     def _httpcall(self, message):
-        return self._post(data=message).send()
+        http = HTTPClient.from_url(self._url_base, concurrency=1, connection_timeout=self._timeout,
+                                   network_timeout=self._timeout)
+        response = http.post(self._url_path, body=message)
+        http.close()
+        return response
 
     def _content(self, response):
-        return response.content
+        return response.read()
 
     def _status_code(self, response):
         return response.status_code
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
