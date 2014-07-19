@@ -223,9 +223,9 @@ if __name__ == '__main__':
     proxy.add(value=30)
     print proxy.current_counter()
     dispatch(('127.0.0.1', 8080), Command.DEBUG)
-    proxy.release()
-    del proxy
+    # proxy.release()
+    # del proxy
 
-    dispatch(('127.0.0.1', 8080), Command.DEBUG)
-    dispatch(('127.0.0.1', 8080), Command.CLEAR)
-    dispatch(('127.0.0.1', 8080), Command.DEBUG)
+    # dispatch(('127.0.0.1', 8080), Command.DEBUG)
+    # dispatch(('127.0.0.1', 8080), Command.CLEAR)
+    # dispatch(('127.0.0.1', 8080), Command.DEBUG)

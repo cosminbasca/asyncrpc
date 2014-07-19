@@ -3,27 +3,44 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>AsyncRpc version {{'{0}'.format(version)}}</title>
+    <title>AsyncRpc version {{version}}</title>
 
     <!-- bootstrap stuff -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=0.8"/>
     <link href="/static/bootstrap/css/bootstrap.css" rel="stylesheet"/>
     <style>
         body {
             padding-bottom: 10px;
         }
     </style>
-    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-
-    <!-- Load d3 -->
-    <script src="http://d3js.org/d3.v2.min.js"></script>
-
     <!-- Mouse-over tooltip -->
     <script src="/static/tooltip/tooltip.js"></script>
     <link href="/static/tooltip/tooltip.css" rel="stylesheet"/>
+
+    <script type="application/javascript">
+        function toggleEditMode() {
+            if ($('#editMode').hasClass('active')) {
+                $('#clearAll').addClass('disabled');
+                $('#editMode').text('Enable Edit Mode');
+            } else {
+                $('#clearAll').removeClass('disabled');
+                $('#editMode').text('Disable Edit Mode');
+            }
+        }
+
+        function reload() {
+            window.location.href = "http://" + window.location.host + window.location.pathname;
+        }
+
+        function clearAll() {
+            if (!$('#clearAll').hasClass('disabled')) {
+                var params = [
+                    "clearAll=True",
+                ];
+                window.location.href = "http://" + window.location.host + window.location.pathname + '?' + params.join('&');
+            }
+        }
+    </script>
 </head>
 
 <body>
@@ -36,7 +53,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </a>
-            <a class="brand" href="#">AsyncRpc version {{'{0}'.format(version)}}</a>
+            <a class="brand" href="#">AsyncRpc version {{version}}</a>
 
             <div class="nav-collapse">
                 <ul class="nav">
@@ -49,43 +66,42 @@
 
 <!-- Everything else -->
 <div class="container">
-    <div class="gallery" id="chart">
+    <br>
+
+    <div class="btn-group" role="toolbar">
+        <button type="button" class="btn btn-default" onclick="reload();">
+            Reload
+        </button>
+        <button id="editMode" type="button" class="btn btn-default" data-toggle="button" onclick="toggleEditMode();">
+            Enable Edit Mode
+        </button>
+        <button id="clearAll" type="button" class="btn btn-danger disabled" onclick="clearAll();">
+            Clear All Instances
+        </button>
     </div>
     <br>
 
     <div class="panel panel-default">
         <!-- Default panel contents -->
-        <div class="panel-heading">registered items</div>
+        <h5>Registry:</h5>
 
         <!-- Table -->
-        <table class="table">
+        <table class="table table-hover">
             <thead>
-            <tr>
+            <tr class="active">
                 <th>#</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Username</th>
+                <th>Registry ID</th>
+                <th>Representation</th>
             </tr>
             </thead>
             <tbody>
-            <tr>
-                <td>1</td>
-                <td>Mark</td>
-                <td>Otto</td>
-                <td>@mdo</td>
+            {% for item in registry_items %}
+            <tr class="{{'info' if isclass(item[1]) else ''}}">
+                <td>{{loop.index}}</td>
+                <td>{{item[0]}}</td>
+                <td>{{item[1]}}</td>
             </tr>
-            <tr>
-                <td>2</td>
-                <td>Jacob</td>
-                <td>Thornton</td>
-                <td>@fat</td>
-            </tr>
-            <tr>
-                <td>3</td>
-                <td>Larry</td>
-                <td>the Bird</td>
-                <td>@twitter</td>
-            </tr>
+            {% endfor %}
             </tbody>
         </table>
     </div>

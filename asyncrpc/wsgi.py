@@ -5,7 +5,7 @@ import traceback
 from werkzeug.wsgi import SharedDataMiddleware
 from asyncrpc.exceptions import CommandNotFoundException, InvalidInstanceId, current_error
 from asyncrpc.log import get_logger
-from asyncrpc.__version__ import version
+from asyncrpc.__version__ import version, str_version
 from msgpackutil import dumps, loads
 from werkzeug.wrappers import Response, Request
 from inspect import isclass
@@ -28,6 +28,12 @@ class Command(object):
     DEBUG = '#DEBUG'
 
 
+def drop_instances(registry):
+    to_remove = [oid for oid, v in registry.iteritems() if not isclass(v)]
+    for oid in to_remove:
+        del registry[oid]
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # WSGI RPC Registry viewer - a wsgi app
@@ -45,8 +51,12 @@ class RpcRegistryViewer(object):
         return t.render(params)
 
     def registry_wsgi_app(self, environ, start_response):
-        # request = Request(environ)
-        response = Response(self.render_template('registry.html', version=version), mimetype='text/html')
+        request = Request(environ)
+        if 'clearAll' in request.args.keys():
+            drop_instances(self._registry)
+        response = Response(
+            self.render_template('registry.html', version=str_version, registry_items=self._registry.items(),
+                                 isclass=isclass), mimetype='text/html')
         return response(environ, start_response)
 
     def __call__(self, environ, start_response):
@@ -106,9 +116,7 @@ class RpcRegistryMiddleware(object):
         return False
 
     def _handler_clear(self, instance_id, name, *args, **kwargs):
-        to_remove = [oid for oid, v in self._registry.iteritems() if not isclass(v)]
-        for oid in to_remove:
-            del self._registry[oid]
+        drop_instances(self._registry)
 
     def _handler_clear_all(self, instance_id, name, *args, **kwargs):
         self._registry.iteritems.clear()
