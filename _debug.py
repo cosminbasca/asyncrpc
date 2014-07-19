@@ -1,6 +1,8 @@
 from multiprocessing.pool import ThreadPool
-from time import time
+import random
+from time import time, sleep
 from gevent.pool import Pool
+import gevent
 import numpy as np
 from asyncrpc.manager import AsyncManager
 from asyncrpc.log import set_level
@@ -9,11 +11,12 @@ set_level('critical')
 
 __author__ = 'basca'
 
+
 class MyClass(object):
     def __init__(self, counter=0, workload=False):
         self._c = counter
         self._w = workload
-        print 'with workload = ',True if self._w else False
+        print 'with workload = ', True if self._w else False
 
     def add(self, value=1):
         self._c += value
@@ -24,6 +27,11 @@ class MyClass(object):
     def current_counter(self):
         if self._w: self._c = np.exp(np.arange(1000000)).sum()
         return self._c
+
+    def wait_op(self):
+        sleep(random.randint(1, 3))
+        return self._c
+
 
 def bench_gevent_man(async=False, workload=False):
     class MyManager(AsyncManager):
@@ -53,6 +61,41 @@ def bench_gevent_man(async=False, workload=False):
     del manager
     print 'done'
 
+
+def async_vs_blocking():
+    class MyManager(AsyncManager):
+        pass
+
+    MyManager.register("MyClass", MyClass)
+
+    manager = MyManager(async=False)
+    manager.start()
+
+    calls = 10
+
+    t0 = time()
+    proxy = manager.MyClass(counter=10)
+    pool = Pool()
+    [pool.apply_async(proxy.wait_op) for i in xrange(calls)]
+    pool.join()
+    print 'BLOCKING TOOK {0} seconds'.format(time()-t0)
+
+    del manager
+
+    manager = MyManager(async=True)
+    manager.start()
+
+    t0 = time()
+    proxy = manager.MyClass(counter=10)
+    pool = Pool()
+    [pool.apply_async(proxy.wait_op) for i in xrange(calls)]
+    pool.join()
+    print 'ASYNC    TOOK {0} seconds'.format(time()-t0)
+
+
+    del manager
+
+
 if __name__ == '__main__':
     # cherrypy ...
     # no workload
@@ -61,4 +104,6 @@ if __name__ == '__main__':
 
     # with workload
     # bench_gevent_man(async=False, workload=True)    # DID: 195 calls / second, total calls: 10000
-    bench_gevent_man(async=True, workload=True)     # DID: 170 calls / second, total calls: 10000
+    # bench_gevent_man(async=True, workload=True)  # DID: 170 calls / second, total calls: 10000
+
+    async_vs_blocking()
