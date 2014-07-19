@@ -4,6 +4,7 @@ from time import time, sleep
 from gevent.pool import Pool
 import gevent
 import numpy as np
+from asyncrpc.client import hidden
 from asyncrpc.manager import AsyncManager
 from asyncrpc.log import set_level
 
@@ -32,6 +33,16 @@ class MyClass(object):
         sleep(random.randint(1, 3))
         return self._c
 
+    def _private(self):
+        pass
+
+    @hidden
+    def some_method(self):
+        pass
+
+    def another(self):
+        pass
+
 
 def bench_gevent_man(async=False, workload=False):
     class MyManager(AsyncManager):
@@ -42,6 +53,7 @@ def bench_gevent_man(async=False, workload=False):
     manager.start()
 
     my1 = manager.MyClass(counter=10, workload=workload)
+
     calls = 10000
     concurrent = 12
     t0 = time()
@@ -71,10 +83,12 @@ def async_vs_blocking():
     manager = MyManager(async=False)
     manager.start()
 
-    calls = 10
+    calls = 3
+
 
     t0 = time()
     proxy = manager.MyClass(counter=10)
+    # proxy.some_method()
     pool = Pool()
     [pool.apply_async(proxy.wait_op) for i in xrange(calls)]
     pool.join()

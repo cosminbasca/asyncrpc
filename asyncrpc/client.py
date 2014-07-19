@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from functools import partial
+import inspect
 import traceback
 from asyncrpc.log import get_logger
 from asyncrpc.exceptions import get_exception, ConnectionDownException, ConnectionTimeoutException
@@ -12,14 +13,36 @@ from retrying import retry
 
 __author__ = 'basca'
 
-
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # general utility functions & constants
 #
 # ----------------------------------------------------------------------------------------------------------------------
+def hidden(func):
+    assert hasattr(func, '__call__'), 'func is not a callable'
+    func.hidden = True
+    return func
+
+
+def asynchronous(func):
+    assert hasattr(func, '__call__'), 'func is not a callable'
+    func.asynchronous = True
+    return func
+
+
+def exposed_methods(obj):
+    def exposed(func_name, func):
+        if not hasattr(func, '__call__') or func_name.startswith('_') or hasattr(func, 'hidden'):
+            return False
+        return True
+
+    methods = inspect.getmembers(obj, predicate=inspect.ismethod)
+    return {method_name: impl for method_name, impl in methods if exposed(method_name, impl)}
+
+
 def _if_connection_error(exception):
     return isinstance(exception, ConnectionError)
+
 
 _MAX_RETRIES = 100
 
@@ -108,7 +131,7 @@ class RpcProxy(object):
         return self._get_result(response)
 
     # def _rpccall(self, name, *args, **kwargs):
-    #     try:
+    # try:
     #         message = dumps((self._id, name, args, kwargs))
     #         response = self._httpcall(message)
     #         return self._get_result(response)
