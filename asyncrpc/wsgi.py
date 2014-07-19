@@ -6,8 +6,8 @@ import traceback
 from werkzeug.wsgi import SharedDataMiddleware
 from asyncrpc.exceptions import CommandNotFoundException, InvalidInstanceId, current_error
 from asyncrpc.log import get_logger
-from asyncrpc.__version__ import version, str_version
-from msgpackutil import dumps, loads
+from asyncrpc.__version__ import str_version
+from asyncrpc.messaging import dumps, loads
 from werkzeug.wrappers import Response, Request
 from inspect import isclass
 from jinja2 import Environment, FileSystemLoader

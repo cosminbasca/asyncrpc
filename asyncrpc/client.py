@@ -6,7 +6,7 @@ from asyncrpc.log import get_logger
 from asyncrpc.exceptions import get_exception, ConnectionDownException, ConnectionTimeoutException
 from asyncrpc.wsgi import Command
 from werkzeug.exceptions import abort
-from msgpackutil import loads, dumps
+from asyncrpc.messaging import dumps, loads
 import requests
 from requests.exceptions import ConnectionError
 from retrying import retry

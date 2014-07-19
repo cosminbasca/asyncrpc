@@ -87,7 +87,7 @@
         <h5>Registry:</h5>
 
         <!-- Table -->
-        <table class="table table-hover">
+        <table class="table table-hover table-condensed">
             <thead>
             <tr class="active">
                 <th>#</th>
@@ -100,7 +100,30 @@
             <tr class="{{'info' if isclass(item[1]) else ''}}">
                 <td>{{loop.index}}</td>
                 <td>{{item[0]}}</td>
-                <td>{{item[1]}}</td>
+                <td>
+                    <a data-toggle="collapse" href="#collapse{{loop.index}}">
+                        {% if isclass(item[1]) %}
+                        {{item[1].__name__}} type
+                        {% else %}
+                        {{item[1][0].__name__}} instance
+                        {% endif %}
+                    </a>
+
+                    <div id="collapse{{loop.index}}" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            {% if isclass(item[1]) %}
+                            {{item[1]}}
+                            {% else %}
+                            <dl class="dl-horizontal">
+                                {% for k,v in item[1][1] %}
+                                <dt>{{k}}: &nbsp;</dt>
+                                <dd>{{v}}</dd>
+                                {% endfor %}
+                            </dl>
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
             </tr>
             {% endfor %}
             </tbody>
