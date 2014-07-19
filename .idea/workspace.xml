@@ -2,51 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="5afc6fb3-898e-4aae-a67e-6f6d4cf5c5f1" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/bootstrap" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/bootstrap/css" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/favicon.ico" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/bootstrap/img/glyphicons-halflings-white.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/bootstrap/img/glyphicons-halflings.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/bootstrap/img" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/bootstrap/js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/templates" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/tooltip" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/bootstrap/css/bootstrap.css" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/bootstrap/js/bootstrap.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/bootstrap/css/bootstrap.min.css" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/bootstrap/js/bootstrap.min.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/ez_setup.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/templates/registry.html" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/tooltip/tooltip.css" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/static/tooltip/tooltip.js" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__deprecated__/__init__.py" afterPath="$PROJECT_DIR$/__deprecated__/__deprecated__/__init__.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__deprecated__/base.py" afterPath="$PROJECT_DIR$/__deprecated__/__deprecated__/base.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__deprecated__/general.py" afterPath="$PROJECT_DIR$/__deprecated__/__deprecated__/general.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__deprecated__/host.py" afterPath="$PROJECT_DIR$/__deprecated__/__deprecated__/host.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__deprecated__/log.py" afterPath="$PROJECT_DIR$/__deprecated__/__deprecated__/log.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__deprecated__/remote.py" afterPath="$PROJECT_DIR$/__deprecated__/__deprecated__/remote.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__deprecated__/rpcsocket.py" afterPath="$PROJECT_DIR$/__deprecated__/__deprecated__/rpcsocket.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__deprecated__/sockrpc.py" afterPath="$PROJECT_DIR$/__deprecated__/__deprecated__/sockrpc.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__init__.py" afterPath="$PROJECT_DIR$/__deprecated__/__init__.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__version__.py" afterPath="$PROJECT_DIR$/__deprecated__/__version__.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/exceptions.py" afterPath="$PROJECT_DIR$/__deprecated__/exceptions.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/log.py" afterPath="$PROJECT_DIR$/__deprecated__/log.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/logging.ini" afterPath="$PROJECT_DIR$/__deprecated__/logging.ini" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/manager.py" afterPath="$PROJECT_DIR$/__deprecated__/manager.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/proxy.py" afterPath="$PROJECT_DIR$/__deprecated__/proxy.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/rpcsocket.py" afterPath="$PROJECT_DIR$/__deprecated__/rpcsocket.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/server.py" afterPath="$PROJECT_DIR$/__deprecated__/server.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/test/__init__.py" afterPath="$PROJECT_DIR$/__deprecated__/test/__init__.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/test/test_manager.py" afterPath="$PROJECT_DIR$/__deprecated__/test/test_manager.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/__version__.py" afterPath="$PROJECT_DIR$/asyncrpc/__version__.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/server.py" afterPath="$PROJECT_DIR$/asyncrpc/server.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/setup.py" afterPath="$PROJECT_DIR$/setup.py" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/__deprecated__/__init__.py" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/wsgi.py" afterPath="$PROJECT_DIR$/asyncrpc/wsgi.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/__deprecated__" afterPath="$PROJECT_DIR$/__deprecated__/__deprecated__" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager" afterPath="$PROJECT_DIR$/__deprecated__" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/geventmanager/test" afterPath="$PROJECT_DIR$/__deprecated__/test" />
     </list>
     <ignored path="trunk.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -113,8 +70,8 @@
       <file leaf-file-name="registry.html" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/asyncrpc/templates/registry.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.40095088" vertical-offset="647" max-vertical-offset="1278">
-              <caret line="50" column="23" selection-start-line="50" selection-start-column="23" selection-end-line="50" selection-end-column="23" />
+            <state vertical-scroll-proportion="0.31537244" vertical-offset="647" max-vertical-offset="1278">
+              <caret line="47" column="6" selection-start-line="47" selection-start-column="6" selection-end-line="47" selection-end-column="6" />
               <folding />
             </state>
           </provider>
@@ -1138,12 +1095,16 @@
       <created>1405720566026</created>
       <updated>1405720566026</updated>
     </task>
-    <option name="localTasksCounter" value="130" />
+    <task id="LOCAL-00130" summary="asyncrpc version 0.3.10&#10;&#10;- wsgi app: registry viewer on /&#10;- tornado multi-process still fails">
+      <created>1405766808029</created>
+      <updated>1405766808029</updated>
+    </task>
+    <option name="localTasksCounter" value="131" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="4" y="22" width="1276" height="778" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32796487" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -1151,7 +1112,7 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22447325" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22447325" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
@@ -1202,7 +1163,6 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="geventmanager version 0.1.13&#10;&#10;- without the immutable preforked component ..." />
     <MESSAGE value="geventmanager version 0.1.14&#10;&#10;- without the immutable preforked component ..." />
     <MESSAGE value="geventmanager version 0.1.17&#10;&#10;- with single instance preforked manager" />
     <MESSAGE value="geventmanager version 0.1.17&#10;&#10;- renamed to geventutil&#10;" />
@@ -1227,7 +1187,8 @@
     <MESSAGE value="asyncrpc version 0.3.7&#10;&#10;- asyncproxy is in!" />
     <MESSAGE value="asyncrpc version 0.3.8&#10;&#10;- tornado multi-process fails" />
     <MESSAGE value="asyncrpc version 0.3.9&#10;&#10;- tornado multi-process still fails" />
-    <option name="LAST_COMMIT_MESSAGE" value="asyncrpc version 0.3.9&#10;&#10;- tornado multi-process still fails" />
+    <MESSAGE value="asyncrpc version 0.3.10&#10;&#10;- wsgi app: registry viewer on /&#10;- tornado multi-process still fails" />
+    <option name="LAST_COMMIT_MESSAGE" value="asyncrpc version 0.3.10&#10;&#10;- wsgi app: registry viewer on /&#10;- tornado multi-process still fails" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -1293,6 +1254,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="162">
           <caret line="2" column="19" selection-start-line="2" selection-start-column="19" selection-end-line="2" selection-end-column="19" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1307,6 +1269,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.5281853" vertical-offset="3042" max-vertical-offset="8388">
           <caret line="207" column="87" selection-start-line="207" selection-start-column="87" selection-end-line="207" selection-end-column="87" />
+          <folding>
+            <element signature="e#0#57#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1314,6 +1279,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.4030888" vertical-offset="0" max-vertical-offset="1998">
           <caret line="31" column="33" selection-start-line="31" selection-start-column="33" selection-end-line="31" selection-end-column="33" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1335,6 +1301,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-0.8903475" vertical-offset="2881" max-vertical-offset="4176">
           <caret line="102" column="0" selection-start-line="102" selection-start-column="0" selection-end-line="102" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1377,6 +1344,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.5480916" vertical-offset="1117" max-vertical-offset="3852">
           <caret line="82" column="69" selection-start-line="82" selection-start-column="32" selection-end-line="82" selection-end-column="69" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1456,6 +1424,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.578626" vertical-offset="647" max-vertical-offset="2700">
           <caret line="57" column="0" selection-start-line="57" selection-start-column="0" selection-end-line="63" selection-end-column="0" />
+          <folding>
+            <element signature="e#87#97#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1471,6 +1442,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.5648855" vertical-offset="440" max-vertical-offset="2160">
           <caret line="49" column="28" selection-start-line="49" selection-start-column="28" selection-end-line="49" selection-end-column="28" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1598,8 +1570,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/asyncrpc/templates/registry.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.40095088" vertical-offset="647" max-vertical-offset="1278">
-          <caret line="50" column="23" selection-start-line="50" selection-start-column="23" selection-end-line="50" selection-end-column="23" />
+        <state vertical-scroll-proportion="0.31537244" vertical-offset="647" max-vertical-offset="1278">
+          <caret line="47" column="6" selection-start-line="47" selection-start-column="6" selection-end-line="47" selection-end-column="6" />
           <folding />
         </state>
       </provider>
