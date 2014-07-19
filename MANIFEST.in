@@ -8,4 +8,4 @@ exclude *.log.*
 exclude *.pdf
 exclude *.xlsx
 exclude dependencies.txt
-exclude _bench.py
+exclude _*.py
