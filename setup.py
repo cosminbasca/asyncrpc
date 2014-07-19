@@ -64,7 +64,6 @@ setup(
                      'static/bootstrap/img/*.png',
                      'static/tooltip/*.js',
                      'static/tooltip/*.css',
-                     'static/css/*.css',
                      'templates/*.html']
     },
     install_requires=manual_deps + pip_deps,

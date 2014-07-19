@@ -1,3 +1,4 @@
+import inspect
 import os
 from pprint import pformat
 from threading import RLock
@@ -34,6 +35,15 @@ def drop_instances(registry):
         del registry[oid]
 
 
+def _registry_items(registry):
+    def _instance_members(obj):
+        attributes = inspect.getmembers(obj, predicate=lambda a: not (inspect.isroutine(a)))
+        return [attr for attr in attributes if not attr[0].startswith('__')]
+
+    return [(oid, instance if isclass(instance) else (type(instance), _instance_members(instance)))
+            for oid, instance in registry.iteritems()]
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # WSGI RPC Registry viewer - a wsgi app
@@ -55,7 +65,7 @@ class RpcRegistryViewer(object):
         if 'clearAll' in request.args.keys():
             drop_instances(self._registry)
         response = Response(
-            self.render_template('registry.html', version=str_version, registry_items=self._registry.items(),
+            self.render_template('registry.html', version=str_version, registry_items=_registry_items(self._registry),
                                  isclass=isclass), mimetype='text/html')
         return response(environ, start_response)
 
