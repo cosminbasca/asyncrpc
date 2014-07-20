@@ -1,3 +1,4 @@
+from multiprocessing.managers import BaseManager
 from multiprocessing.pool import ThreadPool
 import random
 from time import time, sleep
@@ -43,16 +44,22 @@ class MyClass(object):
         pass
 
 
-def bench_gevent_man(async=False, workload=False, backend=None, multiprocess=False):
-    class MyManager(AsyncManager):
-        pass
-
-    MyManager.register("MyClass", MyClass)
-    manager = MyManager(async=async, backend=backend)
-    if backend=='tornado':
-        manager.start(multiprocess=multiprocess)
-    else:
+def bench_gevent_man(async=False, workload=False, backend=None, multiprocess=False, mprocman=False):
+    if not async and mprocman:
+        class MyManager(BaseManager):
+            pass
+        MyManager.register('MyClass', MyClass)
+        manager = MyManager()
         manager.start()
+    else:
+        class MyManager(AsyncManager):
+            pass
+        MyManager.register("MyClass", MyClass)
+        manager = MyManager(async=async, backend=backend)
+        if backend=='tornado':
+            manager.start(multiprocess=multiprocess)
+        else:
+            manager.start()
 
     my1 = manager.MyClass(counter=10, workload=workload)
 
@@ -117,7 +124,7 @@ if __name__ == '__main__':
     # bench_gevent_man(async=True, workload=False)  # DID: 384 calls / second, total calls: 10000
 
     # with workload
-    # bench_gevent_man(async=False, workload=True)    # DID: 180 calls / second, total calls: 10000
+    bench_gevent_man(async=False, workload=True)    # DID: 180 calls / second, total calls: 10000
     # bench_gevent_man(async=True, workload=True)  # DID: 181 calls / second, total calls: 10000
 
     # tornado multiprocess ...
@@ -128,9 +135,14 @@ if __name__ == '__main__':
     # with workload
     # bench_gevent_man(async=False, workload=True, backend='tornado', multiprocess=False)
     # DID: 92 calls / second, total calls: 10000 single process
-    bench_gevent_man(async=False, workload=True, backend='tornado', multiprocess=True)
+    # bench_gevent_man(async=False, workload=True, backend='tornado', multiprocess=True)
     # DID: 92 calls / second, total calls: 10000 multiprocess
     # bench_gevent_man(async=True, workload=True)
     #  DID: 181 calls / second, total calls: 10000
+
+    # Multiprocessing
+    # bench_gevent_man(async=False, workload=True, mprocman=True)
+    # DID: 213 calls / second, total calls: 10000
+
 
     # async_vs_blocking()
