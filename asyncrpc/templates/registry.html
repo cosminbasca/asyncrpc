@@ -112,14 +112,19 @@
                     <div id="collapse{{loop.index}}" class="panel-collapse collapse">
                         <div class="panel-body">
                             {% if isclass(item[1]) %}
-                            {{item[1]}}
+                            <span class="label">{{ item[1] }}</span>
                             {% else %}
-                            <dl class="dl-horizontal">
+                            <table class="table-condensed">
+                                <tbody>
                                 {% for k,v in item[1][1] %}
-                                <dt>{{k}}: &nbsp;</dt>
-                                <dd>{{v}}</dd>
+                                <tr>
+                                    <td valign="top"><span class="label">{{ k }}</span></td>
+                                    <td valign="top"><i class="icon-chevron-right"></i></td>
+                                    <td valign="top">{{ v }}</td>
+                                </tr>
                                 {% endfor %}
-                            </dl>
+                                </tbody>
+                            </table>
                             {% endif %}
                         </div>
                     </div>
