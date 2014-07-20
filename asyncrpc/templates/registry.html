@@ -116,7 +116,7 @@
                 <td>
                     <a data-toggle="collapse" href="#collapse{{loop.index}}">
                         {% if isclass(item[1]) %}
-                        {{item[1].__name__}} type
+                        {{item[1].__name__}}
                         {% else %}
                         {{item[1][0].__name__}} instance
                         {% endif %}
@@ -132,7 +132,13 @@
                                 {% for k,v in item[1][1] %}
                                 <tr>
                                     <td valign="top">{{ k }}</td>
-                                    <td valign="top"><i class="icon-circle-arrow-right"></i></td>
+                                    <td valign="top">
+                                        {% if theme == '386' %}
+                                        &rArr;
+                                        {% else %}
+                                        <i class="icon-circle-arrow-right"></i>
+                                        {% endif %}
+                                    </td>
                                     <td valign="top">{{ v }}</td>
                                 </tr>
                                 {% endfor %}
