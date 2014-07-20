@@ -62,6 +62,9 @@ setup(
                      'static/bootstrap/js/*.js',
                      'static/bootstrap/css/*.css',
                      'static/bootstrap/img/*.png',
+                     'static/bootstrap.386/js/*.js',
+                     'static/bootstrap.386/css/*.css',
+                     'static/bootstrap.386/img/*.png',
                      'static/tooltip/*.js',
                      'static/tooltip/*.css',
                      'templates/*.html']

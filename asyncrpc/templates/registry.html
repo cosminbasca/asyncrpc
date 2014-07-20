@@ -7,7 +7,7 @@
 
     <!-- bootstrap stuff -->
     <meta name="viewport" content="width=device-width, initial-scale=0.8"/>
-    <link href="/static/bootstrap/css/bootstrap.css" rel="stylesheet"/>
+    <link href="/static/bootstrap{{'.386' if theme == '386' else ''}}/css/bootstrap.css" rel="stylesheet"/>
     <style>
         body {
             padding-bottom: 10px;
@@ -15,6 +15,15 @@
 
         .borderless td {
             border: none;
+        }
+
+        footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            /* Set the fixed height of the footer here */
+            height: 60px;
+            /*background-color: #f5f5f5;*/
         }
     </style>
     <!-- Mouse-over tooltip -->
@@ -140,10 +149,18 @@
     </div>
 </div>
 
+<div class="footer navbar-fixed-bottom">
+    <div class="container">
+        <p class="text-center text-muted credit">
+            AsyncRpc by <a href="mailto:cosmin.basca@gmail.com">Cosmin Basca</a> &copy; University of Zurich.
+        </p>
+    </div>
+</div>
+
 <!-- Le javascript
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
 <script src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
-<script src="/static/bootstrap/js/bootstrap.min.js"></script>
+<script src="/static/bootstrap{{'.386' if theme == '386' else ''}}/js/bootstrap.min.js"></script>
 </body>
 </html>

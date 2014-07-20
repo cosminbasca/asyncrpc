@@ -50,9 +50,10 @@ def _registry_items(registry):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class RpcRegistryViewer(object):
-    def __init__(self, registry, with_static=True):
+    def __init__(self, registry, with_static=True, theme='386'):
         self._registry = registry
         self._with_static = with_static
+        self._theme = theme
         template_dir = os.path.join(os.path.dirname(__file__), 'templates')
         self._jinja_env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
 
@@ -66,7 +67,7 @@ class RpcRegistryViewer(object):
             drop_instances(self._registry)
         response = Response(
             self.render_template('registry.html', version=str_version, registry_items=_registry_items(self._registry),
-                                 isclass=isclass), mimetype='text/html')
+                                 isclass=isclass, theme=self._theme), mimetype='text/html')
         return response(environ, start_response)
 
     def __call__(self, environ, start_response):
