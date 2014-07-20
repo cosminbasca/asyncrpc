@@ -151,6 +151,8 @@ class TornadoRpcServer(WsgiRpcServer):
         self._bound_address = self._sockets[0].getsockname()  # get the bound address of the first socket ...
 
     def close(self):
+        if self._multiprocess:
+            del self._registry_manager
         ioloop.IOLoop.instance().stop()
 
     def server_forever(self, *args, **kwargs):
