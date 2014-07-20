@@ -8,5 +8,4 @@ exclude *.log
 exclude *.log.*
 exclude *.pdf
 exclude *.xlsx
-exclude dependencies.txt
 exclude _*.py
