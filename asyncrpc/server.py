@@ -181,7 +181,12 @@ if __name__ == '__main__':
         def __init__(self, counter=0, wait=False):
             self._c = counter
             self._w = wait
+            self.some_data = [10, 20, '30', 'hehe']
             # print 'with wait = ', True if self._w else False
+
+        @property
+        def a_property(self):
+            return {'un':1, 'doi':2}
 
         def add(self, value=1):
             self._c += value
