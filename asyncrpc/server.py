@@ -11,6 +11,7 @@ from asyncrpc.wsgi import RpcRegistryMiddleware, RpcRegistryViewer
 from asyncrpc.log import get_logger
 from werkzeug.wsgi import DispatcherMiddleware
 from werkzeug.debug import DebuggedApplication
+from multiprocessing import Manager
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -133,8 +134,16 @@ class CherrypyRpcServer(WsgiRpcServer):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class TornadoRpcServer(WsgiRpcServer):
-    def _init_wsgi_server(self, address, wsgi_app, multiprocess=False, *args, **kwargs):
-        self._multiprocess = multiprocess # TODO, use a multiprocessing shared dict if set to true ...
+    def __init__(self, address, registry, multiprocess=False, *args, **kwargs):
+        self._multiprocess = multiprocess
+        if self._multiprocess:
+            self._registry_manager = Manager()
+            shared_registry = self._registry_manager.dict()
+            shared_registry.update(registry)
+            registry = shared_registry
+        super(TornadoRpcServer, self).__init__(address, registry, *args, **kwargs)
+
+    def _init_wsgi_server(self, address, wsgi_app, *args, **kwargs):
         self._server = HTTPServer(WSGIContainer(wsgi_app))
         self._sockets = bind_sockets(address[1], address=address[0])
         if not self._multiprocess:

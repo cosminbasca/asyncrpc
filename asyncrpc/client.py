@@ -132,24 +132,6 @@ class RpcProxy(object):
         response = self._httpcall(message)
         return self._get_result(response)
 
-    # def _rpccall(self, name, *args, **kwargs):
-    # try:
-    # message = dumps((self._id, name, args, kwargs))
-    # response = self._httpcall(message)
-    #         return self._get_result(response)
-    #     except socket.timeout:
-    #         raise ConnectionTimeoutException(self._address)
-    #     except socket.error, err:
-    #         if isinstance(err.args, tuple):
-    #             if err[0] == errno.ETIMEDOUT:
-    #                 raise ConnectionTimeoutException(self._address)
-    #             elif err[0] in [errno.ECONNRESET, errno.ECONNREFUSED]:
-    #                 raise ConnectionDownException(repr(socket.error), err, traceback.format_exc(), self._address)
-    #             else:
-    #                 raise err
-    #         else:
-    #             raise err
-
     def dispatch(self, command, *args, **kwargs):
         if not command.startswith('#'):
             raise ValueError('{0} is not a valid formed command'.format(command))

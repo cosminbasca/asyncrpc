@@ -2,7 +2,6 @@ from multiprocessing.pool import ThreadPool
 import random
 from time import time, sleep
 from gevent.pool import Pool
-import gevent
 import numpy as np
 from asyncrpc.client import hidden
 from asyncrpc.manager import AsyncManager

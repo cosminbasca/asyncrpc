@@ -40,8 +40,13 @@ def _registry_items(registry):
         attributes = inspect.getmembers(obj, predicate=lambda a: not (inspect.isroutine(a)))
         return [attr for attr in attributes if not attr[0].startswith('__')]
 
+    if hasattr(registry, 'iteritems'):
+        items_iterator = registry.iteritems()
+    else:
+        items_iterator = ((k, v) for k, v in registry.items())
+
     return [(oid, instance if isclass(instance) else (type(instance), _instance_members(instance)))
-            for oid, instance in registry.iteritems()]
+            for oid, instance in items_iterator]
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -141,8 +146,12 @@ class RpcRegistryMiddleware(object):
         return True
 
     def _handler_debug(self, instance_id, name, *args, **kwargs):
+        if hasattr(self._registry, 'iteritems'):
+            items_iterator = self._registry.iteritems()
+        else:
+            items_iterator = ((k, v) for k, v in self._registry.items())
         self._log.info('''REGISTRY: \n{0}'''.format('\n'.join([
-            '[{0}]\t{1} => {2}'.format(i, k, pformat(v)) for i, (k, v) in enumerate(self._registry.iteritems())])
+            '[{0}]\t{1} => {2}'.format(i, k, pformat(v)) for i, (k, v) in enumerate(items_iterator)])
         ))
 
     def _handle_rpc_call(self, instance_id, name, *args, **kwargs):
