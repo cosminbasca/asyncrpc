@@ -9,21 +9,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=0.8"/>
     <link href="/static/bootstrap{{'.386' if theme == '386' else ''}}/css/bootstrap.css" rel="stylesheet"/>
     <style>
-        body {
-            padding-bottom: 10px;
-        }
-
         .borderless td {
             border: none;
         }
 
-        footer {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            /* Set the fixed height of the footer here */
+        /* Sticky footer styles
+      -------------------------------------------------- */
+
+        html,
+        body {
+            height: 100%;
+            /* The html and body elements cannot have any padding or margin. */
+        }
+
+        /* Wrapper for page content to push down footer */
+        #wrap {
+            min-height: 100%;
+            height: auto !important;
+            height: 100%;
+            /* Negative indent footer by it's height */
+            margin: 0 auto -60px;
+        }
+
+        /* Set the fixed height of the footer here */
+        #push,
+        #footer {
             height: 60px;
-            /*background-color: #f5f5f5;*/
+        }
+
+        #footer {
+            background-color: #f5f5f5;
+        }
+
+        /* Lastly, apply responsive CSS fixes as necessary */
+        @media (max-width: 767px) {
+            #footer {
+                margin-left: -20px;
+                margin-right: -20px;
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+        }
+
+        /* Custom page CSS
+        -------------------------------------------------- */
+        /* Not required for template or sticky footer method. */
+
+        #wrap > .container {
+            padding-top: 60px;
+        }
+
+        .container .credit {
+            margin: 20px 0;
+        }
+
+        code {
+            font-size: 80%;
         }
     </style>
     <!-- Mouse-over tooltip -->
@@ -58,115 +99,127 @@
 </head>
 
 <body>
-<!-- Navbar -->
-<div class="navbar navbar-static-top">
-    <div class="navbar-inner">
-        <div class="container">
-            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </a>
-            <a class="brand" href="#">AsyncRpc v{{version}}</a>
+<!-- Part 1: Wrap all page content here -->
+<div id="wrap">
+    <!-- Fixed navbar -->
+    <div class="navbar navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container">
+                <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="brand" href="#">AsyncRpc v{{version}}</a>
 
-            <div class="nav-collapse">
-                <ul class="nav">
-                </ul>
+                <div class="nav-collapse collapse">
+                    <ul class="nav">
+                        <!--<li class="active"><a href="#">Home</a></li>-->
+                        <!--<li><a href="#about">About</a></li>-->
+                        <!--<li><a href="#contact">Contact</a></li>-->
+                    </ul>
+                </div>
+                <!--/.nav-collapse -->
             </div>
-            <!--/.nav-collapse -->
         </div>
     </div>
-</div>
 
-<!-- Everything else -->
-<div class="container">
-    <br>
-
-    <div class="btn-group" role="toolbar">
-        <button type="button" class="btn btn-default" onclick="reload();">
-            Reload
-        </button>
-        <button id="editMode" type="button" class="btn btn-default" data-toggle="button" onclick="toggleEditMode();">
-            Enable Edit Mode
-        </button>
-        <button id="clearAll" type="button" class="btn btn-danger disabled" onclick="clearAll();">
-            Clear All Instances
-        </button>
-    </div>
-    <br>
-
-    <div class="panel panel-default">
-        <!-- Default panel contents -->
-        <h5>Registry:</h5>
-
-        <!-- Table -->
-        <table class="table table-hover table-condensed">
-            <thead>
-            <tr class="active">
-                <th>#</th>
-                <th>Registry ID</th>
-                <th>Representation</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for item in registry_items %}
-            <tr class="{{'info' if isclass(item[1]) else ''}}">
-                <td>{{loop.index}}</td>
-                <td>{{item[0]}}</td>
-                <td>
-                    <a data-toggle="collapse" href="#collapse{{loop.index}}">
-                        {% if isclass(item[1]) %}
-                        {{item[1].__name__}}
-                        {% else %}
-                        {{item[1][0].__name__}} instance
-                        {% endif %}
-                    </a>
-
-                    <div id="collapse{{loop.index}}" class="panel-collapse collapse">
-                        <div class="panel-body">
-                            {% if isclass(item[1]) %}
-                            <span class="label">{{ item[1] }}</span>
-                            {% else %}
-                            <table class="table-condensed borderless">
-                                <tbody>
-                                {% for k,v in item[1][1] %}
-                                <tr>
-                                    <td valign="top">{{ k }}</td>
-                                    <td valign="top">
-                                        {% if theme == '386' %}
-                                        &rArr;
-                                        {% else %}
-                                        <i class="icon-circle-arrow-right"></i>
-                                        {% endif %}
-                                    </td>
-                                    <td valign="top">{{ v }}</td>
-                                </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                            {% endif %}
-                        </div>
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div class="footer navbar-fixed-bottom">
+    <!-- Everything else -->
     <div class="container">
-        <p class="text-center text-muted credit">
-            AsyncRpc v{{version}} by <a href="mailto:cosmin.basca@gmail.com">Cosmin Basca</a> &copy; University of Zurich.
-        </p>
-    </div>
-</div>
+        <div class="btn-group" role="toolbar">
+            <button type="button" class="btn btn-default" onclick="reload();">
+                Reload
+            </button>
+            <button id="editMode" type="button" class="btn btn-default" data-toggle="button"
+                    onclick="toggleEditMode();">
+                Enable Edit Mode
+            </button>
+            <button id="clearAll" type="button" class="btn btn-danger disabled" onclick="clearAll();">
+                Clear All Instances
+            </button>
+        </div>
+        <br>
 
-<!-- Le javascript
-================================================== -->
-<!-- Placed at the end of the document so the pages load faster -->
-<script src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
-<script src="/static/bootstrap{{'.386' if theme == '386' else ''}}/js/bootstrap.min.js"></script>
+        <div class="panel panel-default">
+            <!-- Default panel contents -->
+            <h5>Registry:</h5>
+
+            <!-- Table -->
+            <table class="table table-hover table-condensed">
+                <thead>
+                <tr class="active">
+                    <th>#</th>
+                    <th>Registry ID</th>
+                    <th>Representation</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in registry_items %}
+                <tr class="{{'info' if isclass(item[1]) else ''}}">
+                    <td>{{loop.index}}</td>
+                    <td>{{item[0]}}</td>
+                    <td>
+                        <a data-toggle="collapse" href="#collapse{{loop.index}}">
+                            {% if isclass(item[1]) %}
+                            {{item[1].__name__}}
+                            {% else %}
+                            {{item[1][0].__name__}} instance
+                            {% endif %}
+                        </a>
+
+                        <div id="collapse{{loop.index}}" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                {% if isclass(item[1]) %}
+                                <span class="label">{{ item[1] }}</span>
+                                {% else %}
+                                <table class="table-condensed borderless">
+                                    <tbody>
+                                    {% for k,v in item[1][1] %}
+                                    <tr>
+                                        <td valign="top">{{ k }}</td>
+                                        <td valign="top">
+                                            {% if theme == '386' %}
+                                            &rArr;
+                                            {% else %}
+                                            <i class="icon-circle-arrow-right"></i>
+                                            {% endif %}
+                                        </td>
+                                        <td valign="top">{{ v }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="footer navbar-fixed-bottom">
+        <div class="container">
+            <p class="text-center text-muted credit">
+                AsyncRpc v{{version}} by <a href="mailto:cosmin.basca@gmail.com">Cosmin Basca</a> &copy; University of
+                Zurich.
+            </p>
+        </div>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
+    <script src="/static/bootstrap{{'.386' if theme == '386' else ''}}/js/bootstrap.min.js"></script>
+    {% if theme == '386' %}
+    <script type="application/javascript">
+        _386 = { fastLoad: true };
+    </script>
+    {% endif %}
+
+</div>
 </body>
 </html>
