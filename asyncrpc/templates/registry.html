@@ -12,6 +12,10 @@
         body {
             padding-bottom: 10px;
         }
+
+        .borderless td {
+            border: none;
+        }
     </style>
     <!-- Mouse-over tooltip -->
     <script src="/static/tooltip/tooltip.js"></script>
@@ -114,12 +118,12 @@
                             {% if isclass(item[1]) %}
                             <span class="label">{{ item[1] }}</span>
                             {% else %}
-                            <table class="table-condensed">
+                            <table class="table-condensed borderless">
                                 <tbody>
                                 {% for k,v in item[1][1] %}
                                 <tr>
-                                    <td valign="top"><span class="label">{{ k }}</span></td>
-                                    <td valign="top"><i class="icon-chevron-right"></i></td>
+                                    <td valign="top">{{ k }}</td>
+                                    <td valign="top"><i class="icon-circle-arrow-right"></i></td>
                                     <td valign="top">{{ v }}</td>
                                 </tr>
                                 {% endfor %}
