@@ -1,17 +1,17 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 import os
-import socket
 import sys
 from tornado.netutil import bind_sockets
 from cherrypy.wsgiserver import CherryPyWSGIServer
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado import ioloop
+from asyncrpc.client import Proxy
 from asyncrpc.wsgi import RpcRegistryMiddleware, RpcRegistryViewer
 from asyncrpc.log import get_logger
+from asyncrpc.registry import Registry
 from werkzeug.wsgi import DispatcherMiddleware
 from werkzeug.debug import DebuggedApplication
-from multiprocessing import Manager
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -79,7 +79,12 @@ class WsgiRpcServer(RpcServer):
     __metaclass__ = ABCMeta
 
     def __init__(self, address, registry, debug=True, *args, **kwargs):
+        if isinstance(registry, dict):
+            registry = Registry(**registry)
+        if not isinstance(registry, Registry):
+            raise ValueError('registry must be a Registry')
         super(WsgiRpcServer, self).__init__(address, *args, **kwargs)
+
         registry_app = RpcRegistryMiddleware(registry, shutdown_callback=self.shutdown)
         registry_viewer = RpcRegistryViewer(registry, with_static=True)
         if debug:
@@ -134,34 +139,19 @@ class CherrypyRpcServer(WsgiRpcServer):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class TornadoRpcServer(WsgiRpcServer):
-    def __init__(self, address, registry, multiprocess=False, *args, **kwargs):
-        self._multiprocess = multiprocess
-        if self._multiprocess:
-            self._registry_manager = Manager()
-            shared_registry = self._registry_manager.dict()
-            shared_registry.update(registry)
-            registry = shared_registry
-        super(TornadoRpcServer, self).__init__(address, registry, *args, **kwargs)
-
     def _init_wsgi_server(self, address, wsgi_app, *args, **kwargs):
         self._server = HTTPServer(WSGIContainer(wsgi_app))
         self._sockets = bind_sockets(address[1], address=address[0])
-        if not self._multiprocess:
-            self._server.add_sockets(self._sockets)
+        self._server.add_sockets(self._sockets)
         self._bound_address = self._sockets[0].getsockname()  # get the bound address of the first socket ...
 
     def close(self):
-        if self._multiprocess:
-            del self._registry_manager
         ioloop.IOLoop.instance().stop()
 
     def server_forever(self, *args, **kwargs):
         self._log.info(
-            'starting tornado server in {0} mode'.format('multi-process' if self._multiprocess else 'single-process'))
+            'starting tornado server in single-process mode')
         try:
-            if self._multiprocess:
-                self._server.start(0)
-                self._server.add_sockets(self._sockets)
             ioloop.IOLoop.instance().start()
         except Exception, e:
             self._log.error("exception in serve_forever: {0}".format(e))
@@ -206,6 +196,6 @@ if __name__ == '__main__':
     cpsrv = CherrypyRpcServer(('127.0.0.1', 8080), registry)
     # cpsrv = CherrypyRpcServer(('127.0.0.1', 0), registry)
     # cpsrv = TornadoRpcServer(('127.0.0.1', 8080), registry)
-    # cpsrv = TornadoRpcServer(('127.0.0.1', 8080), registry, multiprocess=True)
+    # cpsrv = TornadoRpcServer(('127.0.0.1', 8080), registry)
     # print 'BOUND to PORT = {0}'.format(cpsrv.bound_address)
     cpsrv.start()

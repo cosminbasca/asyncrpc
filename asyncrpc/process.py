@@ -4,15 +4,13 @@ from multiprocessing.util import Finalize
 from threading import Thread
 import socket
 import errno
-import signal
 from gevent import reinit
 from gevent.monkey import patch_all
-import psutil
 from asyncrpc.exceptions import InvalidStateException
 from asyncrpc.log import get_logger
 from asyncrpc.server import RpcServer
 from asyncrpc.client import dispatch
-from asyncrpc.wsgi import Command
+from asyncrpc.commands import Command
 from time import sleep
 
 __author__ = 'basca'
@@ -72,7 +70,7 @@ class BackgroundRunner(object):
                     self._log.debug('port checker finalized')
 
                 port = self._address[1]
-                if port == 0: # find out the bound port if the initial port is 0
+                if port == 0:  # find out the bound port if the initial port is 0
                     self._log.debug('port is 0, start waiting thread for bound port ... ')
                     checker = Thread(target=port_check, args=(port, server))
                     checker.daemon = True
@@ -100,7 +98,8 @@ class BackgroundRunner(object):
         self._bound_address = reader.recv()
         reader.close()
         self._log.info('server started on {0}'.format(self._bound_address))
-        self._stop = Finalize(self, self._finalize, args=(), exitpriority=0)
+        self._stop = Finalize(self, type(self)._finalize,
+                              args=(self._process, self._bound_address, self._state, self._log), exitpriority=0)
 
         if wait:
             while True:
@@ -129,53 +128,29 @@ class BackgroundRunner(object):
     def stop(self):
         self._stop()
 
-    def _signal_children(self, signals=(signal.SIGINT, signal.SIGUSR1)):
-        pid = self._process.pid
-        proc = psutil.Process(pid)
-        kids = proc.get_children(recursive=False)
-        if len(kids):
-            self._log.info('signaling {0} request child processes'.format(len(kids)))
-            for kid in kids:
-                try:
-                    self._log.info('\t signal request process [{0}]'.format(kid.pid))
-                    for sig in signals:
-                        kid.send_signal(sig)
-                except psutil.NoSuchProcess:
-                    self._log.error('\t process [{0}] no longer exists (skipping)'.format(kid.pid))
-        else:
-            self._log.info('no child processes to signal on stop')
-
-    # noinspection PyBroadException
-    def _finalize(self):
-        if not self._process:
-            return
-
-        if self._process.is_alive():
-            self._signal_children()
-            self._process.join(timeout=0.1)
-            if not self._process.is_alive():
-                return
-
-            self._log.info('sending shutdown message to server')
+    @staticmethod
+    def _finalize(process, address, state, logger):
+        if process.is_alive():
+            logger.info('sending shutdown message to server')
             try:
-                dispatch(self._bound_address, Command.SHUTDOWN)
+                dispatch(address, Command.SHUTDOWN)
             except Exception:
                 pass
 
-            self._log.info('wait for server-starter process to terminate')
-            self._process.join(timeout=10.0)
+            logger.info('wait for server-starter process to terminate')
+            process.join(timeout=0.2)
 
-            if self._process.is_alive():
-                self._log.info('server-starter still alive')
-                if hasattr(self._process, 'terminate'):
-                    self._log.info('trying to `terminate()` manager process')
-                    self._process.terminate()
-                    self._process.join(timeout=10.0)
-                    if self._process.is_alive():
-                        self._log.warn('server-starter still alive after terminate!')
+            if process.is_alive():
+                logger.info('server-starter still alive')
+                if hasattr(process, 'terminate'):
+                    logger.info('trying to `terminate()` manager process')
+                    process.terminate()
+                    process.join(timeout=10.0)
+                    if process.is_alive():
+                        logger.warn('server-starter still alive after terminate!')
             else:
-                self._log.info('server-starter process has terminated')
-        self._state.value = State.SHUTDOWN
+                logger.info('server-starter process has terminated')
+        state.value = State.SHUTDOWN
 
     def __enter__(self):
         return self

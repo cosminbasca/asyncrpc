@@ -8,12 +8,10 @@ except ImportError:
     use_setuptools()
     from setuptools import setup
 
-import os
+NAME = 'asyncrpc'
 
 str_version = None
-execfile('asyncrpc/__version__.py')
-
-NAME = 'asyncrpc'
+execfile('{0}/__version__.py'.format(NAME))
 
 # Load up the description from README
 with open('README') as f:
@@ -55,19 +53,19 @@ setup(
         'Programming Language :: JavaScript',
         'Topic :: Software Development'
     ],
-    packages=['asyncrpc', 'asyncrpc/test'],
+    packages=[NAME, '{0}/test'.format(NAME)],
     package_data={
-        'asyncrpc': ['static/*.ico',
-                     'static/*.js',
-                     'static/bootstrap/js/*.js',
-                     'static/bootstrap/css/*.css',
-                     'static/bootstrap/img/*.png',
-                     'static/bootstrap.386/js/*.js',
-                     'static/bootstrap.386/css/*.css',
-                     'static/bootstrap.386/img/*.png',
-                     'static/tooltip/*.js',
-                     'static/tooltip/*.css',
-                     'templates/*.html']
+        NAME: ['static/*.ico',
+               'static/*.js',
+               'static/bootstrap/js/*.js',
+               'static/bootstrap/css/*.css',
+               'static/bootstrap/img/*.png',
+               'static/bootstrap.386/js/*.js',
+               'static/bootstrap.386/css/*.css',
+               'static/bootstrap.386/img/*.png',
+               'static/tooltip/*.js',
+               'static/tooltip/*.css',
+               'templates/*.html']
     },
     install_requires=manual_deps + pip_deps,
     entry_points={

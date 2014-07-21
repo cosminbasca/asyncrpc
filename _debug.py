@@ -79,7 +79,7 @@ def bench_gevent_man(async=False, workload=False, backend=None, multiprocess=Fal
     ncalls = long(float(calls) / float(t1))
     print 'DID: {0} calls / second, total calls: {1}'.format(ncalls, calls)
 
-    del manager
+    manager.stop()
     print 'done'
 
 
@@ -118,27 +118,20 @@ def async_vs_blocking():
 
 
 if __name__ == '__main__':
+    pass
     # cherrypy ...
     # no workload
     # bench_gevent_man(async=False, workload=False) # DID: 414 calls / second, total calls: 10000
     # bench_gevent_man(async=True, workload=False)  # DID: 384 calls / second, total calls: 10000
 
     # with workload
-    bench_gevent_man(async=False, workload=True)    # DID: 180 calls / second, total calls: 10000
+    # bench_gevent_man(async=False, workload=True)    # DID: 180 calls / second, total calls: 10000
     # bench_gevent_man(async=True, workload=True)  # DID: 181 calls / second, total calls: 10000
 
     # tornado multiprocess ...
     # no workload
     # bench_gevent_man(async=False, workload=False) # DID: 414 calls / second, total calls: 10000
     # bench_gevent_man(async=True, workload=False)  # DID: 384 calls / second, total calls: 10000
-
-    # with workload
-    # bench_gevent_man(async=False, workload=True, backend='tornado', multiprocess=False)
-    # DID: 92 calls / second, total calls: 10000 single process
-    # bench_gevent_man(async=False, workload=True, backend='tornado', multiprocess=True)
-    # DID: 92 calls / second, total calls: 10000 multiprocess
-    # bench_gevent_man(async=True, workload=True)
-    #  DID: 181 calls / second, total calls: 10000
 
     # Multiprocessing
     # bench_gevent_man(async=False, workload=True, mprocman=True)

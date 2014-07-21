@@ -1,9 +1,8 @@
-import inspect
 import os
-from pprint import pformat
 from threading import RLock
 import traceback
 from werkzeug.wsgi import SharedDataMiddleware
+from asyncrpc.commands import Command
 from asyncrpc.exceptions import CommandNotFoundException, InvalidInstanceId, current_error
 from asyncrpc.log import get_logger
 from asyncrpc.__version__ import str_version
@@ -11,43 +10,9 @@ from asyncrpc.messaging import dumps, loads
 from werkzeug.wrappers import Response, Request
 from inspect import isclass
 from jinja2 import Environment, FileSystemLoader
+from asyncrpc.registry import Registry
 
 __author__ = 'basca'
-
-# ----------------------------------------------------------------------------------------------------------------------
-#
-# Accepted commands on the registry
-#
-# ----------------------------------------------------------------------------------------------------------------------
-class Command(object):
-    NEW = '#NEW'
-    RELEASE = '#RELEASE'
-    CLEAR = '#CLEAR'
-    CLEAR_ALL = '#CLEAR_ALL'
-    PING = '#PING'
-    SHUTDOWN = '#SHUTDOWN'
-    DEBUG = '#DEBUG'
-
-
-def drop_instances(registry):
-    to_remove = [oid for oid, v in registry.iteritems() if not isclass(v)]
-    for oid in to_remove:
-        del registry[oid]
-
-
-def _registry_items(registry):
-    def _instance_members(obj):
-        attributes = inspect.getmembers(obj, predicate=lambda a: not (inspect.isroutine(a)))
-        return [attr for attr in attributes if not attr[0].startswith('__')]
-
-    if hasattr(registry, 'iteritems'):
-        items_iterator = registry.iteritems()
-    else:
-        items_iterator = ((k, v) for k, v in registry.items())
-
-    return [(oid, instance if isclass(instance) else (type(instance), _instance_members(instance)))
-            for oid, instance in items_iterator]
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -56,6 +21,8 @@ def _registry_items(registry):
 # ----------------------------------------------------------------------------------------------------------------------
 class RpcRegistryViewer(object):
     def __init__(self, registry, with_static=True, theme='386'):
+        if not isinstance(registry, Registry):
+            raise ValueError('registry must be a Registry')
         self._registry = registry
         self._with_static = with_static
         self._theme = theme
@@ -69,9 +36,9 @@ class RpcRegistryViewer(object):
     def registry_wsgi_app(self, environ, start_response):
         request = Request(environ)
         if 'clearAll' in request.args.keys():
-            drop_instances(self._registry)
-        response = Response(
-            self.render_template('registry.html', version=str_version, registry_items=_registry_items(self._registry),
+            self._registry.delete_instances()
+        response = Response(self.render_template('registry.html', version=str_version,
+                                 registry_items=self._registry.explained_instances(),
                                  isclass=isclass, theme=self._theme), mimetype='text/html')
         return response(environ, start_response)
 
@@ -95,6 +62,8 @@ class RpcRegistryMiddleware(object):
     """
 
     def __init__(self, registry, shutdown_callback=None):
+        if not isinstance(registry, Registry):
+            raise ValueError('registry must be a Registry')
         if shutdown_callback and not hasattr(shutdown_callback, '__call__'):
             raise ValueError('shutdown_callback must be a callable instance')
         self._shutdown_callback = shutdown_callback
@@ -110,32 +79,31 @@ class RpcRegistryMiddleware(object):
             Command.CLEAR_ALL: self._handler_clear_all,
             Command.PING: self._handler_ping,
             Command.SHUTDOWN: self._handler_shutdown,
-            Command.DEBUG: self._handler_debug,
         }
 
     def _handler_init(self, type_id, name, *args, **kwargs):
         try:
             self._mutex.acquire()
-            _class = self._registry[type_id]
+            _class = self._registry.get(type_id)
             instance = _class(*args, **kwargs)
             instance_id = hash(instance)
-            self._registry[instance_id] = instance
+            self._registry.set(instance_id, instance)
             self._log.debug('got instance id:{0}'.format(instance_id))
             return instance_id
         finally:
             self._mutex.release()
 
     def _handler_release(self, instance_id, name, *args, **kwargs):
-        if instance_id in self._registry:
-            del self._registry[instance_id]
+        if self._registry.has(instance_id):
+            self._registry.delete(instance_id)
             return True
         return False
 
     def _handler_clear(self, instance_id, name, *args, **kwargs):
-        drop_instances(self._registry)
+        self._registry.delete_instances()
 
     def _handler_clear_all(self, instance_id, name, *args, **kwargs):
-        self._registry.iteritems.clear()
+        self._registry.clear()
 
     def _handler_ping(self, instance_id, name, *args, **kwargs):
         return True
@@ -145,16 +113,8 @@ class RpcRegistryMiddleware(object):
             self._shutdown_callback()
         return True
 
-    def _handler_debug(self, instance_id, name, *args, **kwargs):
-        if hasattr(self._registry, 'iteritems'):
-            items_iterator = self._registry.iteritems()
-        else:
-            items_iterator = ((k, v) for k, v in self._registry.items())
-        self._log.info('''REGISTRY: \n{0}'''.format('\n'.join([
-            '[{0}]\t{1} => {2}'.format(i, k, pformat(v)) for i, (k, v) in enumerate(items_iterator)])
-        ))
-
     def _handle_rpc_call(self, instance_id, name, *args, **kwargs):
+        self._log.debug('ACCESS ID {0}'.format(instance_id))
         instance = self._registry.get(instance_id, None)
         if not instance:
             raise InvalidInstanceId('instance with id:{0} not registered'.format(instance_id))

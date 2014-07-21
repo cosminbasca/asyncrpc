@@ -4,7 +4,7 @@ import inspect
 import traceback
 from asyncrpc.log import get_logger
 from asyncrpc.exceptions import get_exception, ConnectionDownException, ConnectionTimeoutException
-from asyncrpc.wsgi import Command
+from asyncrpc.commands import Command
 from werkzeug.exceptions import abort
 from asyncrpc.messaging import dumps, loads
 import requests
@@ -234,7 +234,6 @@ if __name__ == '__main__':
     print proxy.current_counter()
     proxy.add(value=30)
     print proxy.current_counter()
-    dispatch(('127.0.0.1', 8080), Command.DEBUG)
     # proxy.release()
     # del proxy
 
