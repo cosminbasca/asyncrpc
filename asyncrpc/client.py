@@ -10,6 +10,7 @@ from asyncrpc.messaging import dumps, loads
 import requests
 from requests.exceptions import ConnectionError
 from retrying import retry
+from atexit import register
 
 __author__ = 'basca'
 
@@ -218,6 +219,10 @@ class ProxyFactory(object):
 # wrapper methods that use the singleton proxy factory
 #
 # ----------------------------------------------------------------------------------------------------------------------
+@register
+def _clear_remote_instances():
+    ProxyFactory.instance().clear()
+
 
 def create(address, typeid, slots=None, async=False, *args, **kwargs):
     return ProxyFactory.instance().create(address, typeid, slots, async, *args, **kwargs)
