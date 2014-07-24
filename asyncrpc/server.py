@@ -6,7 +6,6 @@ from cherrypy.wsgiserver import CherryPyWSGIServer
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado import ioloop
-from asyncrpc.client import Proxy
 from asyncrpc.wsgi import RpcRegistryMiddleware, RpcRegistryViewer
 from asyncrpc.log import get_logger
 from asyncrpc.registry import Registry
