@@ -88,8 +88,11 @@ class RpcProxy(object):
 
     def release(self):
         if self._owner:
-            self._log.debug('releasing server-side instance {0}'.format(self._id))
-            self.dispatch(Command.RELEASE)
+            try:
+                self._log.debug('releasing server-side instance {0}'.format(self._id))
+                self.dispatch(Command.RELEASE)
+            except ConnectionError:
+                pass
 
     @abstractmethod
     def _content(self, response):
@@ -181,7 +184,9 @@ class AsyncProxy(Proxy):
 # ----------------------------------------------------------------------------------------------------------------------
 class ProxyFactory(object):
     def __init__(self):
+        self._log = get_logger(ProxyFactory.__class__.__name__)
         self._cache = dict()
+        self._log.debug("proxy factory initialized")
 
     @staticmethod
     def instance():
@@ -194,11 +199,14 @@ class ProxyFactory(object):
         if not _proxy:
             _proxy = Proxy(typeid, address)
             self._cache[(address, typeid)] = _proxy
+        self._log.debug("get proxy: {0}".format(_proxy))
         return _proxy
 
     def create(self, address, typeid, slots=None, async=False, *args, **kwargs):
         creator = self._proxy(address, typeid)
+        self._log.debug("create {0} proxy".format('async' if async else 'blocking'))
         instance_id = creator.dispatch(Command.NEW, *args, **kwargs)
+        self._log.debug("got new instance id: {0}".format(instance_id))
         if async:
             return AsyncProxy(instance_id, address, slots=slots)
         return Proxy(instance_id, address, slots=slots)
@@ -209,7 +217,7 @@ class ProxyFactory(object):
         return self._proxy(address, None).dispatch(command)
 
     def clear(self):
-        for k, creator in self._cache:
+        for k, creator in self._cache.iteritems():
             creator.release()
         self._cache.clear()
 

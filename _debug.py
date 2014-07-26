@@ -122,7 +122,7 @@ if __name__ == '__main__':
     # cherrypy ...
     # no workload
     # bench_gevent_man(async=False, workload=False) # DID: 414 calls / second, total calls: 10000
-    # bench_gevent_man(async=True, workload=False)  # DID: 384 calls / second, total calls: 10000
+    bench_gevent_man(async=True, workload=False)  # DID: 384 calls / second, total calls: 10000
 
     # with workload
     # bench_gevent_man(async=False, workload=True)    # DID: 180 calls / second, total calls: 10000

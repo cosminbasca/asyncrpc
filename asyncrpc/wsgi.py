@@ -4,6 +4,7 @@ import traceback
 from werkzeug.wsgi import SharedDataMiddleware
 from asyncrpc.commands import Command
 from asyncrpc.exceptions import CommandNotFoundException, InvalidInstanceId, current_error
+from asyncrpc.handler import RpcHandler
 from asyncrpc.log import get_logger
 from asyncrpc.__version__ import str_version
 from asyncrpc.messaging import dumps, loads
@@ -56,7 +57,7 @@ class RpcRegistryViewer(object):
 # WSGI RPC Registry Middleware - a wsgi app
 #
 # ----------------------------------------------------------------------------------------------------------------------
-class RpcRegistryMiddleware(object):
+class RpcRegistryMiddleware(RpcHandler):
     """
     wsgi application that handles rpc calls to multiple registered objects
     """
@@ -113,16 +114,12 @@ class RpcRegistryMiddleware(object):
             self._shutdown_callback()
         return True
 
-    def _handle_rpc_call(self, instance_id, name, *args, **kwargs):
+    def get_instance(self, instance_id):
         self._log.debug('ACCESS ID {0}'.format(instance_id))
         instance = self._registry.get(instance_id, None)
         if not instance:
             raise InvalidInstanceId('instance with id:{0} not registered'.format(instance_id))
-        func = getattr(instance, name, None)
-        if not func:
-            raise NameError('instance does not have method "{0}"'.format(name))
-        return func(*args, **kwargs)
-
+        return instance
 
     def __call__(self, environ, start_response):
         try:
@@ -138,7 +135,7 @@ class RpcRegistryMiddleware(object):
                     raise CommandNotFoundException('command {0} not defined'.format(name[1:]))
             else:
                 self._log.debug('calling function: "{0}"'.format(name))
-                result = self._handle_rpc_call(object_id, name, *args, **kwargs)
+                result = self.rpc(object_id)(name, *args, **kwargs)
             error = None
         except Exception, e:
             error = current_error()
