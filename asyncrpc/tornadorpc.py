@@ -10,29 +10,29 @@ USE_CURL = True
 if USE_CURL:
     AsyncHTTPClient.configure(CurlAsyncHTTPClient)
 
+
 class TornadoHttpRpcProxy(RpcProxy):
     def __init__(self, address, slots=None, **kwargs):
         super(TornadoHttpRpcProxy, self).__init__(address, slots=slots, **kwargs)
-        self._func_url = partial('{0}/{2}'.format, self._url_path)
+        self._method_url = partial('{0}/{2}'.format, self._url_path)
 
     def _status_code(self, response):
-        pass
+        return response.code
 
     def _content(self, response):
-        pass
+        return response.body
 
-    def _http_call(self, message):
+    def _http_call(self, name, message):
         http_client = AsyncHTTPClient()
         try:
-            response = http_client.fetch(self._func_url(name))
-            print response.body
+            response = http_client.fetch(self._method_url(name), body=message, method='POST',
+                                         connect_timeout=300, request_timeout=300)
         except HTTPError as e:
-            print "Error:", e
-        http_client.close()
-
-    def _message(self, name, *args, **kwargs):
-        return dumps((name, args, kwargs))
-
+            self._log.error("HTTP Error: {0}".format(e))
+            raise e
+        finally:
+            http_client.close()
+        return response
 
 class TornadoRpcServer(object):
     def __init__(self, request_handler):
