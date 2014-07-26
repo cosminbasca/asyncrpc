@@ -3,7 +3,7 @@ from asyncrpc.log import get_logger
 from asyncrpc.client import create, exposed_methods
 from asyncrpc.registry import Registry
 from asyncrpc.process import BackgroundRunner
-from asyncrpc.server import CherrypyRpcServer, TornadoRpcServer
+from asyncrpc.server import CherrypyWsgiRpcServer, TornadoWsgiRpcServer
 
 __author__ = 'basca'
 
@@ -45,9 +45,9 @@ class AsyncManager(object):
     @property
     def _server_class(self):
         if self._backend == 'tornado':
-            return TornadoRpcServer
+            return TornadoWsgiRpcServer
         else:
-            return CherrypyRpcServer
+            return CherrypyWsgiRpcServer
 
     def start(self, wait=True, **kwargs):
         self._runner.start(wait, self._registry, **kwargs)

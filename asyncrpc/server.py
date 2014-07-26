@@ -101,7 +101,7 @@ class WsgiRpcServer(RpcServer):
 # Cherrypy RPC implementation
 #
 # ----------------------------------------------------------------------------------------------------------------------
-class CherrypyRpcServer(WsgiRpcServer):
+class CherrypyWsgiRpcServer(WsgiRpcServer):
     def _init_wsgi_server(self, address, wsgi_app, *args, **kwargs):
         self._server = CherryPyWSGIServer(address, wsgi_app)
         self._bound_address = None
@@ -137,7 +137,7 @@ class CherrypyRpcServer(WsgiRpcServer):
 # Tornado RPC implementation
 #
 # ----------------------------------------------------------------------------------------------------------------------
-class TornadoRpcServer(WsgiRpcServer):
+class TornadoWsgiRpcServer(WsgiRpcServer):
     def _init_wsgi_server(self, address, wsgi_app, *args, **kwargs):
         self._server = HTTPServer(WSGIContainer(wsgi_app))
         self._sockets = bind_sockets(address[1], address=address[0])
@@ -192,7 +192,7 @@ if __name__ == '__main__':
             return self._c
 
     registry = {'MyClass': MyClass}
-    cpsrv = CherrypyRpcServer(('127.0.0.1', 8080), registry)
+    cpsrv = CherrypyWsgiRpcServer(('127.0.0.1', 8080), registry)
     # cpsrv = CherrypyRpcServer(('127.0.0.1', 0), registry)
     # cpsrv = TornadoRpcServer(('127.0.0.1', 8080), registry)
     # cpsrv = TornadoRpcServer(('127.0.0.1', 8080), registry)

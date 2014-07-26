@@ -1,7 +1,7 @@
 import pstats
 import cProfile
 import _bench
-from asyncrpc import CherrypyRpcServer
+from asyncrpc import CherrypyWsgiRpcServer
 
 __author__ = 'basca'
 
@@ -15,7 +15,7 @@ def profile_client(async=False, wait=1):
 
 def _start_server():
     registry = {'MyClass': _bench.MyClass}
-    cpsrv = CherrypyRpcServer(('127.0.0.1', 8080), registry)
+    cpsrv = CherrypyWsgiRpcServer(('127.0.0.1', 8080), registry)
     cpsrv.start()
 
 def profile_server():
