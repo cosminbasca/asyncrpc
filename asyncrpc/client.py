@@ -57,7 +57,7 @@ _MAX_RETRIES = 100
 class RpcProxy(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, instance_id, address, slots=None, owner=True, **kwargs):
+    def __init__(self, address, slots=None, **kwargs):
         if isinstance(address, (tuple, list)):
             host, port = address
         elif isinstance(address, (str, unicode)):
@@ -67,32 +67,10 @@ class RpcProxy(object):
             raise ValueError(
                 'address, must be either a tuple/list or string of the name:port form, got {0}'.format(address))
 
-        self._id = instance_id
         self._address = (host, port)
         self._slots = slots
-        self._owner = owner
         self._log = get_logger(self.__class__.__name__)
         self._url_base = 'http://{0}:{1}'.format(host, port)
-        self._url_path = '/rpc'
-
-    @property
-    def id(self):
-        return self._id
-
-    @property
-    def url(self):
-        return '{0}{1}'.format(self._url_base, self._url_path)
-
-    def __del__(self):
-        self.release()
-
-    def release(self):
-        if self._owner:
-            try:
-                self._log.debug('releasing server-side instance {0}'.format(self._id))
-                self.dispatch(Command.RELEASE)
-            except ConnectionError:
-                pass
 
     @abstractmethod
     def _content(self, response):
@@ -103,14 +81,14 @@ class RpcProxy(object):
         return 500
 
     @abstractmethod
-    def _httpcall(self, message):
+    def _http_call(self, message):
         pass
 
     def __getattr__(self, func):
         def func_wrapper(*args, **kwargs):
             if self._slots and func not in self._slots:
                 raise ValueError('access to function {0} is restricted'.format(func))
-            return self._rpccall(func, *args, **kwargs)
+            return self._rpc_call(func, *args, **kwargs)
 
         func_wrapper.__name__ = func
         self.__dict__[func] = func_wrapper
@@ -132,30 +110,66 @@ class RpcProxy(object):
             abort(status_code)
 
     def _message(self, name, *args, **kwargs):
-        return dumps((self._id, name, args, kwargs))
+        return dumps((name, args, kwargs))
 
-    def _rpccall(self, name, *args, **kwargs):
-        response = self._httpcall(self._message(name, *args, **kwargs))
+    def _rpc_call(self, name, *args, **kwargs):
+        response = self._http_call(self._message(name, *args, **kwargs))
         return self._get_result(response)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# base RPC proxy for registry based http servers
+#
+# ----------------------------------------------------------------------------------------------------------------------
+class RegistryRpcProxy(RpcProxy):
+    __metaclass__ = ABCMeta
+
+    def __init__(self, instance_id, address, slots=None, owner=True, **kwargs):
+        super(RegistryRpcProxy, self).__init__(address, slots=slots, **kwargs)
+        self._id = instance_id
+        self._owner = owner
+        self._url_path = '/rpc'
+
+    @property
+    def id(self):
+        return self._id
+
+    @property
+    def url(self):
+        return '{0}{1}'.format(self._url_base, self._url_path)
+
+    def __del__(self):
+        self.release()
+
+    def release(self):
+        if self._owner:
+            try:
+                self._log.debug('releasing server-side instance {0}'.format(self._id))
+                self.dispatch(Command.RELEASE)
+            except ConnectionError:
+                pass
+
+    def _message(self, name, *args, **kwargs):
+        return dumps((self._id, name, args, kwargs))
 
     def dispatch(self, command, *args, **kwargs):
         if not command.startswith('#'):
             raise ValueError('{0} is not a valid formed command'.format(command))
-        return self._rpccall(command, *args, **kwargs)
-
+        return self._rpc_call(command, *args, **kwargs)
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # Requests proxy implementation
 #
 # ----------------------------------------------------------------------------------------------------------------------
-class Proxy(RpcProxy):
+class Proxy(RegistryRpcProxy):
     def __init__(self, instance_id, address, slots=None, owner=True, **kwargs):
         super(Proxy, self).__init__(instance_id, address, slots=slots, owner=owner)
         self._post = partial(requests.post, self.url)
 
     @retry(retry_on_exception=_if_connection_error, stop_max_attempt_number=_MAX_RETRIES)
-    def _httpcall(self, message):
+    def _http_call(self, message):
         return self._post(data=message)
 
     def _content(self, response):

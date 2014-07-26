@@ -12,7 +12,7 @@ if USE_CURL:
 
 class TornadoHttpRpcProxy(RpcProxy):
     def __init__(self, address, slots=None, **kwargs):
-        super(TornadoHttpRpcProxy, self).__init__(None, address, slots=slots, owner=False, **kwargs)
+        super(TornadoHttpRpcProxy, self).__init__(address, slots=slots, **kwargs)
         self._func_url = partial('{0}/{2}'.format, self._url_path)
 
     def _status_code(self, response):
@@ -21,7 +21,7 @@ class TornadoHttpRpcProxy(RpcProxy):
     def _content(self, response):
         pass
 
-    def _httpcall(self, message):
+    def _http_call(self, message):
         http_client = AsyncHTTPClient()
         try:
             response = http_client.fetch(self._func_url(name))
