@@ -1,6 +1,5 @@
 from functools import partial
 from asyncrpc.client import RpcProxy
-from asyncrpc.messaging import dumps
 from tornado.httpclient import AsyncHTTPClient, HTTPError
 from tornado.curl_httpclient import CurlAsyncHTTPClient
 
@@ -33,6 +32,7 @@ class TornadoHttpRpcProxy(RpcProxy):
         finally:
             http_client.close()
         return response
+
 
 class TornadoRpcServer(object):
     def __init__(self, request_handler):
