@@ -1,7 +1,9 @@
 from functools import partial
+from tornado import web
 from asyncrpc.client import RpcProxy
 from tornado.httpclient import AsyncHTTPClient, HTTPError
 from tornado.curl_httpclient import CurlAsyncHTTPClient
+from asyncrpc.handler import RpcHandler
 
 __author__ = 'basca'
 
@@ -32,6 +34,12 @@ class TornadoHttpRpcProxy(RpcProxy):
         finally:
             http_client.close()
         return response
+
+
+class TornadoRequestHandler(web.RequestHandler, RpcHandler):
+    def post(self, *args, **kwargs):
+        result = self._request(self.request.body)
+        self.write(result)
 
 
 class TornadoRpcServer(object):
