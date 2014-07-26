@@ -131,9 +131,11 @@ class RpcProxy(object):
         else:
             abort(status_code)
 
+    def _message(self, name, *args, **kwargs):
+        return dumps((self._id, name, args, kwargs))
+
     def _rpccall(self, name, *args, **kwargs):
-        message = dumps((self._id, name, args, kwargs))
-        response = self._httpcall(message)
+        response = self._httpcall(self._message(name, *args, **kwargs))
         return self._get_result(response)
 
     def dispatch(self, command, *args, **kwargs):

@@ -2,12 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="5afc6fb3-898e-4aae-a67e-6f6d4cf5c5f1" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/asyncrpc/tornadorpc.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/__init__.py" afterPath="$PROJECT_DIR$/asyncrpc/__init__.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/__version__.py" afterPath="$PROJECT_DIR$/asyncrpc/__version__.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/_profile.py" afterPath="$PROJECT_DIR$/_profile.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/manager.py" afterPath="$PROJECT_DIR$/asyncrpc/manager.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/server.py" afterPath="$PROJECT_DIR$/asyncrpc/server.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/client.py" afterPath="$PROJECT_DIR$/asyncrpc/client.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/tornadorpc.py" afterPath="$PROJECT_DIR$/asyncrpc/tornadorpc.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="trunk.iws" />
@@ -63,29 +59,11 @@
       <file leaf-file-name="client.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/asyncrpc/client.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="4482">
-              <caret line="27" column="0" selection-start-line="27" selection-start-column="0" selection-end-line="30" selection-end-column="15" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="wsgi.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/asyncrpc/wsgi.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="1223" max-vertical-offset="2520">
-              <caret line="123" column="4" selection-start-line="123" selection-start-column="4" selection-end-line="123" selection-end-column="4" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="handler.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/asyncrpc/handler.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="468">
-              <caret line="20" column="0" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
-              <folding />
+            <state vertical-scroll-proportion="0.0" vertical-offset="952" max-vertical-offset="4734">
+              <caret line="74" column="18" selection-start-line="74" selection-start-column="18" selection-end-line="74" selection-end-column="18" />
+              <folding>
+                <element signature="e#0#39#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -93,9 +71,11 @@
       <file leaf-file-name="tornadorpc.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/asyncrpc/tornadorpc.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0906801" vertical-offset="0" max-vertical-offset="794">
-              <caret line="4" column="12" selection-start-line="4" selection-start-column="12" selection-end-line="4" selection-end-column="12" />
-              <folding />
+            <state vertical-scroll-proportion="0.25606695" vertical-offset="0" max-vertical-offset="1195">
+              <caret line="17" column="37" selection-start-line="17" selection-start-column="37" selection-end-line="17" selection-end-column="37" />
+              <folding>
+                <element signature="e#0#29#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -166,11 +146,11 @@
         <option value="$PROJECT_DIR$/asyncrpc/base.py" />
         <option value="$PROJECT_DIR$/asyncrpc/wsgi.py" />
         <option value="$PROJECT_DIR$/_debug.py" />
-        <option value="$PROJECT_DIR$/asyncrpc/client.py" />
         <option value="$PROJECT_DIR$/asyncrpc/handler.py" />
         <option value="$PROJECT_DIR$/asyncrpc/server.py" />
-        <option value="$PROJECT_DIR$/asyncrpc/tornadorpc.py" />
         <option value="$PROJECT_DIR$/asyncrpc/__version__.py" />
+        <option value="$PROJECT_DIR$/asyncrpc/client.py" />
+        <option value="$PROJECT_DIR$/asyncrpc/tornadorpc.py" />
       </list>
     </option>
   </component>
@@ -1327,7 +1307,11 @@
       <created>1406381206038</created>
       <updated>1406381206038</updated>
     </task>
-    <option name="localTasksCounter" value="164" />
+    <task id="LOCAL-00164" summary="asyncrpc version 0.4.1&#10;&#10;- TornadoRpcServer (single instance rpc async server is in)">
+      <created>1406383166027</created>
+      <updated>1406383166027</updated>
+    </task>
+    <option name="localTasksCounter" value="165" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -1365,7 +1349,7 @@
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.47396228" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32796487" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32788226" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32796487" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -1446,7 +1430,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="3236" max-vertical-offset="4554">
           <caret line="196" column="21" selection-start-line="196" selection-start-column="21" selection-end-line="196" selection-end-column="21" />
-          <folding />
+          <folding>
+            <element signature="e#0#39#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1478,7 +1464,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="3744" max-vertical-offset="4554">
           <caret line="220" column="120" selection-start-line="220" selection-start-column="120" selection-end-line="220" selection-end-column="120" />
-          <folding />
+          <folding>
+            <element signature="e#0#39#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1752,26 +1740,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/asyncrpc/handler.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="468">
-          <caret line="20" column="0" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/asyncrpc/wsgi.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="1223" max-vertical-offset="2520">
           <caret line="123" column="4" selection-start-line="123" selection-start-column="4" selection-end-line="123" selection-end-column="4" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/asyncrpc/client.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="4482">
-          <caret line="27" column="0" selection-start-line="27" selection-start-column="0" selection-end-line="30" selection-end-column="15" />
           <folding />
         </state>
       </provider>
@@ -1808,11 +1780,31 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/asyncrpc/handler.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.30125523" vertical-offset="0" max-vertical-offset="1195">
+          <caret line="20" column="0" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/asyncrpc/client.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="952" max-vertical-offset="4734">
+          <caret line="74" column="18" selection-start-line="74" selection-start-column="18" selection-end-line="74" selection-end-column="18" />
+          <folding>
+            <element signature="e#0#39#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/asyncrpc/tornadorpc.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0906801" vertical-offset="0" max-vertical-offset="794">
-          <caret line="4" column="12" selection-start-line="4" selection-start-column="12" selection-end-line="4" selection-end-column="12" />
-          <folding />
+        <state vertical-scroll-proportion="0.25606695" vertical-offset="0" max-vertical-offset="1195">
+          <caret line="17" column="37" selection-start-line="17" selection-start-column="37" selection-end-line="17" selection-end-column="37" />
+          <folding>
+            <element signature="e#0#29#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
