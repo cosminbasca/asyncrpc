@@ -71,6 +71,11 @@ class RpcProxy(object):
         self._slots = slots
         self._log = get_logger(self.__class__.__name__)
         self._url_base = 'http://{0}:{1}'.format(host, port)
+        self._url_path = '/rpc'
+
+    @property
+    def url(self):
+        return '{0}{1}'.format(self._url_base, self._url_path)
 
     @abstractmethod
     def _content(self, response):
@@ -129,15 +134,10 @@ class RegistryRpcProxy(RpcProxy):
         super(RegistryRpcProxy, self).__init__(address, slots=slots, **kwargs)
         self._id = instance_id
         self._owner = owner
-        self._url_path = '/rpc'
 
     @property
     def id(self):
         return self._id
-
-    @property
-    def url(self):
-        return '{0}{1}'.format(self._url_base, self._url_path)
 
     def __del__(self):
         self.release()
