@@ -1,9 +1,13 @@
 from functools import partial
+import traceback
 from tornado import web
+from asyncrpc.exceptions import current_error
+from asyncrpc.messaging import loads, dumps
 from asyncrpc.client import RpcProxy
+from asyncrpc.handler import RpcHandler
+from asyncrpc.log import get_logger
 from tornado.httpclient import AsyncHTTPClient, HTTPError
 from tornado.curl_httpclient import CurlAsyncHTTPClient
-from asyncrpc.handler import RpcHandler
 
 __author__ = 'basca'
 
@@ -37,9 +41,36 @@ class TornadoHttpRpcProxy(RpcProxy):
 
 
 class TornadoRequestHandler(web.RequestHandler, RpcHandler):
+    def __init__(self, application, request, **kwargs):
+        super(TornadoRequestHandler, self).__init__(application, request, **kwargs)
+        if not isinstance(application, TornadoRpcApplication):
+            raise ValueError('application must be an instance of TornadoRpcApplication')
+        self._instance = application.instance
+        self._log = get_logger(self.__class__.__name__)
+
+    def get_instance(self, *args, **kwargs):
+        return self._instance
+
     def post(self, *args, **kwargs):
-        result = self._request(self.request.body)
-        self.write(result)
+        try:
+            name, args, kwargs = loads(self.request.body)
+            self._log.debug('calling function: "{0}"'.format(name))
+            result = self.rpc()(name, *args, **kwargs)
+            error = None
+        except Exception, e:
+            error = current_error()
+            result = None
+            self._log.error('error: {0}, traceback: \n{1}'.format(e, traceback.format_exc()))
+        response = dumps((result, error))
+        self.write(response)
+
+
+class TornadoRpcApplication(web.Application):
+    def __init__(self, instance, **settings):
+        super(TornadoRpcApplication, self).__init__(**settings)
+        self._instance = instance
+
+    instance = property(fget=lambda self: self._instance)
 
 
 class TornadoRpcServer(object):
