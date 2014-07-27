@@ -1,3 +1,4 @@
+from functools import partial
 from multiprocessing.managers import BaseManager
 from multiprocessing.pool import ThreadPool
 import random
@@ -7,6 +8,7 @@ import numpy as np
 from asyncrpc.client import hidden
 from asyncrpc.manager import AsyncManager
 from asyncrpc.log import set_level
+from asyncrpc.tornadorpc import async_call, call
 
 set_level('critical')
 
@@ -117,6 +119,12 @@ def async_vs_blocking():
     del manager
 
 
+def test_tornadorpc():
+    print call(('127.0.0.1', 8080)).do_x(x=20)
+    print call(('127.0.0.1', 8080)).do_x(x=40)
+    print call(('127.0.0.1', 8080)).do_other(30)
+    print call(('127.0.0.1', 8080)).do_async(('127.0.0.1', 8080), 50)
+
 if __name__ == '__main__':
     pass
     # cherrypy ...
@@ -126,7 +134,7 @@ if __name__ == '__main__':
 
     # with workload
     # bench_gevent_man(async=False, workload=True)    # DID: 180 calls / second, total calls: 10000
-    bench_gevent_man(async=True, workload=True)  # DID: 181 calls / second, total calls: 10000
+    # bench_gevent_man(async=True, workload=True)  # DID: 181 calls / second, total calls: 10000
 
     # Multiprocessing
     # bench_gevent_man(async=False, workload=True, mprocman=True)
@@ -134,3 +142,5 @@ if __name__ == '__main__':
 
 
     # async_vs_blocking()
+
+    test_tornadorpc()
