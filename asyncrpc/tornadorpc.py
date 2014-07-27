@@ -1,13 +1,14 @@
 from functools import partial
 import traceback
-from tornado import web
 from asyncrpc.exceptions import current_error
 from asyncrpc.messaging import loads, dumps
-from asyncrpc.client import RpcProxy
+from asyncrpc.client import RpcProxy, exposed_methods
 from asyncrpc.handler import RpcHandler
 from asyncrpc.log import get_logger
 from tornado.httpclient import AsyncHTTPClient, HTTPError
 from tornado.curl_httpclient import CurlAsyncHTTPClient
+from tornado import gen
+from tornado import web
 
 __author__ = 'basca'
 
@@ -46,11 +47,16 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
         if not isinstance(application, TornadoRpcApplication):
             raise ValueError('application must be an instance of TornadoRpcApplication')
         self._instance = application.instance
+        self._async_methods = set([
+            name for name, impl in exposed_methods(self._instance, with_private=False)
+            if hasattr(impl, "asynchronous")
+        ])
         self._log = get_logger(self.__class__.__name__)
 
     def get_instance(self, *args, **kwargs):
         return self._instance
 
+    @gen.coroutine
     def post(self, *args, **kwargs):
         try:
             name, args, kwargs = loads(self.request.body)
