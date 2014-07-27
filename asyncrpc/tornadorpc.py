@@ -2,9 +2,10 @@ from functools import partial
 import traceback
 from asyncrpc.exceptions import current_error
 from asyncrpc.messaging import loads, dumps
-from asyncrpc.client import RpcProxy, exposed_methods
+from asyncrpc.client import RpcProxy
 from asyncrpc.handler import RpcHandler
 from asyncrpc.log import get_logger
+from tornado.ioloop import IOLoop
 from tornado.httpclient import AsyncHTTPClient, HTTPError
 from tornado.curl_httpclient import CurlAsyncHTTPClient
 from tornado import gen
@@ -20,7 +21,6 @@ if USE_CURL:
 class TornadoHttpRpcProxy(RpcProxy):
     def __init__(self, address, slots=None, **kwargs):
         super(TornadoHttpRpcProxy, self).__init__(address, slots=slots, **kwargs)
-        self._method_url = partial('{0}/{2}'.format, self._url_path)
 
     def _status_code(self, response):
         return response.code
@@ -28,23 +28,21 @@ class TornadoHttpRpcProxy(RpcProxy):
     def _content(self, response):
         return response.body
 
-    def _http_call(self, name, message):
+    @gen.coroutine
+    def _fetch(self, http_client, message):
+        yield http_client.fetch(self.url, body=message, method='POST',
+                                connect_timeout=300, request_timeout=300)
+
+    def _http_call(self, message):
         http_client = AsyncHTTPClient()
         try:
-            response = http_client.fetch(self._method_url(name), body=message, method='POST',
-                                         connect_timeout=300, request_timeout=300)
+            response = self._fetch(http_client, message)
         except HTTPError as e:
             self._log.error("HTTP Error: {0}".format(e))
             raise e
         finally:
             http_client.close()
         return response
-
-    def _rpc_call(self, name, *args, **kwargs):
-        @gen.coroutine
-        def _response():
-            yield self._http_call(name, self._message(name, *args, **kwargs))
-        return self._get_result(_response())
 
 
 class TornadoRequestHandler(web.RequestHandler, RpcHandler):
@@ -53,16 +51,11 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
         if not isinstance(application, TornadoRpcApplication):
             raise ValueError('application must be an instance of TornadoRpcApplication')
         self._instance = application.instance
-        self._async_methods = set([
-            name for name, impl in exposed_methods(self._instance, with_private=False)
-            if hasattr(impl, "asynchronous")
-        ])
         self._log = get_logger(self.__class__.__name__)
 
     def get_instance(self, *args, **kwargs):
         return self._instance
 
-    @gen.coroutine
     def post(self, *args, **kwargs):
         try:
             name, args, kwargs = loads(self.request.body)
@@ -78,13 +71,21 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
 
 
 class TornadoRpcApplication(web.Application):
-    def __init__(self, instance, **settings):
-        super(TornadoRpcApplication, self).__init__(**settings)
+    def __init__(self, instance, handlers=None, default_host="", transforms=None, wsgi=False, **settings):
+        super(TornadoRpcApplication, self).__init__(handlers=handlers, default_host=default_host, transforms=transforms,
+                                                    wsgi=wsgi, **settings)
         self._instance = instance
 
     instance = property(fget=lambda self: self._instance)
 
 
 class TornadoRpcServer(object):
-    def __init__(self, request_handler):
-        pass
+    def __init__(self, instance, port=8080):
+        self.app = TornadoRpcApplication(instance, handlers=[
+            web.url(r"/rpc", TornadoRequestHandler)
+        ])
+        self.port = port
+
+    def start(self):
+        self.app.listen(self.port)
+        IOLoop.current().start()

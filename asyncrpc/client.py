@@ -25,12 +25,6 @@ def hidden(func):
     return func
 
 
-def asynchronous(func):
-    assert hasattr(func, '__call__'), 'func is not a callable'
-    func.asynchronous = True
-    return func
-
-
 def exposed_methods(obj, with_private=False):
     def exposed(func_name, func):
         if not hasattr(func, '__call__') or \
@@ -86,7 +80,7 @@ class RpcProxy(object):
         return 500
 
     @abstractmethod
-    def _http_call(self, name, message):
+    def _http_call(self, message):
         pass
 
     def __getattr__(self, func):
@@ -118,7 +112,8 @@ class RpcProxy(object):
         return dumps((name, args, kwargs))
 
     def _rpc_call(self, name, *args, **kwargs):
-        response = self._http_call(name, self._message(name, *args, **kwargs))
+        self._log.debug("calling {0}".format(name))
+        response = self._http_call(self._message(name, *args, **kwargs))
         return self._get_result(response)
 
 
@@ -158,6 +153,7 @@ class RegistryRpcProxy(RpcProxy):
             raise ValueError('{0} is not a valid formed command'.format(command))
         return self._rpc_call(command, *args, **kwargs)
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # Requests proxy implementation
@@ -169,8 +165,7 @@ class Proxy(RegistryRpcProxy):
         self._post = partial(requests.post, self.url)
 
     @retry(retry_on_exception=_if_connection_error, stop_max_attempt_number=_MAX_RETRIES)
-    def _http_call(self, name, message):
-        self._log.debug("calling {0}".format(name))
+    def _http_call(self, message):
         return self._post(data=message)
 
     def _content(self, response):
