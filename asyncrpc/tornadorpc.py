@@ -40,6 +40,10 @@ class TornadoHttpRpcProxy(RpcProxy):
             http_client.close()
         return response
 
+    def _rpc_call(self, name, *args, **kwargs):
+        response = self._http_call(name, self._message(name, *args, **kwargs))
+        return self._get_result(response)
+
 
 class TornadoRequestHandler(web.RequestHandler, RpcHandler):
     def __init__(self, application, request, **kwargs):
