@@ -1,9 +1,8 @@
-from functools import partial
 import traceback
-from tornado.gen import Return
+from tornado.concurrent import Future
 from asyncrpc.exceptions import current_error
 from asyncrpc.messaging import loads, dumps
-from asyncrpc.client import RpcProxy
+from asyncrpc.client import RpcProxy, asynchronous
 from asyncrpc.handler import RpcHandler
 from asyncrpc.log import get_logger
 from tornado.ioloop import IOLoop
@@ -66,22 +65,23 @@ class TornadoAsyncHttpRpcProxy(RpcProxy):
         return response.body
 
     @gen.coroutine
-    def _fetch(self, http_client, message):
-        future_response = http_client.fetch(self.url, body=message, method='POST',
-                                            connect_timeout=300, request_timeout=300)
-        response = yield future_response
-        raise gen.Return(response)
-
     def _http_call(self, message):
         http_client = AsyncHTTPClient()
         try:
-            response = self._fetch(http_client, message)
+            response = yield http_client.fetch(self.url, body=message, method='POST', connect_timeout=300,
+                                               request_timeout=300)
         except HTTPError as e:
             self._log.error("HTTP Error: {0}".format(e))
             raise e
         finally:
             http_client.close()
-        return response
+        raise gen.Return(response)
+
+    @gen.coroutine
+    def _rpc_call(self, name, *args, **kwargs):
+        self._log.debug("calling {0}".format(name))
+        response = yield self._http_call(self._message(name, *args, **kwargs))
+        raise gen.Return(self._get_result(response))
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -141,11 +141,14 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
     def get_instance(self, *args, **kwargs):
         return self._instance
 
+    @gen.coroutine
     def post(self, *args, **kwargs):
         try:
             name, args, kwargs = loads(self.request.body)
             self._logger.debug('calling function: "{0}"'.format(name))
             result = self.rpc()(name, *args, **kwargs)
+            if isinstance(result, Future):
+                result = yield result
             error = None
         except Exception, e:
             error = current_error()
@@ -199,9 +202,15 @@ if __name__ == '__main__':
         def do_other(self, y):
             return self.do_x() * y
 
-        def do_async(self, remote_addr, x):
+        @gen.coroutine
+        def do_async(self, remote_addr, x, y):
             proxy = TornadoAsyncHttpRpcProxy(remote_addr)
-            return proxy.do_x(x)
+            value1 = yield proxy.do_x(x)
+            print 'got value 1 = ', value1
+            value2 = yield proxy.do_x(y)
+            print 'got value 2 = ', value2
+            result = value1 + value2
+            raise gen.Return(result)
 
     instance = AClass()
     srv = TornadoRpcServer(instance)

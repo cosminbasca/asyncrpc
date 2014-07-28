@@ -123,7 +123,7 @@ def test_tornadorpc():
     print call(('127.0.0.1', 8080)).do_x(x=20)
     print call(('127.0.0.1', 8080)).do_x(x=40)
     print call(('127.0.0.1', 8080)).do_other(30)
-    print call(('127.0.0.1', 8080)).do_async(('127.0.0.1', 8080), 50)
+    print call(('127.0.0.1', 8080)).do_async(('127.0.0.1', 8080), 50, 45)
 
 if __name__ == '__main__':
     pass
