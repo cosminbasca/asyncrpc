@@ -1,5 +1,6 @@
 from functools import partial
 import traceback
+from tornado.gen import Return
 from asyncrpc.exceptions import current_error
 from asyncrpc.messaging import loads, dumps
 from asyncrpc.client import RpcProxy
@@ -55,13 +56,12 @@ class TornadoAsyncHttpRpcProxy(RpcProxy):
     def _content(self, response):
         return response.body
 
-    # @gen.coroutine
+    @gen.coroutine
     def _fetch(self, http_client, message):
-        print 'before'
-        response = yield http_client.fetch(self.url, body=message, method='POST',
-                                           connect_timeout=300, request_timeout=300)
-        print 'after -> ',type(response)
-        yield response
+        future_response = http_client.fetch(self.url, body=message, method='POST',
+                                 connect_timeout=300, request_timeout=300)
+        response = yield future_response
+        raise gen.Return(response)
 
     def _http_call(self, message):
         http_client = AsyncHTTPClient()
@@ -169,7 +169,8 @@ if __name__ == '__main__':
             return self.do_x() * y
 
         def do_async(self, remote_addr, x):
-            return async_call(tuple(remote_addr)).do_x(x)
+            proxy = TornadoAsyncHttpRpcProxy(remote_addr)
+            return proxy.do_x(x)
 
     instance = AClass()
     srv = TornadoRpcServer(instance)
