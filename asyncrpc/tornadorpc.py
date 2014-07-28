@@ -31,15 +31,38 @@ if USE_CURL:
 # ----------------------------------------------------------------------------------------------------------------------
 class TornadoHttpRpcProxy(RpcProxy):
     def __init__(self, address, slots=None, **kwargs):
+        """
+        an HTTP RPC proxy based on the tornado synchronous HTTPClient
+
+        :param address: a (host,port) tuple
+        :param slots: the list of method names the proxy is restricted to
+        :param kwargs: named arguments (passed forward to the RpcProxy base class
+        :return: the synchronous tornado HTTP RPC proxy
+        """
         super(TornadoHttpRpcProxy, self).__init__(address, slots=slots, **kwargs)
 
     def _status_code(self, response):
+        """
+        extracts and returns the HTTP response's status code
+        :param response: an instance of a tornado HTTPResponse
+        :return: the HTTP status code
+        """
         return response.code
 
     def _content(self, response):
+        """
+        extracts and returns the HTTP response's body
+        :param response: and instance of a tornado HTTPResponse
+        :return: the HTTPResponse body
+        """
         return response.body
 
     def _http_call(self, message):
+        """
+        the HTTP RPC call
+        :param message: the message to send to the RPC server (usually an encoded tuple of method_name, args, kwargs)
+        :return: the HTTP server response
+        """
         http_client = HTTPClient()
         try:
             response = http_client.fetch(self.url, body=message, method='POST',
@@ -88,10 +111,20 @@ class TornadoAsyncHttpRpcProxy(RpcProxy):
 
 
 def async_call(address):
+    """
+    create and perform an asynchronous HTTP RPC call to a tornado (single instance) RPC server
+    :param address: a (host,port) tuple
+    :return: a tornado Future of the RPC response (or an error otherwise)
+    """
     return TornadoAsyncHttpRpcProxy(tuple(address))
 
 
 def call(address):
+    """
+    create and perform a synchronous HTTP RPC call to a tornado (single instance) RCP server
+    :param address: a (host,port) tuple
+    :return: the actual RPC response (or an error otherwise)
+    """
     return TornadoHttpRpcProxy(tuple(address))
 
 
