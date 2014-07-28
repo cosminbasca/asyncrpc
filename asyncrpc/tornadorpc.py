@@ -26,7 +26,7 @@ if USE_CURL:
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
-#
+# synchronous tornado http rpc proxy
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class TornadoHttpRpcProxy(RpcProxy):
@@ -54,7 +54,7 @@ class TornadoHttpRpcProxy(RpcProxy):
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
-#
+# asynchronous tornado http rpc proxy
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class TornadoAsyncHttpRpcProxy(RpcProxy):
@@ -87,39 +87,6 @@ class TornadoAsyncHttpRpcProxy(RpcProxy):
         raise gen.Return(self._get_result(response))
 
 
-# ----------------------------------------------------------------------------------------------------------------------
-#
-#
-#
-# ----------------------------------------------------------------------------------------------------------------------
-# class TornadoProxyFactory(object):
-#     def __init__(self):
-#         self._log = get_logger(TornadoProxyFactory.__class__.__name__)
-#         self._async_cache = dict()
-#         self._cache = dict()
-#         self._log.debug("tornado proxy factory initialized")
-#
-#     @staticmethod
-#     def instance():
-#         if not hasattr(TornadoProxyFactory, "_instance"):
-#             TornadoProxyFactory._instance = TornadoProxyFactory()
-#         return TornadoProxyFactory._instance
-#
-#     def async_proxy(self, address):
-#         proxy = self._async_cache.get(address, None)
-#         if proxy is None:
-#             proxy = TornadoAsyncHttpRpcProxy(address)
-#             self._async_cache[address] = proxy
-#         return proxy
-#
-#     def proxy(self, address):
-#         proxy = self._cache.get(address, None)
-#         if proxy is None:
-#             proxy = TornadoHttpRpcProxy(address)
-#             self._cache[address] = proxy
-#         return proxy
-
-
 def async_call(address):
     return TornadoAsyncHttpRpcProxy(tuple(address))
 
@@ -130,7 +97,7 @@ def call(address):
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
-#
+# http rpc tornado request handler
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class TornadoRequestHandler(web.RequestHandler, RpcHandler):
@@ -163,7 +130,7 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
-#
+# http rpc tornado application
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class TornadoRpcApplication(web.Application):
@@ -177,7 +144,7 @@ class TornadoRpcApplication(web.Application):
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
-#
+# single instance http rpc tornado server
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class TornadoRpcServer(object):
