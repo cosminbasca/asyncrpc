@@ -55,7 +55,7 @@ class TornadoAsyncHttpRpcProxy(RpcProxy):
     def _content(self, response):
         return response.body
 
-    @gen.coroutine
+    # @gen.coroutine
     def _fetch(self, http_client, message):
         print 'before'
         response = yield http_client.fetch(self.url, body=message, method='POST',
@@ -124,6 +124,7 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
     def get_instance(self, *args, **kwargs):
         return self._instance
 
+    @gen.coroutine
     def post(self, *args, **kwargs):
         try:
             name, args, kwargs = loads(self.request.body)
