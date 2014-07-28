@@ -22,7 +22,11 @@ if USE_CURL:
     except ImportError:
         pass
 
-
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#
+#
+# ----------------------------------------------------------------------------------------------------------------------
 class TornadoHttpRpcProxy(RpcProxy):
     def __init__(self, address, slots=None, **kwargs):
         super(TornadoHttpRpcProxy, self).__init__(address, slots=slots, **kwargs)
@@ -46,6 +50,11 @@ class TornadoHttpRpcProxy(RpcProxy):
         return response
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#
+#
+# ----------------------------------------------------------------------------------------------------------------------
 class TornadoAsyncHttpRpcProxy(RpcProxy):
     def __init__(self, address, slots=None, **kwargs):
         super(TornadoAsyncHttpRpcProxy, self).__init__(address, slots=slots, **kwargs)
@@ -59,16 +68,14 @@ class TornadoAsyncHttpRpcProxy(RpcProxy):
     @gen.coroutine
     def _fetch(self, http_client, message):
         future_response = http_client.fetch(self.url, body=message, method='POST',
-                                 connect_timeout=300, request_timeout=300)
+                                            connect_timeout=300, request_timeout=300)
         response = yield future_response
         raise gen.Return(response)
 
     def _http_call(self, message):
         http_client = AsyncHTTPClient()
         try:
-            print 'out -> before'
             response = self._fetch(http_client, message)
-            print 'out -> after', type(response)
         except HTTPError as e:
             self._log.error("HTTP Error: {0}".format(e))
             raise e
@@ -77,6 +84,11 @@ class TornadoAsyncHttpRpcProxy(RpcProxy):
         return response
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#
+#
+# ----------------------------------------------------------------------------------------------------------------------
 class TornadoProxyFactory(object):
     def __init__(self):
         self._log = get_logger(TornadoProxyFactory.__class__.__name__)
@@ -113,6 +125,11 @@ def call(address):
     return TornadoProxyFactory.instance().proxy(address)
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#
+#
+# ----------------------------------------------------------------------------------------------------------------------
 class TornadoRequestHandler(web.RequestHandler, RpcHandler):
     def __init__(self, application, request, **kwargs):
         super(TornadoRequestHandler, self).__init__(application, request, **kwargs)
@@ -124,7 +141,6 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
     def get_instance(self, *args, **kwargs):
         return self._instance
 
-    @gen.coroutine
     def post(self, *args, **kwargs):
         try:
             name, args, kwargs = loads(self.request.body)
@@ -139,6 +155,11 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
         self.write(response)
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#
+#
+# ----------------------------------------------------------------------------------------------------------------------
 class TornadoRpcApplication(web.Application):
     def __init__(self, instance, handlers=None, default_host="", transforms=None, wsgi=False, **settings):
         super(TornadoRpcApplication, self).__init__(handlers=handlers, default_host=default_host, transforms=transforms,
@@ -148,6 +169,11 @@ class TornadoRpcApplication(web.Application):
     instance = property(fget=lambda self: self._instance)
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#
+#
+# ----------------------------------------------------------------------------------------------------------------------
 class TornadoRpcServer(object):
     def __init__(self, instance, port=8080):
         self.app = TornadoRpcApplication(instance, handlers=[
@@ -160,6 +186,11 @@ class TornadoRpcServer(object):
         IOLoop.current().start()
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# testing
+#
+# ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
     class AClass(object):
         def do_x(self, x=10):
