@@ -19,12 +19,12 @@
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/trunk$Unittests_in_test.coverage" NAME="Unittests in test Coverage Results" MODIFIED="1403963792488" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/geventmanager/test" />
     <SUITE FILE_PATH="coverage/trunk$_profile.coverage" NAME="_profile Coverage Results" MODIFIED="1405003626725" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/trunk$tornadorpc.coverage" NAME="tornadorpc Coverage Results" MODIFIED="1406553340925" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/asyncrpc" />
+    <SUITE FILE_PATH="coverage/trunk$tornadorpc.coverage" NAME="tornadorpc Coverage Results" MODIFIED="1406555227788" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/asyncrpc" />
     <SUITE FILE_PATH="coverage/trunk$_bench.coverage" NAME="_bench Coverage Results" MODIFIED="1405194215486" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/trunk$client.coverage" NAME="client Coverage Results" MODIFIED="1405957887057" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/asyncrpc" />
     <SUITE FILE_PATH="coverage/trunk$immutable.coverage" NAME="immutable Coverage Results" MODIFIED="1403883530547" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/geventmanager" />
     <SUITE FILE_PATH="coverage/trunk$server.coverage" NAME="server Coverage Results" MODIFIED="1405957870773" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/asyncrpc" />
-    <SUITE FILE_PATH="coverage/trunk$_debug.coverage" NAME="_debug Coverage Results" MODIFIED="1406553347840" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/trunk$_debug.coverage" NAME="_debug Coverage Results" MODIFIED="1406555231667" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
@@ -51,8 +51,8 @@
       <file leaf-file-name="server.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/asyncrpc/server.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="2261" max-vertical-offset="3474">
-              <caret line="138" column="19" selection-start-line="138" selection-start-column="19" selection-end-line="138" selection-end-column="19" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="1747" max-vertical-offset="3474">
+              <caret line="152" column="12" selection-start-line="152" selection-start-column="12" selection-end-line="152" selection-end-column="12" />
               <folding />
             </state>
           </provider>
@@ -61,8 +61,8 @@
       <file leaf-file-name="client.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/asyncrpc/client.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="4914">
-              <caret line="20" column="114" selection-start-line="20" selection-start-column="114" selection-end-line="20" selection-end-column="114" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="1374" max-vertical-offset="4914">
+              <caret line="89" column="0" selection-start-line="89" selection-start-column="0" selection-end-line="89" selection-end-column="0" />
               <folding>
                 <element signature="e#0#39#0" expanded="true" />
               </folding>
@@ -73,8 +73,8 @@
       <file leaf-file-name="tornadorpc.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/asyncrpc/tornadorpc.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.7776062" vertical-offset="2665" max-vertical-offset="3996">
-              <caret line="204" column="22" selection-start-line="204" selection-start-column="22" selection-end-line="204" selection-end-column="22" />
+            <state vertical-scroll-proportion="0.52741313" vertical-offset="3241" max-vertical-offset="4536">
+              <caret line="218" column="28" selection-start-line="218" selection-start-column="28" selection-end-line="218" selection-end-column="28" />
               <folding>
                 <element signature="e#0#16#0" expanded="true" />
               </folding>
@@ -85,8 +85,8 @@
       <file leaf-file-name="_debug.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/_debug.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="1243" max-vertical-offset="2538">
-              <caret line="93" column="36" selection-start-line="93" selection-start-column="36" selection-end-line="93" selection-end-column="36" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="1495" max-vertical-offset="2790">
+              <caret line="158" column="83" selection-start-line="158" selection-start-column="83" selection-end-line="158" selection-end-column="83" />
               <folding />
             </state>
           </provider>
@@ -148,10 +148,10 @@
         <option value="$PROJECT_DIR$/asyncrpc/base.py" />
         <option value="$PROJECT_DIR$/asyncrpc/wsgi.py" />
         <option value="$PROJECT_DIR$/asyncrpc/handler.py" />
-        <option value="$PROJECT_DIR$/asyncrpc/server.py" />
-        <option value="$PROJECT_DIR$/asyncrpc/tornadorpc.py" />
-        <option value="$PROJECT_DIR$/_debug.py" />
         <option value="$PROJECT_DIR$/asyncrpc/client.py" />
+        <option value="$PROJECT_DIR$/asyncrpc/server.py" />
+        <option value="$PROJECT_DIR$/_debug.py" />
+        <option value="$PROJECT_DIR$/asyncrpc/tornadorpc.py" />
         <option value="$PROJECT_DIR$/asyncrpc/__version__.py" />
       </list>
     </option>
@@ -237,6 +237,30 @@
     <property name="FullScreen" value="false" />
     <property name="LayoutCode.rearrangeEntriesHTML" value="false" />
     <property name="LayoutCode.rearrangeEntriesCSS" value="false" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth0" value="164" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder0" value="0" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth1" value="165" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder1" value="1" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth2" value="169" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder2" value="2" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth3" value="75" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder3" value="3" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth4" value="122" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder4" value="4" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth5" value="963" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder5" value="5" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth0" value="142" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder0" value="0" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth1" value="144" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder1" value="1" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth2" value="147" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder2" value="2" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth3" value="142" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder3" value="3" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth4" value="142" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder4" value="4" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth5" value="941" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder5" value="5" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
@@ -1329,7 +1353,11 @@
       <created>1406545899027</created>
       <updated>1406545899027</updated>
     </task>
-    <option name="localTasksCounter" value="168" />
+    <task id="LOCAL-00168" summary="asyncrpc version 0.4.5&#10;&#10;- TornadoRpcServer works, handlers must use the tornado async style of coroutines ...">
+      <created>1406553427027</created>
+      <updated>1406553427027</updated>
+    </task>
+    <option name="localTasksCounter" value="169" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -1367,7 +1395,7 @@
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.46031746" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32788226" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.43235072" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32796487" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -1413,7 +1441,6 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="geventmanager version 0.2.8&#10;&#10;- refactoring, to accomodate SocketServer (from python lib)" />
     <MESSAGE value="geventmanager version 0.2.9&#10;&#10;- fixing the connection reset by peer error ...." />
     <MESSAGE value="geventmanager version 0.2.9&#10;&#10;- better ... but still ... :(" />
     <MESSAGE value="geventmanager version 0.2.10&#10;&#10;- still with problems ..." />
@@ -1438,7 +1465,8 @@
     <MESSAGE value="asyncrpc version 0.3.23&#10;&#10;- removed multiprocess from tornado ..." />
     <MESSAGE value="asyncrpc version 0.3.24&#10;&#10;- RpcHandler in" />
     <MESSAGE value="asyncrpc version 0.4.1&#10;&#10;- TornadoRpcServer (single instance rpc async server is in)" />
-    <option name="LAST_COMMIT_MESSAGE" value="asyncrpc version 0.4.1&#10;&#10;- TornadoRpcServer (single instance rpc async server is in)" />
+    <MESSAGE value="asyncrpc version 0.4.5&#10;&#10;- TornadoRpcServer works, handlers must use the tornado async style of coroutines ..." />
+    <option name="LAST_COMMIT_MESSAGE" value="asyncrpc version 0.4.5&#10;&#10;- TornadoRpcServer works, handlers must use the tornado async style of coroutines ..." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -1718,14 +1746,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/asyncrpc/server.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="2261" max-vertical-offset="3474">
-          <caret line="138" column="19" selection-start-line="138" selection-start-column="19" selection-end-line="138" selection-end-column="19" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/asyncrpc/test/test_manager.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.683682" vertical-offset="47" max-vertical-offset="1242">
@@ -1790,13 +1810,29 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/asyncrpc/server.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="1747" max-vertical-offset="3474">
+          <caret line="152" column="12" selection-start-line="152" selection-start-column="12" selection-end-line="152" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/asyncrpc/client.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="4914">
-          <caret line="20" column="114" selection-start-line="20" selection-start-column="114" selection-end-line="20" selection-end-column="114" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="1374" max-vertical-offset="4914">
+          <caret line="89" column="0" selection-start-line="89" selection-start-column="0" selection-end-line="89" selection-end-column="0" />
           <folding>
             <element signature="e#0#39#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/_debug.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="1495" max-vertical-offset="2790">
+          <caret line="158" column="83" selection-start-line="158" selection-start-column="83" selection-end-line="158" selection-end-column="83" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1808,18 +1844,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/_debug.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="1243" max-vertical-offset="2538">
-          <caret line="93" column="36" selection-start-line="93" selection-start-column="36" selection-end-line="93" selection-end-column="36" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/asyncrpc/tornadorpc.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.7776062" vertical-offset="2665" max-vertical-offset="3996">
-          <caret line="204" column="22" selection-start-line="204" selection-start-column="22" selection-end-line="204" selection-end-column="22" />
+        <state vertical-scroll-proportion="0.52741313" vertical-offset="3241" max-vertical-offset="4536">
+          <caret line="218" column="28" selection-start-line="218" selection-start-column="28" selection-end-line="218" selection-end-column="28" />
           <folding>
             <element signature="e#0#16#0" expanded="true" />
           </folding>

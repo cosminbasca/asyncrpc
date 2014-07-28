@@ -1,10 +1,12 @@
 import traceback
 from tornado.concurrent import Future
+from tornado.httpserver import HTTPServer
+from tornado.netutil import bind_sockets
 from asyncrpc.exceptions import current_error
 from asyncrpc.messaging import loads, dumps
-from asyncrpc.client import RpcProxy, asynchronous
+from asyncrpc.client import RpcProxy
 from asyncrpc.handler import RpcHandler
-from asyncrpc.log import get_logger
+from asyncrpc.log import get_logger, set_level
 from tornado.ioloop import IOLoop
 from tornado.httpclient import AsyncHTTPClient, HTTPError, HTTPClient
 from tornado import gen
@@ -12,7 +14,8 @@ from tornado import web
 
 __author__ = 'basca'
 
-USE_CURL = True
+# USE_CURL = True
+USE_CURL = False
 if USE_CURL:
     try:
         from tornado.curl_httpclient import CurlAsyncHTTPClient
@@ -89,40 +92,40 @@ class TornadoAsyncHttpRpcProxy(RpcProxy):
 #
 #
 # ----------------------------------------------------------------------------------------------------------------------
-class TornadoProxyFactory(object):
-    def __init__(self):
-        self._log = get_logger(TornadoProxyFactory.__class__.__name__)
-        self._async_cache = dict()
-        self._cache = dict()
-        self._log.debug("tornado proxy factory initialized")
-
-    @staticmethod
-    def instance():
-        if not hasattr(TornadoProxyFactory, "_instance"):
-            TornadoProxyFactory._instance = TornadoProxyFactory()
-        return TornadoProxyFactory._instance
-
-    def async_proxy(self, address):
-        proxy = self._async_cache.get(address, None)
-        if proxy is None:
-            proxy = TornadoAsyncHttpRpcProxy(address)
-            self._async_cache[address] = proxy
-        return proxy
-
-    def proxy(self, address):
-        proxy = self._cache.get(address, None)
-        if proxy is None:
-            proxy = TornadoHttpRpcProxy(address)
-            self._cache[address] = proxy
-        return proxy
+# class TornadoProxyFactory(object):
+#     def __init__(self):
+#         self._log = get_logger(TornadoProxyFactory.__class__.__name__)
+#         self._async_cache = dict()
+#         self._cache = dict()
+#         self._log.debug("tornado proxy factory initialized")
+#
+#     @staticmethod
+#     def instance():
+#         if not hasattr(TornadoProxyFactory, "_instance"):
+#             TornadoProxyFactory._instance = TornadoProxyFactory()
+#         return TornadoProxyFactory._instance
+#
+#     def async_proxy(self, address):
+#         proxy = self._async_cache.get(address, None)
+#         if proxy is None:
+#             proxy = TornadoAsyncHttpRpcProxy(address)
+#             self._async_cache[address] = proxy
+#         return proxy
+#
+#     def proxy(self, address):
+#         proxy = self._cache.get(address, None)
+#         if proxy is None:
+#             proxy = TornadoHttpRpcProxy(address)
+#             self._cache[address] = proxy
+#         return proxy
 
 
 def async_call(address):
-    return TornadoProxyFactory.instance().async_proxy(address)
+    return TornadoAsyncHttpRpcProxy(tuple(address))
 
 
 def call(address):
-    return TornadoProxyFactory.instance().proxy(address)
+    return TornadoHttpRpcProxy(tuple(address))
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -178,15 +181,43 @@ class TornadoRpcApplication(web.Application):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class TornadoRpcServer(object):
-    def __init__(self, instance, port=8080):
-        self.app = TornadoRpcApplication(instance, handlers=[
+    def __init__(self, instance, address=('127.0.0.1', 8080), multiprocess=True):
+        app = TornadoRpcApplication(instance, handlers=[
             web.url(r"/rpc", TornadoRequestHandler)
         ])
-        self.port = port
+        self._multiprocess = multiprocess
+        self._log = get_logger(self.__class__.__name__)
+        self._server = HTTPServer(app)
+        self._sockets = bind_sockets(address[1], address=address[0])
+        if not self._multiprocess:
+            self._server.add_sockets(self._sockets)
+        self._bound_address = self._sockets[0].getsockname()
 
-    def start(self):
-        self.app.listen(self.port)
-        IOLoop.current().start()
+    def close(self):
+        IOLoop.instance().stop()
+
+    def server_forever(self, *args, **kwargs):
+        try:
+            if self._multiprocess:
+                self._log.info('starting tornado server in multi-process mode')
+                self._server.start(0)
+                self._server.add_sockets(self._sockets)
+            else:
+                self._log.info('starting tornado server in single-process mode')
+            IOLoop.instance().start()
+        except Exception, e:
+            self._log.error("exception in serve_forever: {0}".format(e))
+        finally:
+            self._log.info('closing the server ...')
+            self.close()
+            self._log.info('server shutdown complete')
+
+    def start(self, *args, **kwargs):
+        self.server_forever(*args, **kwargs)
+
+    @property
+    def bound_address(self):
+        return self._bound_address
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -195,6 +226,8 @@ class TornadoRpcServer(object):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
+    set_level('critical')
+
     class AClass(object):
         def do_x(self, x=10):
             return x
@@ -204,11 +237,8 @@ if __name__ == '__main__':
 
         @gen.coroutine
         def do_async(self, remote_addr, x, y):
-            proxy = TornadoAsyncHttpRpcProxy(remote_addr)
-            value1 = yield proxy.do_x(x)
-            print 'got value 1 = ', value1
-            value2 = yield proxy.do_x(y)
-            print 'got value 2 = ', value2
+            value1 = yield async_call(remote_addr).do_x(x)
+            value2 = yield async_call(remote_addr).do_x(y)
             result = value1 + value2
             raise gen.Return(result)
 

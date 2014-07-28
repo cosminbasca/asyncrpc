@@ -119,11 +119,24 @@ def async_vs_blocking():
     del manager
 
 
-def test_tornadorpc():
-    print call(('127.0.0.1', 8080)).do_x(x=20)
-    print call(('127.0.0.1', 8080)).do_x(x=40)
-    print call(('127.0.0.1', 8080)).do_other(30)
-    print call(('127.0.0.1', 8080)).do_async(('127.0.0.1', 8080), 50, 45)
+def test_tornadorpc(async=False):
+    calls = 10000
+    concurrent = 12
+    t0 = time()
+    if async:
+        pool = ThreadPool(concurrent)
+        [pool.apply_async(call(('127.0.0.1', 8080)).do_x, args=(20,)) for i in xrange(calls)]
+        pool.close()
+        pool.join()
+    else:
+        pool = ThreadPool(concurrent)
+        [pool.apply_async(call(('127.0.0.1', 8080)).do_async, args=(('127.0.0.1', 8080), 50, 45,)) for i in xrange(calls)]
+        pool.close()
+        pool.join()
+    t1 = time() - t0
+    ncalls = long(float(calls) / float(t1))
+    print 'DID: {0} calls / second, total calls: {1}'.format(ncalls, calls)
+
 
 if __name__ == '__main__':
     pass
@@ -143,4 +156,5 @@ if __name__ == '__main__':
 
     # async_vs_blocking()
 
-    test_tornadorpc()
+    test_tornadorpc(async=False)      # DID: 153 calls / second, total calls: 10000
+    # test_tornadorpc(async=True)         # DID: 453 calls / second, total calls: 10000
