@@ -130,7 +130,7 @@ def test_tornadorpc(async=False):
         pool.join()
     else:
         pool = ThreadPool(concurrent)
-        [pool.apply_async(call(('127.0.0.1', 8080)).do_x, args=(20,)) for i in xrange(calls)]
+        [pool.apply_async(call(('127.0.0.1', 8080)).do_sync, args=(('127.0.0.1', 8080), 50, 45,)) for i in xrange(calls)]
         pool.close()
         pool.join()
     t1 = time() - t0
@@ -157,4 +157,4 @@ if __name__ == '__main__':
     # async_vs_blocking()
 
     # test_tornadorpc(async=False)      # DID: 153 calls / second, total calls: 10000
-    test_tornadorpc(async=True)         # DID: 453 calls / second, total calls: 10000
+    test_tornadorpc(async=True)         # DID: 207 calls / second, total calls: 10000

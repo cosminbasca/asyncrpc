@@ -205,9 +205,15 @@ if __name__ == '__main__':
         @gen.coroutine
         def do_async(self, remote_addr, x, y):
             value1 = yield async_call(remote_addr).do_x(x)
-            value2 = yield async_call(remote_addr).do_x(y)
-            result = value1 + value2
+            # value2 = yield async_call(remote_addr).do_x(y)
+            # result = value1 + value2
+            result = value1 + y
             raise gen.Return(result)
+
+        def do_sync(self, remote_addr, x, y):
+            value1 = call(remote_addr).do_x(x)
+            result = value1 + y
+            return result
 
     instance = AClass()
     srv = TornadoRpcServer(instance)
