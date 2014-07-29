@@ -3,7 +3,7 @@ from time import time, sleep
 from asyncrpc import set_level, create
 from asyncrpc.manager import AsyncManager
 from gevent.pool import Pool
-from multiprocessing.pool import ThreadPool
+from multiprocessing.pool import ThreadPool, Pool as MpPool
 import numpy as np
 from pandas import DataFrame
 import random
@@ -25,7 +25,6 @@ class DataClass(object):
         return self._dframe
 
 
-
 def bench(async=False):
     class MyManager(AsyncManager):
         pass
@@ -35,7 +34,7 @@ def bench(async=False):
     manager.start()
 
     my1 = manager.DataClass()
-    calls = 1000
+    calls = 100
     concurrent = 128
     t0 = time()
     if async:
@@ -44,6 +43,7 @@ def bench(async=False):
         pool.join()
     else:
         pool = ThreadPool(concurrent)
+        # pool = MpPool()
         res = [pool.apply_async(my1.get_table) for i in xrange(calls)]
         pool.close()
         pool.join()
@@ -54,6 +54,7 @@ def bench(async=False):
 
     del manager
     print 'done'
+
 
 def bench_mpman():
     class MyManager(BaseManager):
@@ -82,6 +83,24 @@ def bench_mpman():
     print 'done'
 
 
+def client(async=False):
+    my1 = create(('127.0.0.1', 8080), 'DataClass', async)
+    calls = 100
+    concurrent = 128
+    t0 = time()
+    if async:
+        pool = Pool(concurrent)
+        [pool.apply_async(my1.get_table) for i in xrange(calls)]
+        pool.join()
+    else:
+        pool = ThreadPool(concurrent)
+        res = [pool.apply_async(my1.get_table) for i in xrange(calls)]
+        pool.close()
+        pool.join()
+        print [r.get().sum().sum() for r in res]
+    t1 = time() - t0
+    ncalls = long(float(calls) / float(t1))
+    print 'DID: {0} calls / second, total calls: {1}'.format(ncalls, calls)
 
 
 if __name__ == '__main__':
@@ -90,3 +109,4 @@ if __name__ == '__main__':
     # bench(async=True)
     # sleep(5)
     # bench_mpman()
+    # client(async=False)

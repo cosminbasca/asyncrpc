@@ -103,7 +103,7 @@ class WsgiRpcServer(RpcServer):
 # ----------------------------------------------------------------------------------------------------------------------
 class CherrypyWsgiRpcServer(WsgiRpcServer):
     def _init_wsgi_server(self, address, wsgi_app, *args, **kwargs):
-        self._server = CherryPyWSGIServer(address, wsgi_app, numthreads=256)
+        self._server = CherryPyWSGIServer(address, wsgi_app)
         self._bound_address = None
 
     def close(self):
