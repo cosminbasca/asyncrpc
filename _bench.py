@@ -86,7 +86,7 @@ def bench_mpman():
 
 if __name__ == '__main__':
     pass
-    # bench(async=False)
-    bench(async=True)
+    bench(async=False)
+    # bench(async=True)
     # sleep(5)
     # bench_mpman()

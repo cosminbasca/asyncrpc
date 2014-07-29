@@ -8,7 +8,7 @@ __author__ = 'basca'
 
 def profile_client(async=False, wait=1):
     stats_name = "profile_async_{0}.prof".format('T' if async else 'F')
-    cProfile.runctx("_bench.bench(async={0}, wait={1})".format(async, wait), globals(), locals(), stats_name)
+    cProfile.runctx("_bench.bench(async={0})".format(async,), globals(), locals(), stats_name)
     s = pstats.Stats(stats_name)
     print '------------------------------------------------------------------------------------------------------------'
     s.strip_dirs().sort_stats("time").print_stats()
@@ -24,7 +24,7 @@ def profile_server():
 
 if __name__ == '__main__':
     pass
-    # profile_client(async=False, wait=True)
+    profile_client(async=False, wait=True)
     # profile_client(async=True, wait=True)
 
-    profile_server()
+    # profile_server()
