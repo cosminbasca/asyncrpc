@@ -1,6 +1,7 @@
 __author__ = 'basca'
 
-from client import hidden, AsyncProxy, Proxy, create, dispatch, ProxyFactory, RpcProxy, RegistryRpcProxy
+from client import hidden, AsyncProxy, Proxy, SingleInstanceProxy, AsyncSingleInstanceProxy, create, dispatch, \
+    ProxyFactory, RpcProxy, RegistryRpcProxy
 from log import get_logger, set_level
 from manager import AsyncManager
 from process import BackgroundRunner
