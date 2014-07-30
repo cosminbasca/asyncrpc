@@ -122,8 +122,8 @@ class RpcProxy(object):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class SingleInstanceProxy(RpcProxy):
-    def __init__(self, address, slots=None, owner=True, **kwargs):
-        super(SingleInstanceProxy, self).__init__(address, slots=slots, owner=owner)
+    def __init__(self, address, slots=None, **kwargs):
+        super(SingleInstanceProxy, self).__init__(address, slots=slots, **kwargs)
         self._post = partial(requests.post, self.url)
 
     @retry(retry_on_exception=_if_connection_error, stop_max_attempt_number=_MAX_RETRIES)
@@ -143,8 +143,8 @@ class SingleInstanceProxy(RpcProxy):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class AsyncSingleInstanceProxy(SingleInstanceProxy):
-    def __init__(self, address, slots=None, owner=True, **kwargs):
-        super(AsyncSingleInstanceProxy, self).__init__(address, slots=slots, owner=owner, **kwargs)
+    def __init__(self, address, slots=None, **kwargs):
+        super(AsyncSingleInstanceProxy, self).__init__(address, slots=slots, **kwargs)
         import grequests
 
         self._gpost = partial(grequests.AsyncRequest, 'POST', self.url)
