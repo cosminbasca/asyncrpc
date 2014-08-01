@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="5afc6fb3-898e-4aae-a67e-6f6d4cf5c5f1" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/client.py" afterPath="$PROJECT_DIR$/asyncrpc/client.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/tornadorpc.py" afterPath="$PROJECT_DIR$/asyncrpc/tornadorpc.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="trunk.iws" />
@@ -56,11 +56,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="client.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="client.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/asyncrpc/client.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.792278" vertical-offset="1386" max-vertical-offset="5292">
+            <state vertical-scroll-proportion="0.0" vertical-offset="1386" max-vertical-offset="5292">
               <caret line="146" column="86" selection-start-line="146" selection-start-column="86" selection-end-line="146" selection-end-column="86" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="tornadorpc.py" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/asyncrpc/tornadorpc.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.16602316" vertical-offset="2863" max-vertical-offset="4428">
+              <caret line="183" column="80" selection-start-line="183" selection-start-column="80" selection-end-line="183" selection-end-column="80" />
               <folding />
             </state>
           </provider>
@@ -144,13 +154,13 @@
         <option value="$PROJECT_DIR$/asyncrpc/wsgi.py" />
         <option value="$PROJECT_DIR$/asyncrpc/handler.py" />
         <option value="$PROJECT_DIR$/asyncrpc/__version__.py" />
-        <option value="$PROJECT_DIR$/asyncrpc/tornadorpc.py" />
         <option value="$PROJECT_DIR$/_debug.py" />
         <option value="$PROJECT_DIR$/asyncrpc/server.py" />
         <option value="$PROJECT_DIR$/_profile.py" />
         <option value="$PROJECT_DIR$/_bench.py" />
         <option value="$PROJECT_DIR$/asyncrpc/__init__.py" />
         <option value="$PROJECT_DIR$/asyncrpc/client.py" />
+        <option value="$PROJECT_DIR$/asyncrpc/tornadorpc.py" />
       </list>
     </option>
   </component>
@@ -1382,7 +1392,11 @@
       <created>1406724873025</created>
       <updated>1406724873026</updated>
     </task>
-    <option name="localTasksCounter" value="176" />
+    <task id="LOCAL-00176" summary="asyncrpc version 0.4.7&#10;&#10;- TornadoRpcServer works, handlers must use the tornado async style of coroutines">
+      <created>1406725596029</created>
+      <updated>1406725596029</updated>
+    </task>
+    <option name="localTasksCounter" value="177" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -1814,16 +1828,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/asyncrpc/tornadorpc.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.0138996" vertical-offset="2251" max-vertical-offset="4050">
-          <caret line="198" column="29" selection-start-line="198" selection-start-column="29" selection-end-line="198" selection-end-column="29" />
-          <folding>
-            <element signature="e#0#16#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/_debug.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-0.765251" vertical-offset="1495" max-vertical-offset="2790">
@@ -1880,8 +1884,16 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/asyncrpc/client.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.792278" vertical-offset="1386" max-vertical-offset="5292">
+        <state vertical-scroll-proportion="0.0" vertical-offset="1386" max-vertical-offset="5292">
           <caret line="146" column="86" selection-start-line="146" selection-start-column="86" selection-end-line="146" selection-end-column="86" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/asyncrpc/tornadorpc.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.16602316" vertical-offset="2863" max-vertical-offset="4428">
+          <caret line="183" column="80" selection-start-line="183" selection-start-column="80" selection-end-line="183" selection-end-column="80" />
           <folding />
         </state>
       </provider>

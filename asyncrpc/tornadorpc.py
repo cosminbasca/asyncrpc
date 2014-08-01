@@ -181,7 +181,7 @@ class TornadoRpcApplication(web.Application):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class TornadoRpcServer(object):
-    def __init__(self, instance, address=('127.0.0.1', 8080), multiprocess=True):
+    def __init__(self, instance, address=('127.0.0.1', 8080), multiprocess=False):
         app = TornadoRpcApplication(instance, handlers=[
             web.url(r"/rpc", TornadoRequestHandler)
         ])
