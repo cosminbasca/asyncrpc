@@ -72,12 +72,9 @@ class RpcRegistryMiddleware(RpcHandler):
     wsgi application that handles rpc calls to multiple registered objects
     """
 
-    def __init__(self, registry, shutdown_callback=None):
+    def __init__(self, registry):
         if not isinstance(registry, Registry):
             raise ValueError('registry must be a Registry')
-        if shutdown_callback and not hasattr(shutdown_callback, '__call__'):
-            raise ValueError('shutdown_callback must be a callable instance')
-        self._shutdown_callback = shutdown_callback
 
         self._registry = registry
         self._mutex = RLock()
@@ -88,7 +85,6 @@ class RpcRegistryMiddleware(RpcHandler):
             Command.RELEASE: self._handler_release,
             Command.CLEAR: self._handler_clear,
             Command.CLEAR_ALL: self._handler_clear_all,
-            Command.SHUTDOWN: self._handler_shutdown,
         }
 
     def _handler_init(self, type_id, name, *args, **kwargs):
@@ -114,11 +110,6 @@ class RpcRegistryMiddleware(RpcHandler):
 
     def _handler_clear_all(self, instance_id, name, *args, **kwargs):
         self._registry.clear()
-
-    def _handler_shutdown(self, instance_id, name, *args, **kwargs):
-        if self._shutdown_callback:
-            self._shutdown_callback()
-        return True
 
     def get_instance(self, instance_id):
         self._log.debug('ACCESS ID {0}'.format(instance_id))

@@ -1,4 +1,4 @@
-from multiprocessing import Pipe, Process
+from multiprocessing import Pipe, Process, Event
 from multiprocessing.managers import State
 from multiprocessing.util import Finalize
 from threading import Thread
@@ -40,11 +40,11 @@ class BackgroundRunner(object):
         self._state.value = State.INITIAL
         self._process = None
         self._bound_address = None
-
+        self._shutdown_event = Event()
         self._stop = lambda: None
 
 
-    def _background_start(self, writer, *args, **kwargs):
+    def _background_start(self, writer, shutdown_event, *args, **kwargs):
         try:
             if self._gevent_patch:
                 reinit()
@@ -79,6 +79,15 @@ class BackgroundRunner(object):
                     checker.daemon = True
                     checker.start()
 
+                def wait_for_shutdown():
+                    self._log.debug('started server stopper thread')
+                    shutdown_event.wait()
+                    self._log.debug('server shutdown event received')
+                    server.shutdown()
+                stopper = Thread(target=wait_for_shutdown)
+                stopper.daemon = True
+                stopper.start()
+
                 server.start()
             else:
                 writer.close()
@@ -91,7 +100,7 @@ class BackgroundRunner(object):
             raise InvalidStateException('server starter has already been initialized')
 
         reader, writer = Pipe(duplex=False)
-        self._process = Process(target=self._background_start, args=(writer,) + args, kwargs=kwargs)
+        self._process = Process(target=self._background_start, args=(writer, self._shutdown_event,) + args, kwargs=kwargs)
         self._process.name = type(self).__name__ + '-' + self._process.name
         self._log.debug('starting background process: {0}'.format(self._process.name))
         self._process.start()
@@ -102,7 +111,7 @@ class BackgroundRunner(object):
         reader.close()
         self._log.info('server started on {0}'.format(self._bound_address))
         self._stop = Finalize(self, type(self)._finalize,
-                              args=(self._process, self._bound_address, self._state, self._log), exitpriority=0)
+                              args=(self._process, self._shutdown_event, self._state, self._log), exitpriority=0)
 
         if wait:
             max_retries = self._retries
@@ -128,13 +137,10 @@ class BackgroundRunner(object):
         self._stop()
 
     @staticmethod
-    def _finalize(process, address, state, logger):
+    def _finalize(process, shutdown_event, state, logger):
         if process.is_alive():
-            logger.info('sending shutdown message to server')
-            try:
-                dispatch(address, Command.SHUTDOWN)
-            except Exception:
-                pass
+            logger.info('setting the shutdown event')
+            shutdown_event.set()
 
             logger.info('wait for server-starter process to terminate')
             process.join(timeout=0.2)

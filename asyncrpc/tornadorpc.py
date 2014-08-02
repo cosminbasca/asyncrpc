@@ -227,6 +227,10 @@ class TornadoRpcServer(RpcServer):
     def bound_address(self):
         return self._bound_address
 
+    def shutdown(self, os_exit=True):
+        IOLoop.instance().stop() # stop the tornado IO loop
+        super(TornadoRpcServer, self).shutdown(os_exit=os_exit)
+
 
 class TornadoManager(object):
     def __init__(self, instance, address=('127.0.0.1', 0), async=False, gevent_patch=False, retries=100, **kwargs):

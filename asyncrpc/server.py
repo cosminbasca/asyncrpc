@@ -93,7 +93,7 @@ class WsgiRpcServer(RpcServer):
             raise ValueError('registry must be a Registry')
         super(WsgiRpcServer, self).__init__(address, *args, **kwargs)
 
-        registry_app = RpcRegistryMiddleware(registry, shutdown_callback=self.shutdown)
+        registry_app = RpcRegistryMiddleware(registry)
         registry_viewer = RpcRegistryViewer(registry, with_static=True)
         if debug:
             registry_viewer = DebuggedApplication(registry_viewer, evalex=True)
