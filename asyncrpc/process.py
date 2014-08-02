@@ -12,6 +12,7 @@ from asyncrpc.server import RpcServer
 from asyncrpc.client import dispatch
 from asyncrpc.commands import Command
 from time import sleep
+from requests import get, post
 
 __author__ = 'basca'
 
@@ -27,7 +28,10 @@ class BackgroundRunner(object):
         if not issubclass(server_class, RpcServer):
             raise ValueError('server_class must be a subclass of RpcServer')
 
+        self._log = get_logger(server_class.__name__)
+
         self._address = address if address else ('127.0.0.1', 0)
+        self._log.debug('server address is {0}'.format(self._address))
         self._server_class = server_class
 
         self._gevent_patch = gevent_patch
@@ -39,7 +43,6 @@ class BackgroundRunner(object):
 
         self._stop = lambda: None
 
-        self._log = get_logger(server_class.__name__)
 
     def _background_start(self, writer, *args, **kwargs):
         try:
@@ -102,20 +105,16 @@ class BackgroundRunner(object):
                               args=(self._process, self._bound_address, self._state, self._log), exitpriority=0)
 
         if wait:
+            max_retries = self._retries
             while True:
-                try:
-                    if self._process.is_alive():
-                        self._log.info("server process started, waiting for initialization ... ")
-                        dispatch(self._bound_address, Command.PING)
-                        self._state.value = State.STARTED
-                        self._log.info('server started OK')
-                        return True
-                    else:
-                        return False
-                except Exception, e:
-                    self._log.error("error: {0}".format(e))
-                    sleep(0.01)
-            return False
+                if RpcServer.is_online(self._bound_address):
+                    self._state.value = State.STARTED
+                    self._log.info('server started OK')
+                    return True
+                if max_retries == 0:
+                    return False
+                sleep(0.01)
+                max_retries -= 1
         return True
 
     def restart(self, wait=None):

@@ -6,11 +6,12 @@ from cherrypy.wsgiserver import CherryPyWSGIServer
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado import ioloop
-from asyncrpc.wsgi import RpcRegistryMiddleware, RpcRegistryViewer
+from asyncrpc.wsgi import RpcRegistryMiddleware, RpcRegistryViewer, ping_middleware
 from asyncrpc.log import get_logger
 from asyncrpc.registry import Registry
 from werkzeug.wsgi import DispatcherMiddleware
 from werkzeug.debug import DebuggedApplication
+from requests import get, post
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -68,6 +69,14 @@ class RpcServer(object):
             else:
                 sys.exit(0)
 
+    @staticmethod
+    def is_online(address, method='get'):
+        _http = get if method=='get' else post
+        response = _http('http://{0}:{1}/ping'.format(address[0], address[1]))
+        if response.status_code == 200:
+            return response.content.strip().lower() == 'pong'
+        return False
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -88,7 +97,10 @@ class WsgiRpcServer(RpcServer):
         registry_viewer = RpcRegistryViewer(registry, with_static=True)
         if debug:
             registry_viewer = DebuggedApplication(registry_viewer, evalex=True)
-        wsgi_app = DispatcherMiddleware(registry_viewer, {'/rpc': registry_app})
+        wsgi_app = DispatcherMiddleware(registry_viewer, {
+            '/rpc': registry_app,
+            '/ping': ping_middleware,
+        })
         self._init_wsgi_server(self.address, wsgi_app, *args, **kwargs)
 
     @abstractmethod

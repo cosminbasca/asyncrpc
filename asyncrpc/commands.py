@@ -10,5 +10,4 @@ class Command(object):
     RELEASE = '#RELEASE'
     CLEAR = '#CLEAR'
     CLEAR_ALL = '#CLEAR_ALL'
-    PING = '#PING'
     SHUTDOWN = '#SHUTDOWN'

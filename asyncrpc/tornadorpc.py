@@ -2,7 +2,9 @@ import traceback
 from tornado.concurrent import Future
 from tornado.httpserver import HTTPServer
 from tornado.netutil import bind_sockets
-from asyncrpc.exceptions import current_error
+from asyncrpc.server import RpcServer
+from asyncrpc.process import BackgroundRunner
+from asyncrpc.exceptions import current_error, RpcServerNotStartedException
 from asyncrpc.messaging import loads, dumps
 from asyncrpc.client import RpcProxy
 from asyncrpc.handler import RpcHandler
@@ -161,6 +163,14 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
         self.write(response)
 
 
+class PingRequestHandler(web.RequestHandler):
+    def get(self, *args, **kwargs):
+        self.write('pong')
+
+    def post(self, *args, **kwargs):
+        self.write('pong')
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # http rpc tornado application
@@ -180,13 +190,14 @@ class TornadoRpcApplication(web.Application):
 # single instance http rpc tornado server
 #
 # ----------------------------------------------------------------------------------------------------------------------
-class TornadoRpcServer(object):
-    def __init__(self, instance, address=('127.0.0.1', 8080), multiprocess=False):
+class TornadoRpcServer(RpcServer):
+    def __init__(self, address, instance, multiprocess=False, *args, **kwargs):
+        super(TornadoRpcServer, self).__init__(address, *args, **kwargs)
         app = TornadoRpcApplication(instance, handlers=[
-            web.url(r"/rpc", TornadoRequestHandler)
+            web.url(r"/rpc", TornadoRequestHandler),
+            web.url(r"/ping", PingRequestHandler),
         ])
         self._multiprocess = multiprocess
-        self._log = get_logger(self.__class__.__name__)
         self._server = HTTPServer(app)
         self._sockets = bind_sockets(address[1], address=address[0])
         if not self._multiprocess:
@@ -212,12 +223,37 @@ class TornadoRpcServer(object):
             self.close()
             self._log.info('server shutdown complete')
 
-    def start(self, *args, **kwargs):
-        self.server_forever(*args, **kwargs)
-
     @property
     def bound_address(self):
         return self._bound_address
+
+
+class TornadoManager(object):
+    def __init__(self, instance, address=('127.0.0.1', 0), async=False, gevent_patch=False, retries=100, **kwargs):
+        self._log = get_logger(self.__class__.__name__)
+        self._async = async
+        self._instance = instance
+        self._runner = BackgroundRunner(server_class=TornadoRpcServer, address=address, gevent_patch=gevent_patch,
+                                        retries=retries)
+
+    def proxy(self, slots=None, **kwargs):
+        if not self._runner.is_running:
+            raise RpcServerNotStartedException('the tornado rcp server has not been started!')
+        _Proxy = TornadoAsyncHttpRpcProxy if self._async else TornadoHttpRpcProxy
+        return _Proxy(self.bound_address, slots=slots, **kwargs)
+
+    def __del__(self):
+        self._runner.stop()
+
+    def start(self, wait=True, **kwargs):
+        self._runner.start(wait, self._instance, **kwargs)
+
+    def stop(self):
+        self._runner.stop()
+
+    @property
+    def bound_address(self):
+        return self._runner.bound_address
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -249,5 +285,9 @@ if __name__ == '__main__':
             return result
 
     instance = AClass()
-    srv = TornadoRpcServer(instance)
-    srv.start()
+    man = TornadoManager(instance)
+    man.start()
+
+    px = man.proxy()
+    print px.do_x(x=20)
+    print px.do_other(40)

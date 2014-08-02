@@ -32,7 +32,7 @@ class AsyncManager(object):
         setattr(cls, type_id, proxy_creator)
 
 
-    def __init__(self, address=None, async=False, gevent_patch=False, retries=100, backend=None, **kwargs):
+    def __init__(self, address=('127.0.0.1', 0), async=False, gevent_patch=False, retries=100, backend=None, **kwargs):
         self._log = get_logger(self.__class__.__name__)
         self._async = async
         self._backend = backend

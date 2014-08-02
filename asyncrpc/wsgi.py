@@ -15,6 +15,16 @@ from asyncrpc.registry import Registry
 
 __author__ = 'basca'
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# WSGI simple ping middleware
+#
+# ----------------------------------------------------------------------------------------------------------------------
+def ping_middleware(environ, start_response):
+    response = Response("pong", mimetype='text/plain')
+    return response(environ, start_response)
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # WSGI RPC Registry viewer - a wsgi app
@@ -78,7 +88,6 @@ class RpcRegistryMiddleware(RpcHandler):
             Command.RELEASE: self._handler_release,
             Command.CLEAR: self._handler_clear,
             Command.CLEAR_ALL: self._handler_clear_all,
-            Command.PING: self._handler_ping,
             Command.SHUTDOWN: self._handler_shutdown,
         }
 
@@ -105,9 +114,6 @@ class RpcRegistryMiddleware(RpcHandler):
 
     def _handler_clear_all(self, instance_id, name, *args, **kwargs):
         self._registry.clear()
-
-    def _handler_ping(self, instance_id, name, *args, **kwargs):
-        return True
 
     def _handler_shutdown(self, instance_id, name, *args, **kwargs):
         if self._shutdown_callback:
