@@ -2,6 +2,8 @@ from unittest import TestCase
 from asyncrpc.client import Proxy, AsyncProxy
 from asyncrpc.log import set_level
 from asyncrpc.manager import AsyncManager
+from asyncrpc.tornadorpc import TornadoManager, TornadoHttpRpcProxy, TornadoAsyncHttpRpcProxy
+from tornado import gen
 
 __author__ = 'basca'
 
@@ -30,7 +32,48 @@ class TestManager(TestCase):
         MyManager.register("MyClass", MyClass)
         return MyManager(async=async)
 
-    def test_01_geventmanager_blocking(self):
+    def test_01_tornadomanager_blocking(self):
+
+        instance = MyClass(counter=10)
+        manager = TornadoManager(instance, async=False)
+        manager.start()
+
+        self.assertIsInstance(manager, TornadoManager)
+
+        my_instance = manager.proxy()
+        self.assertIsInstance(my_instance, TornadoHttpRpcProxy)
+
+        self.assertEqual(my_instance.current_counter(), 10)
+        my_instance.add(20)
+        self.assertEqual(my_instance.current_counter(), 30)
+        my_instance.dec(30)
+        self.assertEqual(my_instance.current_counter(), 0)
+
+        del manager
+
+    @gen.coroutine
+    def test_02_tornadomanager_async(self):
+        instance = MyClass(counter=10)
+        manager = TornadoManager(instance, async=True)
+        manager.start()
+
+        self.assertIsInstance(manager, TornadoManager)
+
+        my_instance = manager.proxy()
+        self.assertIsInstance(my_instance, TornadoAsyncHttpRpcProxy)
+
+        cc = yield my_instance.current_counter()
+        self.assertEqual(cc, 10)
+        my_instance.add(20)
+        cc = yield my_instance.current_counter()
+        self.assertEqual(cc, 30)
+        my_instance.dec(30)
+        cc = yield my_instance.current_counter()
+        self.assertEqual(cc, 0)
+
+        del manager
+
+    def test_03_geventmanager_blocking(self):
 
         manager = self._threaded_manager(async=False)
         manager.start()
@@ -48,7 +91,7 @@ class TestManager(TestCase):
 
         del manager
 
-    def test_02_geventmanager_async(self):
+    def test_04_geventmanager_async(self):
         manager = self._threaded_manager(async=True)
         manager.start()
 
@@ -64,3 +107,4 @@ class TestManager(TestCase):
         self.assertEqual(my_instance.current_counter(), 0)
 
         del manager
+
