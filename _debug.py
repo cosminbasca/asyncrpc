@@ -10,7 +10,7 @@ from asyncrpc.manager import AsyncManager
 from asyncrpc.log import set_level
 from asyncrpc.tornadorpc import async_call, call
 
-set_level('critical')
+set_level('info', name='asyncrpc')
 
 __author__ = 'basca'
 
@@ -65,7 +65,8 @@ def bench_gevent_man(async=False, workload=False, backend=None, multiprocess=Fal
 
     my1 = manager.MyClass(counter=10, workload=workload)
 
-    calls = 10000
+    # calls = 10000
+    calls = 10
     concurrent = 12
     t0 = time()
     if async:
