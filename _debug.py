@@ -142,7 +142,7 @@ if __name__ == '__main__':
     pass
     # cherrypy ...
     # no workload
-    # bench_gevent_man(async=False, workload=False) # DID: 414 calls / second, total calls: 10000
+    bench_gevent_man(async=False, workload=False) # DID: 414 calls / second, total calls: 10000
     # bench_gevent_man(async=True, workload=False)  # DID: 384 calls / second, total calls: 10000
 
     # with workload
@@ -157,4 +157,4 @@ if __name__ == '__main__':
     # async_vs_blocking()
 
     # test_tornadorpc(async=False)      # DID: 153 calls / second, total calls: 10000
-    test_tornadorpc(async=True)         # DID: 207 calls / second, total calls: 10000
+    # test_tornadorpc(async=True)         # DID: 207 calls / second, total calls: 10000

@@ -78,7 +78,7 @@ class RpcRegistryMiddleware(RpcHandler):
 
         self._registry = registry
         self._mutex = RLock()
-        self._log = get_logger(self.__class__.__name__)
+        self._log = get_logger(owner=self)
 
         self._handlers = {
             Command.NEW: self._handler_init,

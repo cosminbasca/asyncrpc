@@ -63,7 +63,7 @@ class RpcProxy(object):
 
         self._address = (host, port)
         self._slots = slots
-        self._log = get_logger(self.__class__.__name__)
+        self._log = get_logger(owner=self)
         self._url_base = 'http://{0}:{1}'.format(host, port)
         self._url_path = '/rpc'
 
@@ -229,7 +229,7 @@ class AsyncProxy(Proxy):
 # ----------------------------------------------------------------------------------------------------------------------
 class ProxyFactory(object):
     def __init__(self):
-        self._log = get_logger(ProxyFactory.__class__.__name__)
+        self._log = get_logger(owner=self)
         self._cache = dict()
         self._log.debug("proxy factory initialized")
 

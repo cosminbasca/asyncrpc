@@ -30,7 +30,7 @@ class RpcServer(object):
         else:
             raise ValueError('address, must be either a tuple/list or string of the name:port form')
 
-        self._log = get_logger(self.__class__.__name__)
+        self._log = get_logger(owner=self)
         self._address = (host, port)
 
     @property

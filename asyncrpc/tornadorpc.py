@@ -141,7 +141,7 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
         if not isinstance(application, TornadoRpcApplication):
             raise ValueError('application must be an instance of TornadoRpcApplication')
         self._instance = application.instance
-        self._logger = get_logger(self.__class__.__name__)
+        self._log = get_logger(owner=self)
 
     def get_instance(self, *args, **kwargs):
         return self._instance
@@ -150,7 +150,7 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
     def post(self, *args, **kwargs):
         try:
             name, args, kwargs = loads(self.request.body)
-            self._logger.debug('calling function: "{0}"'.format(name))
+            self._log.debug('calling function: "{0}"'.format(name))
             result = self.rpc()(name, *args, **kwargs)
             if isinstance(result, Future):
                 result = yield result
@@ -158,7 +158,7 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
         except Exception, e:
             error = current_error()
             result = None
-            self._logger.error('error: {0}, traceback: \n{1}'.format(e, traceback.format_exc()))
+            self._log.error('error: {0}, traceback: \n{1}'.format(e, traceback.format_exc()))
         response = dumps((result, error))
         self.write(response)
 
@@ -234,7 +234,7 @@ class TornadoRpcServer(RpcServer):
 
 class TornadoManager(object):
     def __init__(self, instance, address=('127.0.0.1', 0), async=False, gevent_patch=False, retries=100, **kwargs):
-        self._log = get_logger(self.__class__.__name__)
+        self._log = get_logger(owner=self)
         self._async = async
         self._instance = instance
         self._runner = BackgroundRunner(server_class=TornadoRpcServer, address=address, gevent_patch=gevent_patch,

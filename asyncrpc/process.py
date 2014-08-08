@@ -28,7 +28,7 @@ class BackgroundRunner(object):
         if not issubclass(server_class, RpcServer):
             raise ValueError('server_class must be a subclass of RpcServer')
 
-        self._log = get_logger(server_class.__name__)
+        self._log = get_logger(owner=server_class)
 
         self._address = address if address else ('127.0.0.1', 0)
         self._log.debug('server address is {0}'.format(self._address))
