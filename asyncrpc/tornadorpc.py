@@ -234,7 +234,8 @@ class TornadoRpcServer(RpcServer):
         super(TornadoRpcServer, self).__init__(address, *args, **kwargs)
         settings = {'template_path': os.path.join(os.path.dirname(__file__), 'templates'),
                     'static_path': os.path.join(os.path.dirname(__file__), 'static'),
-                    'xsrf_cookies': True, }
+                    # 'xsrf_cookies': True,
+        }
         app = TornadoRpcApplication(instance, handlers=[
             web.url(r"/", InstanceViewerHandler),
             web.url(r"/rpc", TornadoRequestHandler),
