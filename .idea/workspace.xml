@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="5afc6fb3-898e-4aae-a67e-6f6d4cf5c5f1" name="Default" comment="">
-      <change type="MOVED" beforePath="$PROJECT_DIR$/asyncrpc/templates/single.html" afterPath="$PROJECT_DIR$/asyncrpc/templates/api.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/__version__.py" afterPath="$PROJECT_DIR$/asyncrpc/__version__.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/tornadorpc.py" afterPath="$PROJECT_DIR$/asyncrpc/tornadorpc.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/setup.py" afterPath="$PROJECT_DIR$/setup.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="trunk.iws" />
@@ -38,11 +36,21 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="client.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="setup.py" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/setup.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.38884398" vertical-offset="203" max-vertical-offset="1458">
+              <caret line="38" column="14" selection-start-line="38" selection-start-column="14" selection-end-line="38" selection-end-column="14" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="client.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/asyncrpc/client.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.33468068" vertical-offset="0" max-vertical-offset="5292">
-              <caret line="35" column="25" selection-start-line="35" selection-start-column="25" selection-end-line="35" selection-end-column="25" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="558" max-vertical-offset="5292">
+              <caret line="43" column="18" selection-start-line="43" selection-start-column="18" selection-end-line="43" selection-end-column="18" />
               <folding />
             </state>
           </provider>
@@ -89,7 +97,6 @@
         <option value="$PROJECT_DIR$/asyncrpc/static/css/treeview.css" />
         <option value="$PROJECT_DIR$/asyncrpc/templates/registry.html" />
         <option value="$PROJECT_DIR$/MANIFEST.in" />
-        <option value="$PROJECT_DIR$/setup.py" />
         <option value="$PROJECT_DIR$/asyncrpc/registry.py" />
         <option value="$PROJECT_DIR$/asyncrpc/registry_manager.py" />
         <option value="$PROJECT_DIR$/asyncrpc/base.py" />
@@ -109,6 +116,7 @@
         <option value="$PROJECT_DIR$/asyncrpc/tornadorpc.py" />
         <option value="$PROJECT_DIR$/asyncrpc/templates/api.html" />
         <option value="$PROJECT_DIR$/asyncrpc/__version__.py" />
+        <option value="$PROJECT_DIR$/setup.py" />
       </list>
     </option>
   </component>
@@ -424,9 +432,6 @@
       <option name="PARAMETERS" value="" />
       <method />
     </configuration>
-    <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug">
-      <method />
-    </configuration>
     <configuration default="true" type="tests" factoryName="Unittests">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -448,6 +453,9 @@
       <option name="PUREUNITTEST" value="true" />
       <option name="PARAMS" value="" />
       <option name="USE_PARAM" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug">
       <method />
     </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">
@@ -1272,7 +1280,11 @@
       <created>1407509551030</created>
       <updated>1407509551030</updated>
     </task>
-    <option name="localTasksCounter" value="185" />
+    <task id="LOCAL-00185" summary="asyncrpc version 0.5.3&#10;&#10;- tornadorpc server now displays rpc api on /">
+      <created>1407581920025</created>
+      <updated>1407581920025</updated>
+    </task>
+    <option name="localTasksCounter" value="186" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -1297,14 +1309,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="272" y="82" width="1599" height="1358" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39761093" sideWeight="0.49970606" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39683795" sideWeight="0.49970606" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.329429" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25112396" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25433525" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39833713" sideWeight="0.50029397" order="7" side_tool="true" content_ui="tabs" />
@@ -1336,9 +1348,9 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21961102" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4275256" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4275256" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
     </layout-to-restore>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -1356,7 +1368,6 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="asyncrpc version 0.3.6&#10;&#10;- asyncproxy is in!" />
     <MESSAGE value="asyncrpc version 0.3.7&#10;&#10;- asyncproxy is in!" />
     <MESSAGE value="asyncrpc version 0.3.8&#10;&#10;- tornado multi-process fails" />
     <MESSAGE value="asyncrpc version 0.3.9&#10;&#10;- tornado multi-process still fails" />
@@ -1381,7 +1392,8 @@
     <MESSAGE value="asyncrpc version 0.5.1&#10;&#10;- shutdown is now an event, not a command ... :)" />
     <MESSAGE value="asyncrpc version 0.5.0&#10;&#10;- shutdown is now an event, not a command ... :)" />
     <MESSAGE value="asyncrpc version 0.5.1&#10;&#10;- better logging module (with owner!)" />
-    <option name="LAST_COMMIT_MESSAGE" value="asyncrpc version 0.5.1&#10;&#10;- better logging module (with owner!)" />
+    <MESSAGE value="asyncrpc version 0.5.3&#10;&#10;- tornadorpc server now displays rpc api on /" />
+    <option name="LAST_COMMIT_MESSAGE" value="asyncrpc version 0.5.3&#10;&#10;- tornadorpc server now displays rpc api on /" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -1689,14 +1701,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/setup.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.13874346" vertical-offset="273" max-vertical-offset="1440">
-          <caret line="24" column="31" selection-start-line="24" selection-start-column="31" selection-end-line="24" selection-end-column="31" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/_debug.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.33333334" vertical-offset="302" max-vertical-offset="2808">
@@ -1717,7 +1721,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.50982535" vertical-offset="2053" max-vertical-offset="13248">
           <caret line="150" column="4" selection-start-line="150" selection-start-column="4" selection-end-line="150" selection-end-column="4" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1725,7 +1728,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-11.708333" vertical-offset="2779" max-vertical-offset="4158">
           <caret line="170" column="52" selection-start-line="169" selection-start-column="24" selection-end-line="170" selection-end-column="52" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1751,14 +1753,21 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.029102668" vertical-offset="0" max-vertical-offset="1237">
           <caret line="2" column="18" selection-start-line="2" selection-start-column="18" selection-end-line="2" selection-end-column="18" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/asyncrpc/client.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33468068" vertical-offset="0" max-vertical-offset="5292">
-          <caret line="35" column="25" selection-start-line="35" selection-start-column="25" selection-end-line="35" selection-end-column="25" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="558" max-vertical-offset="5292">
+          <caret line="43" column="18" selection-start-line="43" selection-start-column="18" selection-end-line="43" selection-end-column="18" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/setup.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.38884398" vertical-offset="203" max-vertical-offset="1458">
+          <caret line="38" column="14" selection-start-line="38" selection-start-column="14" selection-end-line="38" selection-end-column="14" />
           <folding />
         </state>
       </provider>
