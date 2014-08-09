@@ -108,17 +108,75 @@
     <!-- Everything else -->
     <div class="container">
         <div class="btn-group" role="toolbar">
-            <!--<button type="button" class="btn btn-default" onclick="reload();">-->
-                <!--Reload-->
-            <!--</button>-->
+            <button type="button" class="btn btn-default" onclick="reload();">
+                Reload
+            </button>
         </div>
         <br>
 
         <div class="panel panel-default">
             <!-- Default panel contents -->
-            <h5>RPC API:</h5>
+            <h5>RPC API for {{ type(instance) }}:</h5>
 
             <!-- Table -->
+            <table class="table table-hover table-condensed">
+                <thead>
+                <tr class="active">
+                    <th>Name</th>
+                    <th>Asynchronous</th>
+                    <th>Arguments</th>
+                    <th>Documentation</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for i, (name, info) in enumerate(api.iteritems()) %}
+                <tr class="{{ 'info' if info[0] else '' }}">
+                    <td>{{ name }}</td>
+                    <td>
+                        {% if info[0] %}
+                        {% if theme == '386' %} yes {% else %} <i class="icon-ok-sign"></i> {% end %}
+                        {% else %}
+                        &nbsp;
+                        {% end %}
+                    </td>
+                    <td>
+                        <a data-toggle="collapse" href="#collapse{{i}}">
+                            ({{ ', '.join(
+
+                            list(info[1].args) +
+                            (['*args'] if info[1].varargs else []) +
+                            (['**kwargs'] if info[1].keywords else [])
+
+                            ) }})
+                        </a>
+
+                        <div id="collapse{{i}}" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                <table class="table-condensed borderless">
+                                    <tbody>
+                                    {% for k,v in info[1]._asdict().iteritems() %}
+                                    <tr>
+                                        <td valign="top">{{ k }}</td>
+                                        <td valign="top">
+                                            {% if theme == '386' %}
+                                            &rArr;
+                                            {% else %}
+                                            <i class="icon-circle-arrow-right"></i>
+                                            {% end %}
+                                        </td>
+                                        <td valign="top">{{ v }}</td>
+                                    </tr>
+                                    {% end %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ info[2] }}</td>
+                </tr>
+                {% end %}
+                </tbody>
+            </table>
 
         </div>
     </div>

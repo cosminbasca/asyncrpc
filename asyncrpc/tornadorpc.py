@@ -1,3 +1,4 @@
+import inspect
 import os
 import traceback
 from tornado.concurrent import Future
@@ -9,7 +10,7 @@ from asyncrpc.server import RpcServer
 from asyncrpc.process import BackgroundRunner
 from asyncrpc.exceptions import current_error, RpcServerNotStartedException
 from asyncrpc.messaging import loads, dumps
-from asyncrpc.client import RpcProxy
+from asyncrpc.client import RpcProxy, exposed_methods
 from asyncrpc.handler import RpcHandler
 from asyncrpc.log import get_logger, set_level
 from tornado.ioloop import IOLoop
@@ -174,16 +175,33 @@ class PingRequestHandler(web.RequestHandler):
         self.write('pong')
 
 
+def decorated_nethods(cls, decorator_name):
+    sourcelines = inspect.getsourcelines(cls)[0]
+    for i, line in enumerate(sourcelines):
+        line = line.strip()
+        if line.split('(')[0].strip() == '@' + decorator_name:  # leaving a bit out
+            next_line = sourcelines[i + 1]
+            name = next_line.split('def')[1].split('(')[0].strip()
+            yield (name)
+
+
 class InstanceViewerHandler(web.RequestHandler):
     def __init__(self, application, request, **kwargs):
         super(InstanceViewerHandler, self).__init__(application, request, **kwargs)
         if not isinstance(application, TornadoRpcApplication):
             raise ValueError('application must be an instance of TornadoRpcApplication')
         self._instance = application.instance
-        self._theme = '386'
+        self._theme = application.theme
 
     def get(self, *args, **kwargs):
-        return self.render("single.html", instance=self._instance, version=str_version, theme=self._theme)
+        async_methods = set(decorated_nethods(self._instance.__class__, "gen.coroutine"))
+        methods = exposed_methods(self._instance, with_private=False)
+        api = {
+            name: ((name in async_methods), inspect.getargspec(method), inspect.getdoc(method), )
+            for name, method in methods.iteritems()
+        }
+        return self.render("api.html", instance=self._instance, api=api, version=str_version, theme=self._theme)
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -191,12 +209,19 @@ class InstanceViewerHandler(web.RequestHandler):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class TornadoRpcApplication(web.Application):
-    def __init__(self, instance, handlers=None, default_host="", transforms=None, wsgi=False, **settings):
+    def __init__(self, instance, handlers=None, default_host="", transforms=None, wsgi=False, theme='386', **settings):
         super(TornadoRpcApplication, self).__init__(handlers=handlers, default_host=default_host, transforms=transforms,
                                                     wsgi=wsgi, **settings)
         self._instance = instance
+        self._theme = theme
 
-    instance = property(fget=lambda self: self._instance)
+    @property
+    def instance(self):
+        return self._instance
+
+    @property
+    def theme(self):
+        return self._theme
 
 
 # ----------------------------------------------------------------------------------------------------------------------
