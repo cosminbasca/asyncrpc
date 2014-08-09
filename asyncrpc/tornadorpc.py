@@ -1,7 +1,10 @@
+import os
 import traceback
 from tornado.concurrent import Future
 from tornado.httpserver import HTTPServer
 from tornado.netutil import bind_sockets
+from tornado.template import Loader
+from asyncrpc.__version__ import str_version
 from asyncrpc.server import RpcServer
 from asyncrpc.process import BackgroundRunner
 from asyncrpc.exceptions import current_error, RpcServerNotStartedException
@@ -171,6 +174,17 @@ class PingRequestHandler(web.RequestHandler):
         self.write('pong')
 
 
+class InstanceViewerHandler(web.RequestHandler):
+    def __init__(self, application, request, **kwargs):
+        super(InstanceViewerHandler, self).__init__(application, request, **kwargs)
+        if not isinstance(application, TornadoRpcApplication):
+            raise ValueError('application must be an instance of TornadoRpcApplication')
+        self._instance = application.instance
+        self._theme = '386'
+
+    def get(self, *args, **kwargs):
+        return self.render("single.html", instance=self._instance, version=str_version, theme=self._theme)
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # http rpc tornado application
@@ -193,10 +207,14 @@ class TornadoRpcApplication(web.Application):
 class TornadoRpcServer(RpcServer):
     def __init__(self, address, instance, multiprocess=False, *args, **kwargs):
         super(TornadoRpcServer, self).__init__(address, *args, **kwargs)
+        settings = {'template_path': os.path.join(os.path.dirname(__file__), 'templates'),
+                    'static_path': os.path.join(os.path.dirname(__file__), 'static'),
+                    'xsrf_cookies': True, }
         app = TornadoRpcApplication(instance, handlers=[
+            web.url(r"/", InstanceViewerHandler),
             web.url(r"/rpc", TornadoRequestHandler),
             web.url(r"/ping", PingRequestHandler),
-        ])
+        ], **settings)
         self._multiprocess = multiprocess
         self._server = HTTPServer(app)
         self._sockets = bind_sockets(address[1], address=address[0])
@@ -228,7 +246,7 @@ class TornadoRpcServer(RpcServer):
         return self._bound_address
 
     def shutdown(self, os_exit=True):
-        IOLoop.instance().stop() # stop the tornado IO loop
+        IOLoop.instance().stop()  # stop the tornado IO loop
         super(TornadoRpcServer, self).shutdown(os_exit=os_exit)
 
 
@@ -266,7 +284,7 @@ class TornadoManager(object):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    set_level('critical')
+    # set_level('critical')
 
     class AClass(object):
         def do_x(self, x=10):
@@ -289,9 +307,11 @@ if __name__ == '__main__':
             return result
 
     instance = AClass()
-    man = TornadoManager(instance)
-    man.start()
-
-    px = man.proxy()
-    print px.do_x(x=20)
-    print px.do_other(40)
+    # man = TornadoManager(instance)
+    # man.start()
+    #
+    # px = man.proxy()
+    # print px.do_x(x=20)
+    # print px.do_other(40)
+    srv = TornadoRpcServer(('127.0.0.1', 8080), instance)
+    srv.start()

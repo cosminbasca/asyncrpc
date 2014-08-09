@@ -1,0 +1,148 @@
+<!doctype html>
+
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>AsyncRpc v{{version}}</title>
+
+    <!-- bootstrap stuff -->
+    <meta name="viewport" content="width=device-width, initial-scale=0.8"/>
+    <link href="/static/bootstrap{{'.386' if theme == '386' else ''}}/css/bootstrap.css" rel="stylesheet"/>
+    <style>
+        .borderless td {
+            border: none;
+        }
+
+        /* Sticky footer styles
+      -------------------------------------------------- */
+
+        html,
+        body {
+            height: 100%;
+            /* The html and body elements cannot have any padding or margin. */
+        }
+
+        /* Wrapper for page content to push down footer */
+        #wrap {
+            min-height: 100%;
+            height: auto !important;
+            height: 100%;
+            /* Negative indent footer by it's height */
+            margin: 0 auto -60px;
+        }
+
+        /* Set the fixed height of the footer here */
+        #push,
+        #footer {
+            height: 60px;
+        }
+
+        #footer {
+            background-color: #f5f5f5;
+        }
+
+        /* Lastly, apply responsive CSS fixes as necessary */
+        @media (max-width: 767px) {
+            #footer {
+                margin-left: -20px;
+                margin-right: -20px;
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+        }
+
+        /* Custom page CSS
+        -------------------------------------------------- */
+        /* Not required for template or sticky footer method. */
+
+        #wrap > .container {
+            padding-top: 60px;
+        }
+
+        .container .credit {
+            margin: 20px 0;
+        }
+
+        code {
+            font-size: 80%;
+        }
+    </style>
+    <!-- Mouse-over tooltip -->
+    <script src="/static/tooltip/tooltip.js"></script>
+    <link href="/static/tooltip/tooltip.css" rel="stylesheet"/>
+    <link href="/static/css/treeview.css" rel="stylesheet"/>
+
+    <script type="application/javascript">
+        function reload() {
+            window.location.href = "http://" + window.location.host + window.location.pathname;
+        }
+    </script>
+</head>
+
+<body>
+<!-- Part 1: Wrap all page content here -->
+<div id="wrap">
+    <!-- Fixed navbar -->
+    <div class="navbar navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container">
+                <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="brand" href="#">AsyncRpc v{{version}}</a>
+
+                <div class="nav-collapse collapse">
+                    <ul class="nav">
+                        <!--<li class="active"><a href="#">Home</a></li>-->
+                        <!--<li><a href="#about">About</a></li>-->
+                        <!--<li><a href="#contact">Contact</a></li>-->
+                    </ul>
+                </div>
+                <!--/.nav-collapse -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Everything else -->
+    <div class="container">
+        <div class="btn-group" role="toolbar">
+            <!--<button type="button" class="btn btn-default" onclick="reload();">-->
+                <!--Reload-->
+            <!--</button>-->
+        </div>
+        <br>
+
+        <div class="panel panel-default">
+            <!-- Default panel contents -->
+            <h5>RPC API:</h5>
+
+            <!-- Table -->
+
+        </div>
+    </div>
+
+    <div class="footer navbar-fixed-bottom">
+        <div class="container">
+            <p class="text-center text-muted credit">
+                AsyncRpc v{{version}} by <a href="mailto:cosmin.basca@gmail.com">Cosmin Basca</a> &copy; University of
+                Zurich.
+            </p>
+        </div>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
+    <script src="/static/bootstrap{{'.386' if theme == '386' else ''}}/js/bootstrap.min.js"></script>
+    {% if theme == '386' %}
+    <script type="application/javascript">
+        _386 = { fastLoad: true };
+    </script>
+    {% end %}
+
+</div>
+</body>
+</html>
