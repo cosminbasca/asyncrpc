@@ -50,7 +50,7 @@ def handle_exception(address, remote_exception_description):
         raise ValueError('remote_exception_description must be a dictionary')
     ex_type = remote_exception_description.get('type', None)
     exception = None
-    message = 'address:{0}, message:{1}\n traceback:{2}'.format(
+    message = 'address:{0}, message:{1}\n{2}'.format(
         address, remote_exception_description['message'], remote_exception_description['traceback'])
     if ex_type:
         _Exception = _EXCEPTIONS.get(ex_type, None)
