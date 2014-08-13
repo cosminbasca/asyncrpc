@@ -8,7 +8,7 @@ from tornado.template import Loader
 from asyncrpc.__version__ import str_version
 from asyncrpc.server import RpcServer
 from asyncrpc.process import BackgroundRunner
-from asyncrpc.exceptions import current_error, RpcServerNotStartedException
+from asyncrpc.exceptions import RpcServerNotStartedException
 from asyncrpc.messaging import loads, dumps
 from asyncrpc.client import RpcProxy, exposed_methods
 from asyncrpc.handler import RpcHandler
@@ -160,7 +160,7 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
                 result = yield result
             error = None
         except Exception, e:
-            error = current_error()
+            error = {'message': e.message, 'type': e.__class__.__name__, 'traceback': traceback.format_exc()}
             result = None
             self._log.error('error: {0}, traceback: \n{1}'.format(e, traceback.format_exc()))
         response = dumps((result, error))

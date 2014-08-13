@@ -3,7 +3,7 @@ from functools import partial
 import inspect
 import traceback
 from asyncrpc.log import get_logger
-from asyncrpc.exceptions import get_exception, ConnectionDownException, ConnectionTimeoutException
+from asyncrpc.exceptions import HTTPRpcNoBodyException, handle_exception
 from asyncrpc.commands import Command
 from werkzeug.exceptions import abort
 from asyncrpc.messaging import dumps, loads
@@ -98,13 +98,12 @@ class RpcProxy(object):
         if status_code == 200:
             content = self._content(response)
             if content is None:
-                raise ConnectionDownException('http response does not have a body', None, traceback.format_exc(),
-                                              self._address)
+                raise HTTPRpcNoBodyException(self._address, traceback.format_exc())
             result, error = loads(content)
             if not error:
                 return result
 
-            raise get_exception(error, self._host)
+            handle_exception(self._address, error)
         else:
             abort(status_code)
 
