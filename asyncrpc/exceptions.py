@@ -30,9 +30,8 @@ class RpcRemoteException(Exception):
 
     def __str__(self):
         return """
-Remote rpc exception: {0}
-remote exception:
-{1}
+Remote RPC exception: {0}
+Remote {1}
         """.format(self.message, self.error).strip()
 
 
@@ -49,19 +48,21 @@ def handle_exception(address, remote_exception_description):
     if not isinstance(remote_exception_description, dict):
         raise ValueError('remote_exception_description must be a dictionary')
     ex_type = remote_exception_description.get('type', None)
-    exception = None
-    message = 'address:{0}, message:{1}\n{2}'.format(
-        address, remote_exception_description['message'], remote_exception_description['traceback'])
+
     if ex_type:
         _Exception = _EXCEPTIONS.get(ex_type, None)
         if _Exception:
+            message = 'address:{0}, message:{1}\n{2}'.format(
+                address, remote_exception_description['message'], remote_exception_description['traceback'])
             exception = _Exception(message)
         elif ex_type == RpcRemoteException.__name__:
             exception = RpcRemoteException(remote_exception_description['message'],
                                            remote_exception_description['traceback'])
         else:
-            exception = Exception(message)
+            exception = RpcRemoteException(remote_exception_description['message'],
+                                           remote_exception_description['traceback'])
     else:
-        exception = Exception(message)
+        exception = RpcRemoteException(remote_exception_description['message'],
+                                       remote_exception_description['traceback'])
     raise exception
 
