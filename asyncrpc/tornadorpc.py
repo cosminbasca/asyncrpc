@@ -8,7 +8,7 @@ from tornado.template import Loader
 from asyncrpc.__version__ import str_version
 from asyncrpc.server import RpcServer
 from asyncrpc.process import BackgroundRunner
-from asyncrpc.exceptions import RpcServerNotStartedException
+from asyncrpc.exceptions import RpcServerNotStartedException, RpcRemoteException
 from asyncrpc.messaging import loads, dumps
 from asyncrpc.client import RpcProxy, exposed_methods
 from asyncrpc.handler import RpcHandler
@@ -75,7 +75,7 @@ class TornadoHttpRpcProxy(RpcProxy):
                                          connect_timeout=300, request_timeout=300)
         except HTTPError as e:
             self._log.error("HTTP Error: {0}".format(e))
-            raise e
+            raise RpcRemoteException(e, traceback.format_exc(), remote_type=HTTPError)
         finally:
             http_client.close()
         return response
@@ -104,7 +104,7 @@ class TornadoAsyncHttpRpcProxy(RpcProxy):
                                                request_timeout=300)
         except HTTPError as e:
             self._log.error("HTTP Error: {0}".format(e))
-            raise e
+            raise RpcRemoteException(e, traceback.format_exc(), remote_type=HTTPError)
         finally:
             http_client.close()
         raise gen.Return(response)

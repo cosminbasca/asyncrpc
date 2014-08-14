@@ -1,3 +1,4 @@
+from inspect import isclass
 import sys
 from traceback import format_exception
 import socket
@@ -27,7 +28,9 @@ class RpcRemoteException(Exception):
     def __init__(self, message, error, remote_type=None):
         super(RpcRemoteException, self).__init__(message.message if isinstance(message, BaseException) else message)
         self.error = error
-        self.remote_type = remote_type
+        self.remote_type = remote_type.__name__ if isclass(remote_type) else remote_type
+        if not self.remote_type and isinstance(message, BaseException):
+            self.remote_type = message.__class__.__name__
 
     def __str__(self):
         return """
