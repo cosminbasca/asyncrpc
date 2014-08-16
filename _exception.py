@@ -51,9 +51,7 @@ def test_remote():
         print my_class.method(10)
         print my_class.error_method(20)
     except Exception, e:
-        print 'ERROR'
         print e
-        print 'type(e) = ',type(e)
     finally:
         del manager
 
@@ -67,9 +65,7 @@ def test_remote():
         print my_nested_class.method(10)
         print my_nested_class.error_method(20)
     except Exception, e:
-        print 'ERROR'
         print e
-        print 'type(e) = ',type(e)
     finally:
         del nested_manager
 

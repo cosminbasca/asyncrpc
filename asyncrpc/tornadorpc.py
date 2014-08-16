@@ -161,7 +161,7 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
             error = None
         except Exception, e:
             error = {'message': e.message, 'type': e.__class__.__name__, 'traceback': traceback.format_exc(),
-                     'address': self.request.connection.address}
+                     'address': '{0}://{1}'.format(self.request.protocol, self.request.host)}
             result = None
             self._log.error('error: {0}, traceback: \n{1}'.format(e, traceback.format_exc()))
         response = dumps((result, error))

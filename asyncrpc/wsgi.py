@@ -136,7 +136,7 @@ class RpcRegistryMiddleware(RpcHandler):
             error = None
         except Exception, e:
             error = {'message': e.message, 'type': e.__class__.__name__, 'traceback': traceback.format_exc(),
-                     'address': request.remote_addr}
+                     'address': request.host_url}
             result = None
             self._log.error('error: {0}, traceback: \n{1}'.format(e, traceback.format_exc()))
 

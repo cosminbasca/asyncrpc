@@ -84,6 +84,7 @@ class BackgroundRunner(object):
                     shutdown_event.wait()
                     self._log.debug('server shutdown event received')
                     server.shutdown()
+
                 stopper = Thread(target=wait_for_shutdown)
                 stopper.daemon = True
                 stopper.start()
@@ -100,7 +101,8 @@ class BackgroundRunner(object):
             raise InvalidStateException('server starter has already been initialized')
 
         reader, writer = Pipe(duplex=False)
-        self._process = Process(target=self._background_start, args=(writer, self._shutdown_event,) + args, kwargs=kwargs)
+        self._process = Process(target=self._background_start, args=(writer, self._shutdown_event,) + args,
+                                kwargs=kwargs)
         self._process.name = type(self).__name__ + '-' + self._process.name
         self._log.debug('starting background process: {0}'.format(self._process.name))
         self._process.start()
