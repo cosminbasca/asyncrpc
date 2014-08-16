@@ -55,7 +55,7 @@ def test_remote():
         print e
         print 'type(e) = ',type(e)
     finally:
-        manager.stop()
+        del manager
 
     print '---------------------------------------------------------------------------------------------'
 
@@ -71,7 +71,7 @@ def test_remote():
         print e
         print 'type(e) = ',type(e)
     finally:
-        nested_manager.stop()
+        del nested_manager
 
 
 

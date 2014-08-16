@@ -119,8 +119,8 @@ class RpcRegistryMiddleware(RpcHandler):
         return instance
 
     def __call__(self, environ, start_response):
+        request = Request(environ)
         try:
-            request = Request(environ)
             object_id, name, args, kwargs = loads(request.get_data(cache=True))
             if name.startswith('#'):
                 command_handler = self._handlers.get(name, None)
@@ -135,7 +135,8 @@ class RpcRegistryMiddleware(RpcHandler):
                 result = self.rpc(object_id)(name, *args, **kwargs)
             error = None
         except Exception, e:
-            error = {'message': e.message, 'type': e.__class__.__name__, 'traceback': traceback.format_exc()}
+            error = {'message': e.message, 'type': e.__class__.__name__, 'traceback': traceback.format_exc(),
+                     'address': request.remote_addr}
             result = None
             self._log.error('error: {0}, traceback: \n{1}'.format(e, traceback.format_exc()))
 
