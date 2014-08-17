@@ -1,6 +1,7 @@
 from multiprocessing import Pipe, Process, Event
 from multiprocessing.managers import State
 from multiprocessing.util import Finalize
+import os
 from threading import Thread
 import socket
 import errno
@@ -83,16 +84,17 @@ class BackgroundRunner(object):
                     self._log.debug('started server stopper thread')
                     shutdown_event.wait()
                     self._log.debug('server shutdown event received')
-                    server.close() # or shutdown ?
-                    self._log.debug('server shutdown successfully')
+                    server.stop()
+                    os._exit(0)
 
                 stopper = Thread(target=wait_for_shutdown)
                 stopper.daemon = True
                 stopper.start()
 
                 server.start()
+                self._log.debug('server shutdown successfully')
             else:
-                writer.close()
+                writer.stop()
         except Exception, err:
             self._log.error(
                 'Rpc server exited. {0}'.format('Exception on exit: {0}'.format(err if err.message else '')))

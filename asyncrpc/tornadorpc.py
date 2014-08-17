@@ -253,7 +253,7 @@ class TornadoRpcServer(RpcServer):
             self._server.add_sockets(self._sockets)
         self._bound_address = self._sockets[0].getsockname()
 
-    def close(self):
+    def stop(self):
         IOLoop.instance().stop()
 
     def server_forever(self, *args, **kwargs):
@@ -269,16 +269,16 @@ class TornadoRpcServer(RpcServer):
             self._log.error("exception in serve_forever: {0}".format(e))
         finally:
             self._log.info('closing the server ...')
-            self.close()
+            self.stop()
             self._log.info('server shutdown complete')
 
     @property
     def bound_address(self):
         return self._bound_address
 
-    def shutdown(self, os_exit=True):
+    def stop(self):
         IOLoop.instance().stop()  # stop the tornado IO loop
-        super(TornadoRpcServer, self).shutdown(os_exit=os_exit)
+        super(TornadoRpcServer, self).stop()
 
 
 class TornadoManager(object):

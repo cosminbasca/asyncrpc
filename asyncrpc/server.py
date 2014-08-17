@@ -47,7 +47,7 @@ class RpcServer(object):
         return self._address
 
     @abstractmethod
-    def close(self):
+    def stop(self):
         pass
 
     @abstractproperty
@@ -60,15 +60,6 @@ class RpcServer(object):
 
     def start(self, *args, **kwargs):
         self.server_forever(*args, **kwargs)
-
-    def shutdown(self, os_exit=True):
-        try:
-            self.close()
-        finally:
-            if os_exit:
-                os._exit(0)
-            else:
-                sys.exit(0)
 
     @staticmethod
     def is_online(address, method='get'):
@@ -118,7 +109,7 @@ class CherrypyWsgiRpcServer(WsgiRpcServer):
         self._server = CherryPyWSGIServer(address, wsgi_app)
         self._bound_address = None
 
-    def close(self):
+    def stop(self):
         self._server.stop()
 
     def server_forever(self, *args, **kwargs):
@@ -130,7 +121,7 @@ class CherrypyWsgiRpcServer(WsgiRpcServer):
             self._log.error("exception in serve_forever: {0}".format(e))
         finally:
             self._log.info('closing the server ...')
-            self.close()
+            self.stop()
             self._log.info('server shutdown complete')
 
     @property
@@ -156,7 +147,7 @@ class TornadoWsgiRpcServer(WsgiRpcServer):
         self._server.add_sockets(self._sockets)
         self._bound_address = self._sockets[0].getsockname()  # get the bound address of the first socket ...
 
-    def close(self):
+    def stop(self):
         ioloop.IOLoop.instance().stop()
 
     def server_forever(self, *args, **kwargs):
@@ -168,7 +159,7 @@ class TornadoWsgiRpcServer(WsgiRpcServer):
             self._log.error("exception in serve_forever: {0}".format(e))
         finally:
             self._log.info('closing the server ...')
-            self.close()
+            self.stop()
             self._log.info('server shutdown complete')
 
     @property

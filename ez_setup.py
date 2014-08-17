@@ -46,7 +46,7 @@ def _install(tarball, install_args=()):
         os.chdir(tmpdir)
         tar = tarfile.open(tarball)
         _extractall(tar)
-        tar.close()
+        tar.stop()
 
         # going in the directory
         subdir = os.path.join(tmpdir, os.listdir(tmpdir)[0])
@@ -74,7 +74,7 @@ def _build_egg(egg, tarball, to_dir):
         os.chdir(tmpdir)
         tar = tarfile.open(tarball)
         _extractall(tar)
-        tar.close()
+        tar.stop()
 
         # going in the directory
         subdir = os.path.join(tmpdir, os.listdir(tmpdir)[0])
@@ -239,7 +239,7 @@ def download_file_insecure(url, target):
         dst.write(data)
     finally:
         if src:
-            src.close()
+            src.stop()
         if dst:
             dst.close()
 

@@ -1,4 +1,5 @@
 from asyncrpc import AsyncManager, set_level
+import weakref
 
 __author__ = 'basca'
 
@@ -29,6 +30,8 @@ class MyNestedClass(object):
         self._my_class = self._manager.MyClass()
         # print self._manager._registry
 
+    def finalize(self):
+        self._manager.stop()
 
     def method(self, x):
         return self._my_class.method(x)
@@ -63,13 +66,14 @@ def test_remote():
     nested_manager.start()
     # print nested_manager._registry
 
+    my_nested_class = nested_manager.MyNestedClass()
     try:
-        my_nested_class = nested_manager.MyNestedClass()
         print my_nested_class.method(10)
         print my_nested_class.error_method(20)
     except Exception, e:
         print e
     finally:
+        my_nested_class.finalize()
         del nested_manager
 
 
