@@ -37,7 +37,8 @@ class RpcRemoteException(Exception):
         return """
 Remote RPC exception on {0}: {1}
 {2}Remote {3}
-        """.format(self.address, self.message, '' if not self.remote_type else 'Remote Exception: {0}\n'.format(self.remote_type),
+        """.format(self.address, self.message,
+                   '' if not self.remote_type else 'Remote Exception: {0}\n'.format(self.remote_type),
                    self.error).strip()
 
 
@@ -50,7 +51,7 @@ class HTTPRpcNoBodyException(RpcRemoteException):
         super(HTTPRpcNoBodyException, self).__init__("HTTP request body is empty", address, error)
 
 
-def handle_exception(address, remote_exception_description):
+def handle_exception(remote_exception_description):
     if not isinstance(remote_exception_description, dict):
         raise ValueError('remote_exception_description must be a dictionary')
     remote_type = remote_exception_description.get('type', None)
@@ -60,9 +61,7 @@ def handle_exception(address, remote_exception_description):
             remote_exception_description['address'], remote_exception_description['message'],
             remote_exception_description['traceback'])
         raise _EXCEPTIONS[remote_type](message)
-    raise RpcRemoteException(remote_exception_description['message'],
-                             remote_exception_description['address'],
-                             remote_exception_description['traceback'],
-                             remote_type=remote_type)
+    raise RpcRemoteException(remote_exception_description['message'], remote_exception_description['address'],
+                             remote_exception_description['traceback'], remote_type=remote_type)
 
 

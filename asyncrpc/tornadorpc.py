@@ -8,7 +8,7 @@ from tornado.template import Loader
 from asyncrpc.__version__ import str_version
 from asyncrpc.server import RpcServer
 from asyncrpc.process import BackgroundRunner
-from asyncrpc.exceptions import RpcServerNotStartedException, RpcRemoteException
+from asyncrpc.exceptions import RpcServerNotStartedException, RpcRemoteException, handle_exception
 from asyncrpc.messaging import loads, dumps
 from asyncrpc.client import RpcProxy, exposed_methods
 from asyncrpc.handler import RpcHandler
@@ -70,12 +70,14 @@ class TornadoHttpRpcProxy(RpcProxy):
         :return: the HTTP server response
         """
         http_client = HTTPClient()
+        response = ('', None)
         try:
             response = http_client.fetch(self.url, body=message, method='POST',
                                          connect_timeout=300, request_timeout=300)
         except HTTPError as e:
             self._log.error("HTTP Error: {0}".format(e))
-            raise RpcRemoteException(e, traceback.format_exc(), remote_type=HTTPError)
+            handle_exception({'message': e.message, 'type': e.__class__.__name__, 'traceback': traceback.format_exc(),
+                              'address': self.url})
         finally:
             http_client.close()
         return response
@@ -99,12 +101,14 @@ class TornadoAsyncHttpRpcProxy(RpcProxy):
     @gen.coroutine
     def _http_call(self, message):
         http_client = AsyncHTTPClient()
+        response = ('', None)
         try:
             response = yield http_client.fetch(self.url, body=message, method='POST', connect_timeout=300,
                                                request_timeout=300)
         except HTTPError as e:
             self._log.error("HTTP Error: {0}".format(e))
-            raise RpcRemoteException(e, traceback.format_exc(), remote_type=HTTPError)
+            handle_exception({'message': e.message, 'type': e.__class__.__name__, 'traceback': traceback.format_exc(),
+                              'address': self.url})
         finally:
             http_client.close()
         raise gen.Return(response)
@@ -304,41 +308,3 @@ class TornadoManager(object):
     def bound_address(self):
         return self._runner.bound_address
 
-
-# ----------------------------------------------------------------------------------------------------------------------
-#
-# testing
-#
-# ----------------------------------------------------------------------------------------------------------------------
-if __name__ == '__main__':
-    # set_level('critical')
-
-    class AClass(object):
-        def do_x(self, x=10):
-            return x
-
-        def do_other(self, y):
-            return self.do_x() * y
-
-        @gen.coroutine
-        def do_async(self, remote_addr, x, y):
-            value1 = yield async_call(remote_addr).do_x(x)
-            # value2 = yield async_call(remote_addr).do_x(y)
-            # result = value1 + value2
-            result = value1 + y
-            raise gen.Return(result)
-
-        def do_sync(self, remote_addr, x, y):
-            value1 = call(remote_addr).do_x(x)
-            result = value1 + y
-            return result
-
-    instance = AClass()
-    # man = TornadoManager(instance)
-    # man.start()
-    #
-    # px = man.proxy()
-    # print px.do_x(x=20)
-    # print px.do_other(40)
-    srv = TornadoRpcServer(('127.0.0.1', 8080), instance)
-    srv.start()

@@ -103,7 +103,7 @@ class RpcProxy(object):
             if not error:
                 return result
 
-            handle_exception(self._address, error)
+            handle_exception(error)
         else:
             abort(status_code)
 
