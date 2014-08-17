@@ -283,17 +283,3 @@ def create(address, typeid, slots=None, async=False, *args, **kwargs):
 def dispatch(address, command):
     return ProxyFactory.instance().dispatch(address, command)
 
-
-if __name__ == '__main__':
-    proxy = create(('127.0.0.1', 8080), 'MyClass', counter=100, async=True)
-    # proxy = create(('127.0.0.1', 8080), 'MyClass', counter=100, async=False)
-    print proxy
-    print proxy.current_counter()
-    proxy.add(value=30)
-    print proxy.current_counter()
-    # proxy.release()
-    # del proxy
-
-    # dispatch(('127.0.0.1', 8080), Command.DEBUG)
-    # dispatch(('127.0.0.1', 8080), Command.CLEAR)
-    # dispatch(('127.0.0.1', 8080), Command.DEBUG)
