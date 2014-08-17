@@ -46,19 +46,19 @@ MyNestedManager.register('MyNestedClass', MyNestedClass)
 
 
 def test_remote():
-    manager = MyManager()
-    manager.start()
-
-    try:
-        my_class = manager.MyClass()
-        print my_class.method(10)
-        print my_class.error_method(20)
-    except Exception, e:
-        print e
-    finally:
-        del manager
-
-    print '---------------------------------------------------------------------------------------------'
+    # manager = MyManager()
+    # manager.start()
+    #
+    # try:
+    #     my_class = manager.MyClass()
+    #     print my_class.method(10)
+    #     print my_class.error_method(20)
+    # except Exception, e:
+    #     print e
+    # finally:
+    #     del manager
+    #
+    # print '---------------------------------------------------------------------------------------------'
 
     nested_manager = MyNestedManager()
     nested_manager.start()
