@@ -83,7 +83,8 @@ class BackgroundRunner(object):
                     self._log.debug('started server stopper thread')
                     shutdown_event.wait()
                     self._log.debug('server shutdown event received')
-                    server.shutdown()
+                    server.close() # or shutdown ?
+                    self._log.debug('server shutdown successfully')
 
                 stopper = Thread(target=wait_for_shutdown)
                 stopper.daemon = True

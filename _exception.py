@@ -75,5 +75,6 @@ def test_remote():
 
 
 if __name__ == '__main__':
+    # import _hanging_threads
     set_level('critical')
     test_remote()
