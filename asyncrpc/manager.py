@@ -17,6 +17,9 @@ class AsyncManager(object):
 
     @classmethod
     def register(cls, type_id, initialiser, with_private=False):
+        if '_registry' not in cls.__dict__:
+            cls._registry = cls._registry.copy()
+
         cls._registry.set(type_id, initialiser)
         slots = exposed_methods(initialiser, with_private=with_private).keys()
 
