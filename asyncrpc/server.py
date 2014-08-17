@@ -98,6 +98,8 @@ class WsgiRpcServer(RpcServer):
     def _init_wsgi_server(self, address, wsgi_app, *args, **kwargs):
         pass
 
+    def stop(self):
+        self._registry.clear()
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -110,6 +112,7 @@ class CherrypyWsgiRpcServer(WsgiRpcServer):
         self._bound_address = None
 
     def stop(self):
+        super(CherrypyWsgiRpcServer, self).stop()
         self._server.stop()
 
     def server_forever(self, *args, **kwargs):
@@ -148,6 +151,7 @@ class TornadoWsgiRpcServer(WsgiRpcServer):
         self._bound_address = self._sockets[0].getsockname()  # get the bound address of the first socket ...
 
     def stop(self):
+        super(TornadoWsgiRpcServer, self).stop()
         ioloop.IOLoop.instance().stop()
 
     def server_forever(self, *args, **kwargs):

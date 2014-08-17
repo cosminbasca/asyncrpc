@@ -73,7 +73,7 @@ def test_remote():
     except Exception, e:
         print e
     finally:
-        my_nested_class.finalize()
+        # my_nested_class.finalize()
         del nested_manager
 
 
