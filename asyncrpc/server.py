@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
+from collections import OrderedDict
 import os
 import sys
 from tornado.netutil import bind_sockets
@@ -86,15 +87,14 @@ class RpcServer(object):
 class WsgiRpcServer(RpcServer):
     __metaclass__ = ABCMeta
 
-    def __init__(self, address, registry, debug=True, *args, **kwargs):
-        if isinstance(registry, dict):
-            registry = Registry(**registry)
-        if not isinstance(registry, Registry):
-            raise ValueError('registry must be a Registry')
+    def __init__(self, address, types_registry, debug=True, *args, **kwargs):
+        if not isinstance(types_registry, (dict, OrderedDict)):
+            raise ValueError('types_registry must be a dict or OrderDict')
         super(WsgiRpcServer, self).__init__(address, *args, **kwargs)
 
-        registry_app = RpcRegistryMiddleware(registry)
-        registry_viewer = RpcRegistryViewer(registry, with_static=True)
+        self._registry = Registry()
+        registry_app = RpcRegistryMiddleware(types_registry, self._registry)
+        registry_viewer = RpcRegistryViewer(types_registry, self._registry, with_static=True)
         if debug:
             registry_viewer = DebuggedApplication(registry_viewer, evalex=True)
         wsgi_app = DispatcherMiddleware(registry_viewer, {

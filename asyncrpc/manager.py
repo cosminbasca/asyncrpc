@@ -1,7 +1,7 @@
+from collections import OrderedDict
 from asyncrpc.exceptions import RpcServerNotStartedException
 from asyncrpc.log import get_logger
 from asyncrpc.client import create, exposed_methods
-from asyncrpc.registry import Registry
 from asyncrpc.process import BackgroundRunner
 from asyncrpc.server import CherrypyWsgiRpcServer, TornadoWsgiRpcServer
 
@@ -13,14 +13,14 @@ __author__ = 'basca'
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class AsyncManager(object):
-    _registry = Registry()
+    _registry = OrderedDict()
 
     @classmethod
     def register(cls, type_id, initialiser, with_private=False):
         if '_registry' not in cls.__dict__:
             cls._registry = cls._registry.copy()
 
-        cls._registry.set(type_id, initialiser)
+        cls._registry[type_id] = initialiser
         slots = exposed_methods(initialiser, with_private=with_private).keys()
 
         def proxy_creator(self, *args, **kwargs):

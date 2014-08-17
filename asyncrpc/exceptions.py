@@ -16,6 +16,10 @@ class InvalidInstanceId(Exception):
     pass
 
 
+class InvalidTypeId(Exception):
+    pass
+
+
 class InvalidStateException(Exception):
     pass
 

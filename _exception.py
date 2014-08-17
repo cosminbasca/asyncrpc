@@ -27,8 +27,7 @@ class MyNestedClass(object):
         self._manager = MyManager()
         self._manager.start()
         self._my_class = self._manager.MyClass()
-        print 'INSIDE '
-        print self._manager._registry.items_dict
+        # print self._manager._registry
 
 
     def method(self, x):
@@ -62,7 +61,7 @@ def test_remote():
 
     nested_manager = MyNestedManager()
     nested_manager.start()
-    print nested_manager._registry.items_dict
+    # print nested_manager._registry
 
     try:
         my_nested_class = nested_manager.MyNestedClass()

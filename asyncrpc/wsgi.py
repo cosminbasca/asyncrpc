@@ -1,9 +1,10 @@
+from collections import OrderedDict
 import os
 from threading import RLock
 import traceback
 from werkzeug.wsgi import SharedDataMiddleware
 from asyncrpc.commands import Command
-from asyncrpc.exceptions import CommandNotFoundException, InvalidInstanceId, RpcRemoteException
+from asyncrpc.exceptions import CommandNotFoundException, InvalidInstanceId, RpcRemoteException, InvalidTypeId
 from asyncrpc.handler import RpcHandler
 from asyncrpc.log import get_logger
 from asyncrpc.__version__ import str_version
@@ -25,15 +26,20 @@ def ping_middleware(environ, start_response):
     response = Response("pong", mimetype='text/plain')
     return response(environ, start_response)
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # WSGI RPC Registry viewer - a wsgi app
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class RpcRegistryViewer(object):
-    def __init__(self, registry, with_static=True, theme='386'):
+    def __init__(self, types_registry, registry, with_static=True, theme='386'):
+        if not isinstance(types_registry, (dict, OrderedDict)):
+            raise ValueError('types_registry must be a dict or an OrderedDict')
         if not isinstance(registry, Registry):
             raise ValueError('registry must be a Registry')
+
+        self._types_registry = types_registry
         self._registry = registry
         self._with_static = with_static
         self._theme = theme
@@ -48,9 +54,9 @@ class RpcRegistryViewer(object):
         request = Request(environ)
         if 'clearAll' in request.args.keys():
             self._registry.delete_instances()
-        response = Response(self.render_template('registry.html', version=str_version,
-                                 registry_items=self._registry.explained_instances(),
-                                 isclass=isclass, theme=self._theme), mimetype='text/html')
+        response = Response(self.render_template('registry.html', version=str_version, classes=self._types_registry,
+                                                 instances=self._registry.explained_instances(),
+                                                 isclass=isclass, theme=self._theme), mimetype='text/html')
         return response(environ, start_response)
 
     def __call__(self, environ, start_response):
@@ -72,25 +78,30 @@ class RpcRegistryMiddleware(RpcHandler):
     wsgi application that handles rpc calls to multiple registered objects
     """
 
-    def __init__(self, registry):
+    def __init__(self, types_registry, registry):
+        if not isinstance(types_registry, (dict, OrderedDict)):
+            raise ValueError('types_registry must be a dict or an OrderedDict')
         if not isinstance(registry, Registry):
             raise ValueError('registry must be a Registry')
 
+        self._types_registry = types_registry
         self._registry = registry
         self._mutex = RLock()
         self._log = get_logger(owner=self)
 
         self._handlers = {
-            Command.NEW: self._handler_init,
+            Command.NEW: self._handler_new,
             Command.RELEASE: self._handler_release,
             Command.CLEAR: self._handler_clear,
             Command.CLEAR_ALL: self._handler_clear_all,
         }
 
-    def _handler_init(self, type_id, name, *args, **kwargs):
+    def _handler_new(self, type_id, name, *args, **kwargs):
         try:
             self._mutex.acquire()
-            _class = self._registry.get(type_id)
+            _class = self._types_registry.get(type_id, None)
+            if not _class:
+                raise InvalidTypeId('could not find {0} in registry, instance could not be created'.format(type_id))
             instance = _class(*args, **kwargs)
             instance_id = hash(instance)
             self._registry.set(instance_id, instance)

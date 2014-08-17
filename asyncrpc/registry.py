@@ -19,8 +19,7 @@ class Registry(object):
             attributes = getmembers(obj, predicate=lambda a: not (isroutine(a)))
             return [attr for attr in attributes if not attr[0].startswith('__')]
 
-        return [(oid, instance if isclass(instance) else (type(instance), _instance_members(instance)))
-                for oid, instance in self._data.iteritems()]
+        return [(oid, (type(instance), _instance_members(instance))) for oid, instance in self._data.iteritems()]
 
     def clear(self):
         self._data.clear()
