@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod
 from functools import partial
 import inspect
 import traceback
+from geventhttpclient import HTTPClient
 from asyncrpc.log import get_logger
 from asyncrpc.exceptions import HTTPRpcNoBodyException, handle_exception
 from asyncrpc.commands import Command
@@ -140,13 +141,28 @@ class SingleInstanceProxy(RpcProxy):
 # Requests proxy implementation
 #
 # ----------------------------------------------------------------------------------------------------------------------
-class AsyncSingleInstanceProxy(SingleInstanceProxy):
+# class AsyncSingleInstanceProxy(SingleInstanceProxy):
+#     def __init__(self, address, slots=None, **kwargs):
+#         super(AsyncSingleInstanceProxy, self).__init__(address, slots=slots, **kwargs)
+#         import grequests
+#
+#         self._gpost = partial(grequests.AsyncRequest, 'POST', self.url)
+#         self._post = lambda data=None: self._gpost(data=data).send()
+
+class AsyncSingleInstanceProxy(RpcProxy):
     def __init__(self, address, slots=None, **kwargs):
         super(AsyncSingleInstanceProxy, self).__init__(address, slots=slots, **kwargs)
-        import grequests
+        self._post = partial(HTTPClient(self._address[0], port=self._address[1]).post, self._url_path)
 
-        self._gpost = partial(grequests.AsyncRequest, 'POST', self.url)
-        self._post = lambda data=None: self._gpost(data=data).send()
+    @retry(retry_on_exception=_if_connection_error, stop_max_attempt_number=_MAX_RETRIES)
+    def _http_call(self, message):
+        return self._post(body=message)
+
+    def _content(self, response):
+        return response.read()
+
+    def _status_code(self, response):
+        return response.status_code
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -211,13 +227,28 @@ class Proxy(RegistryRpcProxy):
 # Requests proxy implementation
 #
 # ----------------------------------------------------------------------------------------------------------------------
-class AsyncProxy(Proxy):
+# class AsyncProxy(Proxy):
+#     def __init__(self, instance_id, address, slots=None, owner=True, **kwargs):
+#         super(AsyncProxy, self).__init__(instance_id, address, slots=slots, owner=owner, **kwargs)
+#         import grequests
+#
+#         self._gpost = partial(grequests.AsyncRequest, 'POST', self.url)
+#         self._post = lambda data=None: self._gpost(data=data).send()
+
+class AsyncProxy(RegistryRpcProxy):
     def __init__(self, instance_id, address, slots=None, owner=True, **kwargs):
         super(AsyncProxy, self).__init__(instance_id, address, slots=slots, owner=owner, **kwargs)
-        import grequests
+        self._post = partial(HTTPClient(self._address[0], port=self._address[1]).post, self._url_path[1:])
 
-        self._gpost = partial(grequests.AsyncRequest, 'POST', self.url)
-        self._post = lambda data=None: self._gpost(data=data).send()
+    @retry(retry_on_exception=_if_connection_error, stop_max_attempt_number=_MAX_RETRIES)
+    def _http_call(self, message):
+        return self._post(body=message)
+
+    def _content(self, response):
+        return response.read()
+
+    def _status_code(self, response):
+        return response.status_code
 
 
 # ----------------------------------------------------------------------------------------------------------------------
