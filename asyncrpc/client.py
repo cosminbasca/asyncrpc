@@ -141,14 +141,6 @@ class SingleInstanceProxy(RpcProxy):
 # Requests proxy implementation
 #
 # ----------------------------------------------------------------------------------------------------------------------
-# class AsyncSingleInstanceProxy(SingleInstanceProxy):
-#     def __init__(self, address, slots=None, **kwargs):
-#         super(AsyncSingleInstanceProxy, self).__init__(address, slots=slots, **kwargs)
-#         import grequests
-#
-#         self._gpost = partial(grequests.AsyncRequest, 'POST', self.url)
-#         self._post = lambda data=None: self._gpost(data=data).send()
-
 class AsyncSingleInstanceProxy(RpcProxy):
     def __init__(self, address, slots=None, **kwargs):
         super(AsyncSingleInstanceProxy, self).__init__(address, slots=slots, **kwargs)
@@ -227,14 +219,6 @@ class Proxy(RegistryRpcProxy):
 # Requests proxy implementation
 #
 # ----------------------------------------------------------------------------------------------------------------------
-# class AsyncProxy(Proxy):
-#     def __init__(self, instance_id, address, slots=None, owner=True, **kwargs):
-#         super(AsyncProxy, self).__init__(instance_id, address, slots=slots, owner=owner, **kwargs)
-#         import grequests
-#
-#         self._gpost = partial(grequests.AsyncRequest, 'POST', self.url)
-#         self._post = lambda data=None: self._gpost(data=data).send()
-
 class AsyncProxy(RegistryRpcProxy):
     def __init__(self, instance_id, address, slots=None, owner=True, **kwargs):
         super(AsyncProxy, self).__init__(instance_id, address, slots=slots, owner=owner, **kwargs)
