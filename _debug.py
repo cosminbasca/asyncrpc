@@ -8,7 +8,7 @@ import numpy as np
 from asyncrpc.client import hidden
 from asyncrpc.manager import AsyncManager
 from asyncrpc.log import set_level
-from asyncrpc.tornadorpc import async_call, call
+from asyncrpc.tornadorpc import async_call, call, TornadoRpcServer
 
 set_level('info', name='asyncrpc')
 
@@ -139,11 +139,46 @@ def test_tornadorpc(async=False):
     print 'DID: {0} calls / second, total calls: {1}'.format(ncalls, calls)
 
 
+def tornadorpc_server():
+    class AClass(object):
+        def simple_method(self):
+            """
+            this method has no arguments
+            :return: None
+            """
+            return None
+
+        def varargs_method(self, x, y, *args):
+            """
+            this method does smth
+            :param x: x value
+            :param y: y value
+            :param args: other args
+            :return: None
+            """
+            return None
+
+        def kwargs_method(self, a, b, val=None, val2=10, **kwargs):
+            """
+            more complex
+            :param a: val a
+            :param b: val b
+            :param val: val val
+            :param val2: val val2
+            :param kwargs: other
+            :return: None
+            """
+            return None
+
+    aclass = AClass()
+    server = TornadoRpcServer(('127.0.0.1', 8080), aclass, theme=None)
+    server.server_forever()
+
 if __name__ == '__main__':
     pass
     # cherrypy ...
     # no workload
-    bench_gevent_man(async=False, workload=False) # DID: 414 calls / second, total calls: 10000
+    # bench_gevent_man(async=False, workload=False) # DID: 414 calls / second, total calls: 10000
     # bench_gevent_man(async=True, workload=False)  # DID: 384 calls / second, total calls: 10000
 
     # with workload
@@ -159,3 +194,4 @@ if __name__ == '__main__':
 
     # test_tornadorpc(async=False)      # DID: 153 calls / second, total calls: 10000
     # test_tornadorpc(async=True)         # DID: 207 calls / second, total calls: 10000
+    tornadorpc_server()

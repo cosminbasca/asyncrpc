@@ -76,6 +76,20 @@
         function reload() {
             window.location.href = "http://" + window.location.host + window.location.pathname;
         }
+
+        var themes = {
+            "default": "/static/bootstrap/css/bootstrap.css",
+            "386": "/static/bootstrap.386/css/bootstrap.css"
+        };
+
+        $(function () {
+            var themesheet = $('<link href="' + themes['default'] + '" rel="stylesheet" />');
+            themesheet.appendTo('head');
+            $('.theme-link').click(function () {
+                var themeurl = themes[$(this).attr('data-theme')];
+                themesheet.attr('href', themeurl);
+            });
+        });
     </script>
 </head>
 
@@ -94,10 +108,14 @@
                 <a class="brand" href="#">AsyncRpc v{{version}}</a>
 
                 <div class="nav-collapse collapse">
-                    <ul class="nav">
-                        <!--<li class="active"><a href="#">Home</a></li>-->
-                        <!--<li><a href="#about">About</a></li>-->
-                        <!--<li><a href="#contact">Contact</a></li>-->
+                    <ul class="nav navbar-nav">
+                        <li class="dropdown">
+                            <!--<a href="#" class="dropdown-toggle" data-toggle="dropdown">Themes <b class="caret"></b></a>-->
+                            <!--<ul class="dropdown-menu">-->
+                                <!--<li><a href="#" data-theme="default" class="theme-link">Default</a></li>-->
+                                <!--<li><a href="#" data-theme="386" class="theme-link">386</a></li>-->
+                            <!--</ul>-->
+                        </li>
                     </ul>
                 </div>
                 <!--/.nav-collapse -->
@@ -108,15 +126,15 @@
     <!-- Everything else -->
     <div class="container">
         <div class="btn-group" role="toolbar">
-            <button type="button" class="btn btn-default" onclick="reload();">
-                Reload
-            </button>
+            <!--<button type="button" class="btn btn-default" onclick="reload();">-->
+            <!--Reload-->
+            <!--</button>-->
         </div>
         <br>
 
         <div class="panel panel-default">
             <!-- Default panel contents -->
-            <h5>RPC API for {{ type(instance) }}:</h5>
+            <h4>RPC API for {{ str(type(instance))[1:-1].replace("'", "") }} : </h4>
 
             <!-- Table -->
             <table class="table table-hover table-condensed">
@@ -131,23 +149,27 @@
                 <tbody>
                 {% for i, (name, info) in enumerate(api.iteritems()) %}
                 <tr class="{{ 'info' if info[0] else '' }}">
-                    <td>{{ name }}</td>
+                    <td><span class="label label-info">{{ name }}</span></td>
                     <td>
                         {% if info[0] %}
-                        {% if theme == '386' %} yes {% else %} <i class="icon-ok-sign"></i> {% end %}
+                        {% if theme == '386' %}
+                        yes
                         {% else %}
-                        &nbsp;
+                        <i class="icon-check"></i>
+                        {% end %}
+                        {% else %}
+                        <i>no</i>
                         {% end %}
                     </td>
                     <td>
                         <a data-toggle="collapse" href="#collapse{{i}}">
-                            ({{ ', '.join(
+                            {{ ', '.join(
 
-                            list(info[1].args) +
+                            list(info[1].args)[1:] +
                             (['*args'] if info[1].varargs else []) +
                             (['**kwargs'] if info[1].keywords else [])
 
-                            ) }})
+                            ) }}
                         </a>
 
                         <div id="collapse{{i}}" class="panel-collapse collapse">
@@ -155,24 +177,26 @@
                                 <table class="table-condensed borderless">
                                     <tbody>
                                     {% for k,v in info[1]._asdict().iteritems() %}
+                                    {% if v %}
                                     <tr>
                                         <td valign="top">{{ k }}</td>
                                         <td valign="top">
                                             {% if theme == '386' %}
                                             &rArr;
                                             {% else %}
-                                            <i class="icon-circle-arrow-right"></i>
+                                            <i class="icon-arrow-right"></i>
                                             {% end %}
                                         </td>
-                                        <td valign="top">{{ v }}</td>
+                                        <td valign="top">{{ v[1:] if k=='args' else v }}</td>
                                     </tr>
+                                    {% end %}
                                     {% end %}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </td>
-                    <td>{{ info[2] }}</td>
+                    <td><p>{{ info[2] }}</p></td>
                 </tr>
                 {% end %}
                 </tbody>

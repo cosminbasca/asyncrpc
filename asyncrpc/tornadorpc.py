@@ -235,7 +235,7 @@ class TornadoRpcApplication(web.Application):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class TornadoRpcServer(RpcServer):
-    def __init__(self, address, instance, multiprocess=False, *args, **kwargs):
+    def __init__(self, address, instance, multiprocess=False, theme=None, *args, **kwargs):
         super(TornadoRpcServer, self).__init__(address, *args, **kwargs)
         settings = {'template_path': os.path.join(os.path.dirname(__file__), 'templates'),
                     'static_path': os.path.join(os.path.dirname(__file__), 'static'),
@@ -245,16 +245,13 @@ class TornadoRpcServer(RpcServer):
             web.url(r"/", InstanceViewerHandler),
             web.url(r"/rpc", TornadoRequestHandler),
             web.url(r"/ping", PingRequestHandler),
-        ], **settings)
+        ], theme=theme, **settings)
         self._multiprocess = multiprocess
         self._server = HTTPServer(app)
         self._sockets = bind_sockets(address[1], address=address[0])
         if not self._multiprocess:
             self._server.add_sockets(self._sockets)
         self._bound_address = self._sockets[0].getsockname()
-
-    def stop(self):
-        IOLoop.instance().stop()
 
     def server_forever(self, *args, **kwargs):
         try:
@@ -298,8 +295,8 @@ class TornadoManager(object):
     def __del__(self):
         self._runner.stop()
 
-    def start(self, wait=True, **kwargs):
-        self._runner.start(wait, self._instance, **kwargs)
+    def start(self, wait=True, multiprocess=False, theme=None, **kwargs):
+        self._runner.start(wait, self._instance, multiprocess=multiprocess, theme=theme, **kwargs)
 
     def stop(self):
         self._runner.stop()

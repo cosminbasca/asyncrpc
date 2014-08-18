@@ -78,14 +78,14 @@ class RpcServer(object):
 class WsgiRpcServer(RpcServer):
     __metaclass__ = ABCMeta
 
-    def __init__(self, address, types_registry, debug=True, *args, **kwargs):
+    def __init__(self, address, types_registry, debug=True, theme=None, *args, **kwargs):
         if not isinstance(types_registry, (dict, OrderedDict)):
             raise ValueError('types_registry must be a dict or OrderDict')
         super(WsgiRpcServer, self).__init__(address, *args, **kwargs)
 
         self._registry = Registry()
         registry_app = RpcRegistryMiddleware(types_registry, self._registry)
-        registry_viewer = RpcRegistryViewer(types_registry, self._registry, with_static=True)
+        registry_viewer = RpcRegistryViewer(types_registry, self._registry, with_static=True, theme=theme)
         if debug:
             registry_viewer = DebuggedApplication(registry_viewer, evalex=True)
         wsgi_app = DispatcherMiddleware(registry_viewer, {
