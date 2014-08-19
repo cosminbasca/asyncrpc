@@ -78,7 +78,7 @@ class RpcServer(object):
 class WsgiRpcServer(RpcServer):
     __metaclass__ = ABCMeta
 
-    def __init__(self, address, types_registry, debug=True, theme=None, *args, **kwargs):
+    def __init__(self, address, types_registry, debug=True, theme='386', *args, **kwargs):
         if not isinstance(types_registry, (dict, OrderedDict)):
             raise ValueError('types_registry must be a dict or OrderDict')
         super(WsgiRpcServer, self).__init__(address, *args, **kwargs)

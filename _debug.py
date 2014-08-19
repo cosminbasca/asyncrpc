@@ -5,6 +5,7 @@ import random
 from time import time, sleep
 from gevent.pool import Pool
 import numpy as np
+from asyncrpc import CherrypyWsgiRpcServer
 from asyncrpc.client import hidden
 from asyncrpc.manager import AsyncManager
 from asyncrpc.log import set_level
@@ -141,6 +142,10 @@ def test_tornadorpc(async=False):
 
 def tornadorpc_server():
     class AClass(object):
+        def __init__(self):
+            self._unattr = 10
+            self.ttr_er = 20
+
         def simple_method(self):
             """
             this method has no arguments
@@ -171,7 +176,14 @@ def tornadorpc_server():
             return None
 
     aclass = AClass()
-    server = TornadoRpcServer(('127.0.0.1', 8080), aclass, theme=None)
+    # server = TornadoRpcServer(('127.0.0.1', 8080), aclass)
+    registry = {'AClass': AClass}
+
+    # server = CherrypyWsgiRpcServer(('127.0.0.1', 8080), registry, theme=None)
+    server = CherrypyWsgiRpcServer(('127.0.0.1', 8080), registry)
+    server._registry.set(hash(aclass), aclass)
+    server._registry.set("12213231231", AClass())
+    server._registry.set("12432432432", AClass())
     server.server_forever()
 
 if __name__ == '__main__':
