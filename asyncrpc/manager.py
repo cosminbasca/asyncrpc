@@ -52,7 +52,7 @@ class AsyncManager(object):
         else:
             return CherrypyWsgiRpcServer
 
-    def start(self, wait=True, debug=True, theme='386', **kwargs):
+    def start(self, wait=True, debug=True, theme=None, **kwargs):
         self._runner.start(wait, self._registry, debug=debug, theme=theme, **kwargs)
 
     def stop(self):
