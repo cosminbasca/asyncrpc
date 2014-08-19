@@ -213,6 +213,10 @@ table.docutils th.field-name, table.docinfo th.docinfo-name {
     border: 0;
 }
 
+table.docutils:hover {
+    background-color: inherit;
+}
+
 /* "booktabs" style (no vertical lines) */
 table.docutils.booktabs {
     border: 0;

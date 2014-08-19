@@ -231,7 +231,7 @@ class InstanceViewerHandler(web.RequestHandler):
             docstring = inspect.getdoc(method)
             if docstring:
                 docstring = '\n\t'.join([line.strip() for line in docstring.split('\n')])
-                return publish_parts(docstring, writer_name='html')['fragment']
+                return publish_parts(docstring, writer_name='html')['fragment'].replace('param','')
             return '&nbsp;'
 
         api = {
