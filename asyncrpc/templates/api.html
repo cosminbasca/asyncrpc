@@ -207,8 +207,8 @@
                         {% else %}
                         {% if ":" in line %}
                         {{"".join(line.split(":")[:1])}}&nbsp;
-                        <strong>{{line.split(":")[1]}}</strong>&nbsp;
-                        {{"".join(line.split(":")[1:])}}
+                        <strong>{{line.split(":")[1]}}&nbsp;:</strong>&nbsp;
+                        {{"".join(line.split(":")[2:])}}
                         {% else %}
                         {{line}}
                         {% end %}

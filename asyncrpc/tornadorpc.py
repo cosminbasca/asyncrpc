@@ -235,7 +235,7 @@ class TornadoRpcApplication(web.Application):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class TornadoRpcServer(RpcServer):
-    def __init__(self, address, instance, multiprocess=False, debug=True, theme='386', *args, **kwargs):
+    def __init__(self, address, instance, multiprocess=False, theme=None, *args, **kwargs):
         super(TornadoRpcServer, self).__init__(address, *args, **kwargs)
         settings = {'template_path': os.path.join(os.path.dirname(__file__), 'templates'),
                     'static_path': os.path.join(os.path.dirname(__file__), 'static'),
@@ -295,7 +295,7 @@ class TornadoManager(object):
     def __del__(self):
         self._runner.stop()
 
-    def start(self, wait=True, multiprocess=False, theme='386', **kwargs):
+    def start(self, wait=True, multiprocess=False, theme=None, **kwargs):
         self._runner.start(wait, self._instance, multiprocess=multiprocess, theme=theme, **kwargs)
 
     def stop(self):
