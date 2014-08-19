@@ -199,6 +199,7 @@
                 </td>
                 <!--<td><p>{{ info[2] }}</p></td>-->
                 <td>
+                    {% if info[2] %}
                     <p>
                         {% for i, line in enumerate(info[2].split("\n")) %}
                         {% if i == 0 %}
@@ -215,6 +216,7 @@
                         <br/>
                         {% end %}
                     </p>
+                    {% end %}
                 </td>
             </tr>
             {% end %}
