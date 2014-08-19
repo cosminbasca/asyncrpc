@@ -153,22 +153,18 @@
                 </td>
                 <td>
                     {% if info[0] %}
-                    {% if theme == '386' %}
-                    yes
+                    {% if theme == '386' %}<strong>yes</strong>{% else %}<i class="icon-check icon-large"></i>{% end %}
                     {% else %}
-                    <i class="icon-check"></i>
-                    {% end %}
-                    {% else %}
-                    <em>no</em>
+                    {% if theme == '386' %}<em>no</em>{% else %}<i class="icon-remove icon-large"></i>{% end %}
                     {% end %}
                 </td>
                 <td>
                     <a data-toggle="collapse" href="#collapse{{i}}">
                         {{ ', '.join(
 
-                        list(info[1].args)[1:] +
-                        (['*args'] if info[1].varargs else []) +
-                        (['**kwargs'] if info[1].keywords else [])
+                        list(info[1]['args'])[1:] +
+                        (['*args'] if info[1]['varargs'] else []) +
+                        (['**kwargs'] if info[1]['keywords'] else [])
 
                         ) }}
                     </a>
@@ -177,7 +173,7 @@
                         <div class="panel-body">
                             <table class="table-condensed borderless">
                                 <tbody>
-                                {% for k,v in info[1]._asdict().iteritems() %}
+                                {% for k,v in info[1].iteritems() %}
                                 {% if v %}
                                 <tr>
                                     <td valign="top">{{ k }}</td>
@@ -197,7 +193,6 @@
                         </div>
                     </div>
                 </td>
-                <!--<td><p>{{ info[2] }}</p></td>-->
                 <td>
                     {% if info[2] %}
                     <p>

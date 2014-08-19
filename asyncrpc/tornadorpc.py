@@ -188,7 +188,7 @@ class PingRequestHandler(web.RequestHandler):
 
 
 def decorated_nethods(cls, *decorator_names):
-    _decorators = ['@'+name for name in decorator_names]
+    _decorators = ['@' + name for name in decorator_names]
     sourcelines = inspect.getsourcelines(cls)[0]
     for i, line in enumerate(sourcelines):
         line = line.strip()
@@ -216,8 +216,15 @@ class InstanceViewerHandler(web.RequestHandler):
         def _argspec(name, method):
             if _is_decorated(name):
                 original = method.func_closure[0].cell_contents
-                return inspect.getargspec(original)
-            return inspect.getargspec(method)
+                spec = inspect.getargspec(original)
+            else:
+                spec = inspect.getargspec(method)
+            spec = spec._asdict()
+            if spec['defaults']:
+                r_defaults = list(reversed(spec['defaults']))
+                r_args = list(reversed(spec['args']))
+                spec['defaults'] = list(reversed([(r_args[i], val) for i, val in enumerate(r_defaults)]))
+            return spec
 
         api = {
             name: (_is_decorated(name), _argspec(name, method), inspect.getdoc(method), )
