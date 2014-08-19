@@ -129,7 +129,6 @@
         <!-- Default panel contents -->
         <div class="page-header">
             <blockquote>
-                <!--<h3>Class <mark>{{ str(type(instance))[1:-1].replace("'", "").replace("class ","") }}</mark></h3>-->
                 <h3>Class <em>{{ str(type(instance))[1:-1].replace("'", "").replace("class ","") }}</em></h3>
                 <footer>publicly exposed RPC api</footer>
             </blockquote>
@@ -148,9 +147,11 @@
             <tbody>
             {% for i, (name, info) in enumerate(api.iteritems()) %}
             <tr class="{{ 'info' if info[0] else '' }}">
-                <td>
-                    <strong>{{ name }}</strong>
-                </td>
+                {% if theme == '386' %}
+                <td><strong>{{ name }}</strong></td>
+                {% else %}
+                <td style="color: indigo;"><strong>{{ name }}</strong></td>
+                {% end %}
                 <td>
                     {% if info[0] %}
                     {% if theme == '386' %}<strong>yes</strong>{% else %}<i class="icon-check icon-large"></i>{% end %}
