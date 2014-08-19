@@ -17,6 +17,7 @@ from tornado.ioloop import IOLoop
 from tornado.httpclient import AsyncHTTPClient, HTTPError, HTTPClient
 from tornado import gen
 from tornado import web
+from docutils.core import publish_parts
 
 __author__ = 'basca'
 
@@ -226,8 +227,15 @@ class InstanceViewerHandler(web.RequestHandler):
                 spec['defaults'] = list(reversed([(r_args[i], val) for i, val in enumerate(r_defaults)]))
             return spec
 
+        def _doc(method):
+            docstring = inspect.getdoc(method)
+            if docstring:
+                docstring = '\n\t'.join([line.strip() for line in docstring.split('\n')])
+                return publish_parts(docstring, writer_name='html')['fragment']
+            return '&nbsp;'
+
         api = {
-            name: (_is_decorated(name), _argspec(name, method), inspect.getdoc(method), )
+            name: (_is_decorated(name), _argspec(name, method), _doc(method), )
             for name, method in methods.iteritems()
         }
         return self.render("api.html", instance=self._instance, api=api, version=str_version, theme=self._theme)

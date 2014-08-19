@@ -29,6 +29,7 @@ pip_deps = [
     'Werkzeug>=0.9.6',
     'Jinja2>=2.7.3',
     'retrying>=1.2.2',
+    'docutils>=0.12',
 ]
 
 manual_deps = [
@@ -57,6 +58,7 @@ setup(
     package_data={
         NAME: ['static/*.ico',
                'static/*.js',
+               'static/docutils/*.css',
                'static/bootstrap/js/*.js',
                'static/bootstrap/css/*.css',
                'static/bootstrap/img/*.png',
