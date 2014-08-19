@@ -2,7 +2,7 @@ from unittest import TestCase
 from asyncrpc.client import Proxy, AsyncProxy
 from asyncrpc.log import set_level
 from asyncrpc.manager import AsyncManager
-from asyncrpc.tornadorpc import TornadoManager, TornadoHttpRpcProxy, TornadoAsyncHttpRpcProxy
+from asyncrpc.tornadorpc import TornadoManager, TornadoHttpRpcProxy, TornadoAsyncHttpRpcProxy, asynchronous
 from tornado import gen
 
 __author__ = 'basca'
@@ -51,7 +51,7 @@ class TestManager(TestCase):
 
         del manager
 
-    @gen.coroutine
+    @asynchronous
     def test_02_tornadomanager_async(self):
         instance = MyClass(counter=10)
         manager = TornadoManager(instance, async=True)

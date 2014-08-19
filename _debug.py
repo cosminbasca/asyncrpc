@@ -5,11 +5,12 @@ import random
 from time import time, sleep
 from gevent.pool import Pool
 import numpy as np
+from tornado import gen
 from asyncrpc import CherrypyWsgiRpcServer
 from asyncrpc.client import hidden
 from asyncrpc.manager import AsyncManager
 from asyncrpc.log import set_level
-from asyncrpc.tornadorpc import async_call, call, TornadoRpcServer
+from asyncrpc.tornadorpc import async_call, call, TornadoRpcServer, asynchronous
 
 set_level('info', name='asyncrpc')
 
@@ -163,6 +164,7 @@ def tornadorpc_server():
             """
             return None
 
+        @asynchronous
         def kwargs_method(self, a, b, val=None, val2=10, **kwargs):
             """
             more complex

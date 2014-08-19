@@ -85,6 +85,13 @@ class TornadoHttpRpcProxy(RpcProxy):
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
+# asynchronous decorator alias
+#
+# ----------------------------------------------------------------------------------------------------------------------
+asynchronous = gen.coroutine
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
 # asynchronous tornado http rpc proxy
 #
 # ----------------------------------------------------------------------------------------------------------------------
@@ -180,11 +187,12 @@ class PingRequestHandler(web.RequestHandler):
         self.write('pong')
 
 
-def decorated_nethods(cls, decorator_name):
+def decorated_nethods(cls, *decorator_names):
+    _decorators = ['@'+name for name in decorator_names]
     sourcelines = inspect.getsourcelines(cls)[0]
     for i, line in enumerate(sourcelines):
         line = line.strip()
-        if line.split('(')[0].strip() == '@' + decorator_name:  # leaving a bit out
+        if line.split('(')[0].strip() in _decorators:  # leaving a bit out
             next_line = sourcelines[i + 1]
             name = next_line.split('def')[1].split('(')[0].strip()
             yield (name)
@@ -199,10 +207,20 @@ class InstanceViewerHandler(web.RequestHandler):
         self._theme = application.theme
 
     def get(self, *args, **kwargs):
-        async_methods = set(decorated_nethods(self._instance.__class__, "gen.coroutine"))
+        async_methods = set(decorated_nethods(self._instance.__class__, "asynchronous", "gen.coroutine"))
         methods = exposed_methods(self._instance, with_private=False)
+
+        def _is_decorated(name):
+            return name in async_methods
+
+        def _argspec(name, method):
+            if _is_decorated(name):
+                original = method.func_closure[0].cell_contents
+                return inspect.getargspec(original)
+            return inspect.getargspec(method)
+
         api = {
-            name: ((name in async_methods), inspect.getargspec(method), inspect.getdoc(method), )
+            name: (_is_decorated(name), _argspec(name, method), inspect.getdoc(method), )
             for name, method in methods.iteritems()
         }
         return self.render("api.html", instance=self._instance, api=api, version=str_version, theme=self._theme)
