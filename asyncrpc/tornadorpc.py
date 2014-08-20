@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import inspect
 import os
 import traceback
@@ -231,13 +232,13 @@ class InstanceViewerHandler(web.RequestHandler):
             docstring = inspect.getdoc(method)
             if docstring:
                 docstring = '\n\t'.join([line.strip() for line in docstring.split('\n')])
-                return publish_parts(docstring, writer_name='html')['fragment'].replace('param','')
+                return publish_parts(docstring, writer_name='html')['fragment'].replace('param', '')
             return '&nbsp;'
 
-        api = {
-            name: (_is_decorated(name), _argspec(name, method), _doc(method), )
-            for name, method in methods.iteritems()
-        }
+        api = OrderedDict()
+        for name, method in sorted(methods.iteritems(), key=lambda item: item[0]):
+            api[name] = (_is_decorated(name), _argspec(name, method), _doc(method), )
+
         return self.render("api.html", instance=self._instance, api=api, version=str_version, theme=self._theme)
 
 
