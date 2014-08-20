@@ -2,97 +2,97 @@
 
 <html>
 <head>
-<meta charset="utf-8">
-<title>AsyncRpc v{{version}}</title>
+    <meta charset="utf-8">
+    <title>AsyncRpc v{{version}}</title>
 
-<!-- bootstrap stuff -->
-<meta name="viewport" content="width=device-width, initial-scale=0.8"/>
-<link href="/static/bootstrap{{'.386' if theme == '386' else ''}}/css/bootstrap.css" rel="stylesheet"/>
-<link href="/static/docutils/style.css" rel="stylesheet"/>
-<style>
-    .borderless td {
-        border: none;
-    }
-
-    /* Sticky footer styles
-  -------------------------------------------------- */
-
-    html,
-    body {
-        height: 100%;
-        /* The html and body elements cannot have any padding or margin. */
-    }
-
-    /* Wrapper for page content to push down footer */
-    #wrap {
-        min-height: 100%;
-        height: auto !important;
-        height: 100%;
-        /* Negative indent footer by it's height */
-        margin: 0 auto -60px;
-    }
-
-    /* Set the fixed height of the footer here */
-    #push,
-    #footer {
-        height: 60px;
-    }
-
-    #footer {
-        background-color: #f5f5f5;
-    }
-
-    /* Lastly, apply responsive CSS fixes as necessary */
-    @media (max-width: 767px) {
-        #footer {
-            margin-left: -20px;
-            margin-right: -20px;
-            padding-left: 20px;
-            padding-right: 20px;
+    <!-- bootstrap stuff -->
+    <meta name="viewport" content="width=device-width, initial-scale=0.8"/>
+    <link href="/static/bootstrap{{'.386' if theme == '386' else ''}}/css/bootstrap.css" rel="stylesheet"/>
+    <link href="/static/docutils/style.css" rel="stylesheet"/>
+    <style>
+        .borderless td {
+            border: none;
         }
-    }
 
-    /* Custom page CSS
-    -------------------------------------------------- */
-    /* Not required for template or sticky footer method. */
+        /* Sticky footer styles
+      -------------------------------------------------- */
 
-    #wrap > .container {
-        padding-top: 60px;
-    }
+        html,
+        body {
+            height: 100%;
+            /* The html and body elements cannot have any padding or margin. */
+        }
 
-    .container .credit {
-        margin: 20px 0;
-    }
+        /* Wrapper for page content to push down footer */
+        #wrap {
+            min-height: 100%;
+            height: auto !important;
+            height: 100%;
+            /* Negative indent footer by it's height */
+            margin: 0 auto -60px;
+        }
 
-    code {
-        font-size: 80%;
-    }
-</style>
+        /* Set the fixed height of the footer here */
+        #push,
+        #footer {
+            height: 60px;
+        }
 
-<!-- Mouse-over tooltip -->
-<script src="/static/tooltip/tooltip.js"></script>
-<link href="/static/tooltip/tooltip.css" rel="stylesheet"/>
-<link href="/static/css/treeview.css" rel="stylesheet"/>
+        #footer {
+            background-color: #f5f5f5;
+        }
 
-<script type="application/javascript">
-    function reload() {
-        window.location.href = "http://" + window.location.host + window.location.pathname;
-    }
+        /* Lastly, apply responsive CSS fixes as necessary */
+        @media (max-width: 767px) {
+            #footer {
+                margin-left: -20px;
+                margin-right: -20px;
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+        }
 
-    var themes = {
-        "default": "/static/bootstrap/css/bootstrap.css",
-        "386": "/static/bootstrap.386/css/bootstrap.css"
-    };
+        /* Custom page CSS
+        -------------------------------------------------- */
+        /* Not required for template or sticky footer method. */
 
-    $(function () {
-        var themesheet = $('<link href="' + themes['default'] + '" rel="stylesheet" />');
-        themesheet.appendTo('head');
-        $('.theme-link').click(function () {
-            var themeurl = themes[$(this).attr('data-theme')];
-            themesheet.attr('href', themeurl);
+        #wrap > .container {
+            padding-top: 60px;
+        }
+
+        .container .credit {
+            margin: 20px 0;
+        }
+
+        code {
+            font-size: 80%;
+        }
+    </style>
+
+    <!-- Mouse-over tooltip -->
+    <script src="/static/tooltip/tooltip.js"></script>
+    <link href="/static/tooltip/tooltip.css" rel="stylesheet"/>
+    <link href="/static/css/treeview.css" rel="stylesheet"/>
+
+    <script type="application/javascript">
+        function reload() {
+            window.location.href = "http://" + window.location.host + window.location.pathname;
+        }
+
+        var themes = {
+            "default": "/static/bootstrap/css/bootstrap.css",
+            "386": "/static/bootstrap.386/css/bootstrap.css"
+        };
+
+        $(function () {
+            var themesheet = $('<link href="' + themes['default'] + '" rel="stylesheet" />');
+            themesheet.appendTo('head');
+            $('.theme-link').click(function () {
+                var themeurl = themes[$(this).attr('data-theme')];
+                themesheet.attr('href', themeurl);
+            });
         });
-    });
-</script>
+    </script>
 </head>
 
 <body>
@@ -197,7 +197,18 @@
                     </div>
                 </td>
                 <td>
-                    {% raw info[2] %}
+                    {% if info[2] %}
+                    <a data-toggle="collapse" href="#collapse_doc{{i}}">
+                        {{ info[2][info[2].find("<dt>")+4: info[2].find("</dt>")] }}
+                    </a>
+
+                    <div id="collapse_doc{{i}}" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            {% raw info[2] %}
+                        </div>
+                    </div>
+                    {% end %}
+                    <!--{% raw info[2] %}-->
                 </td>
             </tr>
             {% end %}
