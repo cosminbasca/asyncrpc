@@ -4,7 +4,7 @@ import inspect
 import traceback
 from geventhttpclient import HTTPClient
 from asyncrpc.log import get_logger
-from asyncrpc.exceptions import HTTPRpcNoBodyException, handle_exception
+from asyncrpc.exceptions import HTTPRpcNoBodyException, handle_exception, ErrorMessage
 from asyncrpc.commands import Command
 from werkzeug.exceptions import abort
 from asyncrpc.messaging import dumps, loads
@@ -101,7 +101,8 @@ class RpcProxy(object):
                 raise HTTPRpcNoBodyException(self._address, traceback.format_exc())
 
             response = loads(content)
-            if isinstance(response, tuple) and len(response) == 2:
+            if isinstance(response, tuple) and len(response) == 2 and \
+                    (isinstance(response[1], ErrorMessage) or response[1] is None):
                 result, error = response
                 if not error:
                     return result

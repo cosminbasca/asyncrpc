@@ -4,7 +4,8 @@ from threading import RLock
 import traceback
 from werkzeug.wsgi import SharedDataMiddleware
 from asyncrpc.commands import Command
-from asyncrpc.exceptions import CommandNotFoundException, InvalidInstanceId, RpcRemoteException, InvalidTypeId
+from asyncrpc.exceptions import CommandNotFoundException, InvalidInstanceId, RpcRemoteException, InvalidTypeId, \
+    ErrorMessage
 from asyncrpc.handler import RpcHandler
 from asyncrpc.log import get_logger
 from asyncrpc.__version__ import str_version
@@ -146,8 +147,7 @@ class RpcRegistryMiddleware(RpcHandler):
                 result = self.rpc(object_id)(name, *args, **kwargs)
             error = None
         except Exception, e:
-            error = {'message': e.message, 'type': e.__class__.__name__, 'traceback': traceback.format_exc(),
-                     'address': request.host_url}
+            error = ErrorMessage.from_exception(e, address=request.host_url)
             result = None
             self._log.error('error: {0}, traceback: \n{1}'.format(e, traceback.format_exc()))
 

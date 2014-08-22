@@ -5,15 +5,14 @@ import traceback
 from tornado.concurrent import Future
 from tornado.httpserver import HTTPServer
 from tornado.netutil import bind_sockets
-from tornado.template import Loader
 from asyncrpc.__version__ import str_version
 from asyncrpc.server import RpcServer
 from asyncrpc.process import BackgroundRunner
-from asyncrpc.exceptions import RpcServerNotStartedException, RpcRemoteException, handle_exception
+from asyncrpc.exceptions import RpcServerNotStartedException, handle_exception, ErrorMessage
 from asyncrpc.messaging import loads, dumps
 from asyncrpc.client import RpcProxy, exposed_methods
 from asyncrpc.handler import RpcHandler
-from asyncrpc.log import get_logger, set_level
+from asyncrpc.log import get_logger
 from tornado.ioloop import IOLoop
 from tornado.httpclient import AsyncHTTPClient, HTTPError, HTTPClient
 from tornado import gen
@@ -78,8 +77,7 @@ class TornadoHttpRpcProxy(RpcProxy):
                                          connect_timeout=300, request_timeout=300)
         except HTTPError as e:
             self._log.error("HTTP Error: {0}".format(e))
-            handle_exception({'message': e.message, 'type': e.__class__.__name__, 'traceback': traceback.format_exc(),
-                              'address': self.url})
+            handle_exception(ErrorMessage.from_exception(e, address=self.url))
         finally:
             http_client.close()
         return response
@@ -116,8 +114,7 @@ class TornadoAsyncHttpRpcProxy(RpcProxy):
                                                request_timeout=300)
         except HTTPError as e:
             self._log.error("HTTP Error: {0}".format(e))
-            handle_exception({'message': e.message, 'type': e.__class__.__name__, 'traceback': traceback.format_exc(),
-                              'address': self.url})
+            handle_exception(ErrorMessage.from_exception(e, address=self.url))
         finally:
             http_client.close()
         raise gen.Return(response)
@@ -173,8 +170,7 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
                 result = yield result
             error = None
         except Exception, e:
-            error = {'message': e.message, 'type': e.__class__.__name__, 'traceback': traceback.format_exc(),
-                     'address': '{0}://{1}'.format(self.request.protocol, self.request.host)}
+            error = ErrorMessage.from_exception(e, address='{0}://{1}'.format(self.request.protocol, self.request.host))
             result = None
             self._log.error('error: {0}, traceback: \n{1}'.format(e, traceback.format_exc()))
         response = dumps((result, error))

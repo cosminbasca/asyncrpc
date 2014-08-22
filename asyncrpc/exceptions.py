@@ -4,8 +4,28 @@ from traceback import format_exception
 import socket
 import errno
 from abc import ABCMeta, abstractproperty
+import traceback
 
 __author__ = 'basca'
+
+
+class ErrorMessage(object):
+    def __init__(self, message, error_type=None, stacktrace=None, address=None):
+        self.message = message
+        self.error_type = error_type
+        self.stacktrace = stacktrace
+        self.address = address
+
+    @staticmethod
+    def from_exception(e, address=None):
+        return ErrorMessage(e.message, error_type=e.__class__.__name__, stacktrace=traceback.format_exc(),
+                            address=address)
+
+    def __getstate__(self):
+        return self.message, self.error_type, self.stacktrace, self.address
+
+    def __setstate__(self, state):
+        self.message, self.error_type, self.stacktrace, self.address = state
 
 
 class CommandNotFoundException(Exception):
@@ -55,17 +75,14 @@ class HTTPRpcNoBodyException(RpcRemoteException):
         super(HTTPRpcNoBodyException, self).__init__("HTTP request body is empty", address, error)
 
 
-def handle_exception(remote_exception_description):
-    if not isinstance(remote_exception_description, dict):
-        raise ValueError('remote_exception_description must be a dictionary')
-    remote_type = remote_exception_description.get('type', None)
-
-    if remote_type and remote_type in _EXCEPTIONS:
-        message = 'Remote address:{0}, error:{1}\n{2}'.format(
-            remote_exception_description['address'], remote_exception_description['message'],
-            remote_exception_description['traceback'])
-        raise _EXCEPTIONS[remote_type](message)
-    raise RpcRemoteException(remote_exception_description['message'], remote_exception_description['address'],
-                             remote_exception_description['traceback'], remote_type=remote_type)
+def handle_exception(error_message):
+    if not isinstance(error_message, ErrorMessage):
+        raise ValueError('error_message must be an ErrorMessage')
+    if error_message.error_type and error_message.error_type in _EXCEPTIONS:
+        message = 'Remote address:{0}, error:{1}\n{2}'.format(error_message.address, error_message.message,
+                                                              error_message.stacktrace)
+        raise _EXCEPTIONS[error_message.error_type](message)
+    raise RpcRemoteException(error_message.message, error_message.address, error_message.stacktrace,
+                             remote_type=error_message.error_type)
 
 
