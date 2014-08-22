@@ -95,16 +95,21 @@ class RpcProxy(object):
 
     def _get_result(self, response):
         status_code = self._status_code(response)
+        content = self._content(response)
         if status_code == 200:
-            content = self._content(response)
             if content is None:
                 raise HTTPRpcNoBodyException(self._address, traceback.format_exc())
-            result, error = loads(content)
-            if not error:
-                return result
 
-            handle_exception(error)
+            response = loads(content)
+            if isinstance(response, tuple) and len(response) == 2:
+                result, error = response
+                if not error:
+                    return result
+                handle_exception(error)
+            else:
+                return response
         else:
+            self._log.error('HTTP exception (status code: {0})\nServer response: {1}'.format(status_code, content))
             abort(status_code)
 
     def _message(self, name, *args, **kwargs):
