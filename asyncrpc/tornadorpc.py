@@ -132,7 +132,7 @@ def async_call(address):
     :param address: a (host,port) tuple
     :return: a tornado Future of the RPC response (or an error otherwise)
     """
-    return TornadoAsyncHttpRpcProxy(tuple(address))
+    return TornadoAsyncHttpRpcProxy(tuple(address) if isinstance(address, list) else address)
 
 
 def call(address):
@@ -141,7 +141,7 @@ def call(address):
     :param address: a (host,port) tuple
     :return: the actual RPC response (or an error otherwise)
     """
-    return TornadoHttpRpcProxy(tuple(address))
+    return TornadoHttpRpcProxy(tuple(address) if isinstance(address, list) else address)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
