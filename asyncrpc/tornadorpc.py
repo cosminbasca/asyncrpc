@@ -304,8 +304,9 @@ class TornadoRpcServer(RpcServer):
         return self._bound_address
 
     def stop(self):
-        IOLoop.instance().stop()  # stop the tornado IO loop
         super(TornadoRpcServer, self).stop()
+        self._server.stop()
+        IOLoop.instance().stop()  # stop the tornado IO loop
 
 
 class TornadoManager(object):
