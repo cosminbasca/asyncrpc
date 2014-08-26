@@ -1,6 +1,8 @@
 from collections import OrderedDict
+from functools import partial
 import inspect
 import os
+from time import time
 import traceback
 from tornado.concurrent import Future
 from tornado.httpserver import HTTPServer
@@ -306,7 +308,8 @@ class TornadoRpcServer(RpcServer):
     def stop(self):
         super(TornadoRpcServer, self).stop()
         self._server.stop()
-        IOLoop.instance().stop()  # stop the tornado IO loop
+        loop = IOLoop.current()
+        loop.add_timeout(time() + 3.0, partial(lambda tornado_loop: tornado_loop.stop(), loop))
 
 
 class TornadoManager(object):
