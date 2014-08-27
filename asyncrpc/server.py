@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import OrderedDict
 import os
 import sys
+from cherrypy import engine
 from tornado.netutil import bind_sockets
 from cherrypy.wsgiserver import CherryPyWSGIServer
 from tornado.wsgi import WSGIContainer
@@ -114,6 +115,7 @@ class CherrypyWsgiRpcServer(WsgiRpcServer):
     def stop(self):
         super(CherrypyWsgiRpcServer, self).stop()
         self._server.stop()
+        engine.stop()
 
     def server_forever(self, *args, **kwargs):
         self._log.info('starting cherrypy server with a minimum of {0} threads and {1} max threads'.format(
