@@ -155,7 +155,9 @@ class TornadoWsgiRpcServer(WsgiRpcServer):
 
     def stop(self):
         super(TornadoWsgiRpcServer, self).stop()
-        ioloop.IOLoop.instance().stop()
+        # ioloop.IOLoop.instance().stop()
+        loop = ioloop.IOLoop.instance()
+        loop.add_callback(lambda tornado_loop: tornado_loop.close(all_fds=True), loop)
 
     def server_forever(self, *args, **kwargs):
         self._log.info(
