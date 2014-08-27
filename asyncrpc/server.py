@@ -115,7 +115,8 @@ class CherrypyWsgiRpcServer(WsgiRpcServer):
     def stop(self):
         super(CherrypyWsgiRpcServer, self).stop()
         self._server.stop()
-        engine.stop()
+        # engine.stop()
+        engine.exit()
 
     def server_forever(self, *args, **kwargs):
         self._log.info('starting cherrypy server with a minimum of {0} threads and {1} max threads'.format(
