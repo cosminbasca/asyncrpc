@@ -305,9 +305,8 @@ class TornadoRpcServer(RpcServer):
 
     def stop(self):
         super(TornadoRpcServer, self).stop()
-        self._server.stop()
         loop = IOLoop.instance()
-        loop.add_callback(shutdown_tornado, loop)
+        loop.add_callback(shutdown_tornado, loop, self._server)
 
 
 class TornadoManager(object):

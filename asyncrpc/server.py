@@ -144,7 +144,8 @@ class CherrypyWsgiRpcServer(WsgiRpcServer):
 # Tornado RPC implementation
 #
 # ----------------------------------------------------------------------------------------------------------------------
-def shutdown_tornado(loop):
+def shutdown_tornado(loop, server):
+    server.stop()
     loop.stop()
 
 class TornadoWsgiRpcServer(WsgiRpcServer):
@@ -156,9 +157,8 @@ class TornadoWsgiRpcServer(WsgiRpcServer):
 
     def stop(self):
         super(TornadoWsgiRpcServer, self).stop()
-        self._server.stop()
         loop = ioloop.IOLoop.instance()
-        loop.add_callback(shutdown_tornado, loop)
+        loop.add_callback(shutdown_tornado, loop, self._server)
 
     def server_forever(self, *args, **kwargs):
         self._log.info(
