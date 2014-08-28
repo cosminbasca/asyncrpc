@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from functools import partial
 import inspect
+import socket
 import traceback
 from geventhttpclient import HTTPClient
 from asyncrpc.log import get_logger
@@ -188,6 +189,8 @@ class RegistryRpcProxy(RpcProxy):
                 self._log.debug('releasing server-side instance {0}'.format(self._id))
                 self.dispatch(Command.RELEASE)
             except ConnectionError:
+                pass
+            except socket.error:
                 pass
 
     def _message(self, name, *args, **kwargs):

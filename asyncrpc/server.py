@@ -1,7 +1,9 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import OrderedDict
+from functools import partial
 import os
 import sys
+from time import time
 from cherrypy import engine
 from tornado.netutil import bind_sockets
 from cherrypy.wsgiserver import CherryPyWSGIServer
@@ -155,14 +157,14 @@ class TornadoWsgiRpcServer(WsgiRpcServer):
 
     def stop(self):
         super(TornadoWsgiRpcServer, self).stop()
-        # ioloop.IOLoop.instance().stop()
+        # stop listening for new connections
+        self._server.stop()
+        # stop the ioloop too now
         def shutdown(tornado_loop):
             tornado_loop.stop()
             tornado_loop.close(all_fds=True)
-
         loop = ioloop.IOLoop.instance()
-        loop.add_callback(shutdown, loop)
-        self._server.stop()
+        loop.add_timeout(time() + 3, partial(shutdown, loop))
 
     def server_forever(self, *args, **kwargs):
         self._log.info(
