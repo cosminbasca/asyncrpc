@@ -110,6 +110,8 @@ class BackgroundRunner(object):
         self._log.debug('starting background process: {0}'.format(self._process.name))
         self._process.start()
 
+        self._log.info('started background process with pid: {0}'.format(self._process.pid))
+
         writer.close()
         self._log.debug('waiting for bound address .. ')
         self._bound_address = reader.recv()
