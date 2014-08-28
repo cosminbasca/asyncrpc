@@ -17,6 +17,7 @@ from tornado.ioloop import IOLoop
 from tornado.httpclient import AsyncHTTPClient, HTTPError, HTTPClient
 from tornado import gen
 from tornado import web
+from tornado.process import task_id
 from docutils.core import publish_parts
 
 __author__ = 'basca'
