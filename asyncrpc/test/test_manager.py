@@ -51,8 +51,41 @@ class TestManager(TestCase):
 
         del manager
 
+    def test_02_tornadomanager_blocking_multiple(self):
+
+        instance = MyClass(counter=10)
+        manager = TornadoManager(instance, async=False)
+        manager.start()
+
+        manager2 = TornadoManager(instance, async=False)
+        manager2.start()
+
+        self.assertIsInstance(manager, TornadoManager)
+
+        my_instance = manager.proxy()
+        self.assertIsInstance(my_instance, TornadoHttpRpcProxy)
+
+        self.assertEqual(my_instance.current_counter(), 10)
+        my_instance.add(20)
+        self.assertEqual(my_instance.current_counter(), 30)
+        my_instance.dec(30)
+        self.assertEqual(my_instance.current_counter(), 0)
+
+        manager.stop()
+
+        my_instance = manager2.proxy()
+        self.assertIsInstance(my_instance, TornadoHttpRpcProxy)
+
+        self.assertEqual(my_instance.current_counter(), 10)
+        my_instance.add(20)
+        self.assertEqual(my_instance.current_counter(), 30)
+        my_instance.dec(30)
+        self.assertEqual(my_instance.current_counter(), 0)
+
+        manager2.stop()
+
     @asynchronous
-    def test_02_tornadomanager_async(self):
+    def test_03_tornadomanager_async(self):
         instance = MyClass(counter=10)
         manager = TornadoManager(instance, async=True)
         manager.start()
@@ -73,7 +106,7 @@ class TestManager(TestCase):
 
         del manager
 
-    def test_03_geventmanager_blocking(self):
+    def test_04_geventmanager_blocking(self):
 
         manager = self._threaded_manager(async=False)
         manager.start()
@@ -91,7 +124,7 @@ class TestManager(TestCase):
 
         del manager
 
-    def test_04_geventmanager_async(self):
+    def test_05_geventmanager_async(self):
         manager = self._threaded_manager(async=True)
         manager.start()
 
