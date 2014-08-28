@@ -1,5 +1,4 @@
 from collections import OrderedDict
-from functools import partial
 import inspect
 import os
 import traceback
@@ -306,10 +305,7 @@ class TornadoRpcServer(RpcServer):
 
     def stop(self):
         super(TornadoRpcServer, self).stop()
-        # stop listening for new connections
-        # print 'stop listening for new connections'
         self._server.stop()
-        # stop the ioloop too now
         loop = IOLoop.instance()
         loop.add_callback(shutdown_tornado, loop)
 
