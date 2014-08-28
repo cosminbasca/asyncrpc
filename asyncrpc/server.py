@@ -5,13 +5,14 @@ import os
 import sys
 from time import time
 from cherrypy import engine
+import signal
 from tornado.netutil import bind_sockets
 from cherrypy.wsgiserver import CherryPyWSGIServer
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado import ioloop
 from asyncrpc.wsgi import RpcRegistryMiddleware, RpcRegistryViewer, ping_middleware
-from asyncrpc.log import get_logger
+from asyncrpc.log import get_logger, logger
 from asyncrpc.registry import Registry
 from werkzeug.wsgi import DispatcherMiddleware
 from werkzeug.debug import DebuggedApplication
@@ -148,6 +149,11 @@ class CherrypyWsgiRpcServer(WsgiRpcServer):
 # Tornado RPC implementation
 #
 # ----------------------------------------------------------------------------------------------------------------------
+MAX_WAIT_SECONDS_BEFORE_SHUTDOWN = 3
+
+def shutdown_tornado(tornado_loop):
+    tornado_loop.stop()
+
 class TornadoWsgiRpcServer(WsgiRpcServer):
     def _init_wsgi_server(self, address, wsgi_app, *args, **kwargs):
         self._server = HTTPServer(WSGIContainer(wsgi_app))
@@ -160,11 +166,8 @@ class TornadoWsgiRpcServer(WsgiRpcServer):
         # stop listening for new connections
         self._server.stop()
         # stop the ioloop too now
-        def shutdown(tornado_loop):
-            tornado_loop.stop()
-            tornado_loop.close(all_fds=True)
         loop = ioloop.IOLoop.instance()
-        loop.add_timeout(time() + 3, partial(shutdown, loop))
+        loop.add_callback(shutdown_tornado, loop)
 
     def server_forever(self, *args, **kwargs):
         self._log.info(

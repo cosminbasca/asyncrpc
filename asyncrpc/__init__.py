@@ -12,3 +12,4 @@ from registry import Registry
 from tornadorpc import TornadoManager, TornadoAsyncHttpRpcProxy, TornadoHttpRpcProxy
 
 set_level('critical', name='cherrypy.error')
+set_level('critical', name='rdflib')

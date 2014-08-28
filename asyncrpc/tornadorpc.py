@@ -2,13 +2,12 @@ from collections import OrderedDict
 from functools import partial
 import inspect
 import os
-from time import time
 import traceback
 from tornado.concurrent import Future
 from tornado.httpserver import HTTPServer
 from tornado.netutil import bind_sockets
 from asyncrpc.__version__ import str_version
-from asyncrpc.server import RpcServer
+from asyncrpc.server import RpcServer, shutdown_tornado
 from asyncrpc.process import BackgroundRunner
 from asyncrpc.exceptions import RpcServerNotStartedException, handle_exception, ErrorMessage
 from asyncrpc.messaging import loads, dumps
@@ -307,9 +306,12 @@ class TornadoRpcServer(RpcServer):
 
     def stop(self):
         super(TornadoRpcServer, self).stop()
+        # stop listening for new connections
+        # print 'stop listening for new connections'
         self._server.stop()
-        loop = IOLoop.current()
-        loop.add_timeout(time() + 3.0, partial(lambda tornado_loop: tornado_loop.stop(), loop))
+        # stop the ioloop too now
+        loop = IOLoop.instance()
+        loop.add_callback(shutdown_tornado, loop)
 
 
 class TornadoManager(object):
