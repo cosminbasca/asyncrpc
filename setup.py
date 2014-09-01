@@ -22,7 +22,6 @@ pip_deps = [
     'nose>=1.3.0',
     'rednose>=0.3',
     'psutil>=2.1.1',
-    'py-prefork-server>=0.2.2',
     'requests>=2.3.0',
     'geventhttpclient>=1.1',
     'cherrypy>=3.5.0',
