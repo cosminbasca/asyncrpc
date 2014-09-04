@@ -9,7 +9,7 @@ from gevent import reinit
 from gevent.monkey import patch_all
 from asyncrpc.exceptions import InvalidStateException
 from asyncrpc.log import get_logger
-from asyncrpc.server import RpcServer
+from asyncrpc.server import RpcServer, server_is_online
 from asyncrpc.client import dispatch
 from asyncrpc.commands import Command
 from time import sleep
@@ -123,7 +123,7 @@ class BackgroundRunner(object):
         if wait:
             max_retries = self._retries
             while True:
-                if RpcServer.is_online(self._bound_address):
+                if server_is_online(self._bound_address):
                     self._state.value = State.STARTED
                     self._log.info('server started OK')
                     return True

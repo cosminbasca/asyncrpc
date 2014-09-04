@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import OrderedDict
+from functools import partial
 from threading import Thread
 from time import sleep
 from cherrypy import engine
@@ -62,38 +63,42 @@ class RpcServer(object):
     def start(self, *args, **kwargs):
         self.server_forever(*args, **kwargs)
 
-    @staticmethod
-    def is_online(address, method='get'):
-        if isinstance(address, (tuple, list)):
-            host, port = address
-        elif isinstance(address, (str, unicode)):
-            host, port = address.split(':')
-            port = int(port)
-        else:
-            raise ValueError('address, must be either a tuple/list or string of the name:port form')
 
-        _http = get if method=='get' else post
-        response = _http('http://{0}:{1}/ping'.format(host, port))
-        if response.status_code == 200:
-            return response.content.strip().lower() == 'pong'
-        return False
+def server_is_online(address, method='get'):
+    if isinstance(address, (tuple, list)):
+        host, port = address
+    elif isinstance(address, (str, unicode)):
+        host, port = address.split(':')
+        port = int(port)
+    else:
+        raise ValueError('address, must be either a tuple/list or string of the name:port form')
 
-    @staticmethod
-    def wait_for_server(address, method='get', check_every=0.5, timeout=None):
-        def _wait():
-            while True:
-                sleep(check_every)
-                # noinspection PyBroadException
-                try:
-                    online = RpcServer.is_online(address, method=method)
-                    if online:
-                        break
-                except Exception:
-                    pass
-        stopper = Thread(target=_wait)
-        stopper.daemon = True
-        stopper.start()
-        stopper.join(timeout=timeout)
+    _http = get if method == 'get' else post
+    response = _http('http://{0}:{1}/ping'.format(host, port))
+    if response.status_code == 200:
+        return response.content.strip().lower() == 'pong'
+    return False
+
+
+def wait_for_server(address, method='get', check_every=0.5, timeout=None, to_start=True):
+    def _test():
+        return server_is_online(address, method=method) == to_start
+
+    def _wait():
+        while True:
+            sleep(check_every)
+            # noinspection PyBroadException
+            try:
+                if _test():
+                    break
+            except Exception:
+                pass
+
+    stopper = Thread(target=_wait)
+    stopper.daemon = True
+    stopper.start()
+    stopper.join(timeout=timeout)
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -125,6 +130,7 @@ class WsgiRpcServer(RpcServer):
 
     def stop(self):
         self._registry.clear()
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -173,6 +179,7 @@ class CherrypyWsgiRpcServer(WsgiRpcServer):
 def shutdown_tornado(loop, server):
     server.stop()
     loop.stop()
+
 
 class TornadoWsgiRpcServer(WsgiRpcServer):
     def _init_wsgi_server(self, address, wsgi_app, *args, **kwargs):
