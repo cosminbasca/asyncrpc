@@ -62,8 +62,16 @@ class RpcServer(object):
 
     @staticmethod
     def is_online(address, method='get'):
+        if isinstance(address, (tuple, list)):
+            host, port = address
+        elif isinstance(address, (str, unicode)):
+            host, port = address.split(':')
+            port = int(port)
+        else:
+            raise ValueError('address, must be either a tuple/list or string of the name:port form')
+
         _http = get if method=='get' else post
-        response = _http('http://{0}:{1}/ping'.format(address[0], address[1]))
+        response = _http('http://{0}:{1}/ping'.format(host, port))
         if response.status_code == 200:
             return response.content.strip().lower() == 'pong'
         return False
