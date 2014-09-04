@@ -1,5 +1,7 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import OrderedDict
+from threading import Thread
+from time import sleep
 from cherrypy import engine
 from tornado.netutil import bind_sockets
 from cherrypy.wsgiserver import CherryPyWSGIServer
@@ -76,6 +78,22 @@ class RpcServer(object):
             return response.content.strip().lower() == 'pong'
         return False
 
+    @staticmethod
+    def wait_for_server(address, method='get', check_every=0.5, timeout=None):
+        def _wait():
+            while True:
+                sleep(check_every)
+                # noinspection PyBroadException
+                try:
+                    online = RpcServer.is_online(address, method=method)
+                    if online:
+                        break
+                except Exception:
+                    pass
+        stopper = Thread(target=_wait)
+        stopper.daemon = True
+        stopper.start()
+        stopper.join(timeout=timeout)
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
