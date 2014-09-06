@@ -122,6 +122,7 @@ class RpcProxy(object):
         response = self._http_call(self._message(name, *args, **kwargs))
         return self._get_result(response)
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # Requests proxy implementation
@@ -149,9 +150,10 @@ class SingleInstanceProxy(RpcProxy):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class AsyncSingleInstanceProxy(RpcProxy):
-    def __init__(self, address, slots=None, **kwargs):
+    def __init__(self, address, slots=None, connection_timeout=10, **kwargs):
         super(AsyncSingleInstanceProxy, self).__init__(address, slots=slots, **kwargs)
-        self._post = partial(HTTPClient(self._address[0], port=self._address[1]).post, self._url_path)
+        self._post = partial(HTTPClient(self._address[0], port=self._address[1], connection_timeout=connection_timeout,
+                                        network_timeout=connection_timeout).post, self._url_path)
 
     @retry(retry_on_exception=_if_connection_error, stop_max_attempt_number=_MAX_RETRIES)
     def _http_call(self, message):
@@ -162,6 +164,7 @@ class AsyncSingleInstanceProxy(RpcProxy):
 
     def _status_code(self, response):
         return response.status_code
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -229,9 +232,10 @@ class Proxy(RegistryRpcProxy):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class AsyncProxy(RegistryRpcProxy):
-    def __init__(self, instance_id, address, slots=None, owner=True, **kwargs):
+    def __init__(self, instance_id, address, slots=None, owner=True, connection_timeout=10, **kwargs):
         super(AsyncProxy, self).__init__(instance_id, address, slots=slots, owner=owner, **kwargs)
-        self._post = partial(HTTPClient(self._address[0], port=self._address[1]).post, self._url_path[1:])
+        self._post = partial(HTTPClient(self._address[0], port=self._address[1], connection_timeout=connection_timeout,
+                                        network_timeout=connection_timeout).post, self._url_path[1:])
 
     @retry(retry_on_exception=_if_connection_error, stop_max_attempt_number=_MAX_RETRIES)
     def _http_call(self, message):
