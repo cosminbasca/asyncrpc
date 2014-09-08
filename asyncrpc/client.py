@@ -273,13 +273,13 @@ class ProxyFactory(object):
         self._log.debug("get proxy: {0}".format(_proxy))
         return _proxy
 
-    def create(self, address, typeid, slots=None, async=False, *args, **kwargs):
+    def create(self, address, typeid, slots=None, async=False, connection_timeout=10, *args, **kwargs):
         creator = self._proxy(address, typeid)
         self._log.debug("create {0} proxy".format('async' if async else 'blocking'))
         instance_id = creator.dispatch(Command.NEW, *args, **kwargs)
         self._log.debug("got new instance id: {0}".format(instance_id))
         if async:
-            return AsyncProxy(instance_id, address, slots=slots)
+            return AsyncProxy(instance_id, address, slots=slots, connection_timeout=connection_timeout)
         return Proxy(instance_id, address, slots=slots)
 
     def dispatch(self, address, command):
@@ -298,8 +298,8 @@ class ProxyFactory(object):
 # wrapper methods that use the singleton proxy factory
 #
 # ----------------------------------------------------------------------------------------------------------------------
-def create(address, typeid, slots=None, async=False, *args, **kwargs):
-    return ProxyFactory.instance().create(address, typeid, slots, async, *args, **kwargs)
+def create(address, typeid, slots=None, async=False, connection_timeout=10, *args, **kwargs):
+    return ProxyFactory.instance().create(address, typeid, slots, async, connection_timeout, *args, **kwargs)
 
 
 def dispatch(address, command):
