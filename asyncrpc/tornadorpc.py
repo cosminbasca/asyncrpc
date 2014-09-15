@@ -54,7 +54,8 @@ class SynchronousTornadoHTTP(HTTPTransport):
         response = ('', None)
         try:
             response = http_client.fetch(self.url, body=message, method='POST',
-                                         connect_timeout=300, request_timeout=300)
+                                         connect_timeout=self.connection_timeout,
+                                         request_timeout=self.connection_timeout)
         except HTTPError as e:
             self._log.error("HTTP Error: {0}".format(e))
             handle_exception(ErrorMessage.from_exception(e, address=self.url))
@@ -78,8 +79,9 @@ class AsynchronousTornadoHTTP(HTTPTransport):
         http_client = AsyncHTTPClient()
         response = ('', None)
         try:
-            response = yield http_client.fetch(self.url, body=message, method='POST', connect_timeout=300,
-                                               request_timeout=300)
+            response = yield http_client.fetch(self.url, body=message, method='POST',
+                                               connect_timeout=self.connection_timeout,
+                                               request_timeout=self.connection_timeout)
         except HTTPError as e:
             self._log.error("HTTP Error: {0}".format(e))
             handle_exception(ErrorMessage.from_exception(e, address=self.url))
@@ -93,12 +95,19 @@ class AsynchronousTornadoHTTP(HTTPTransport):
     def status_code(self, response):
         return response.code
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # synchronous tornado http rpc proxy
 #
 # ----------------------------------------------------------------------------------------------------------------------
+DEFAULT_TORNADO_CONNECTION_TIMEOUT = 300
+
+
 class TornadoHttpRpcProxy(RpcProxy):
+    def __init__(self, address, slots=None, connection_timeout=DEFAULT_TORNADO_CONNECTION_TIMEOUT, **kwargs):
+        super(TornadoHttpRpcProxy, self).__init__(address, slots=slots, connection_timeout=connection_timeout, **kwargs)
+
     def get_transport(self, address, connection_timeout):
         return SynchronousTornadoHTTP(address, connection_timeout)
 
@@ -109,6 +118,10 @@ class TornadoHttpRpcProxy(RpcProxy):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class TornadoAsyncHttpRpcProxy(RpcProxy):
+    def __init__(self, address, slots=None, connection_timeout=DEFAULT_TORNADO_CONNECTION_TIMEOUT, **kwargs):
+        super(TornadoAsyncHttpRpcProxy, self).__init__(address, slots=slots, connection_timeout=connection_timeout,
+                                                       **kwargs)
+
     def get_transport(self, address, connection_timeout):
         return AsynchronousTornadoHTTP(address, connection_timeout)
 

@@ -138,10 +138,12 @@ class AsynchronousHTTP(HTTPTransport):
 # base RPC proxy specification
 #
 # ----------------------------------------------------------------------------------------------------------------------
+DEFAULT_CONNECTION_TIMEOUT = 10
+
 class RpcProxy(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, address, slots=None, connection_timeout=10, **kwargs):
+    def __init__(self, address, slots=None, connection_timeout=DEFAULT_CONNECTION_TIMEOUT, **kwargs):
         self._slots = slots
         self._log = get_logger(owner=self)
         self._transport = self.get_transport(address, connection_timeout)
