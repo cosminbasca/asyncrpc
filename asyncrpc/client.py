@@ -4,6 +4,7 @@ import inspect
 import socket
 import traceback
 from geventhttpclient import HTTPClient
+from asyncrpc.util import format_address
 from asyncrpc.log import get_logger
 from asyncrpc.exceptions import HTTPRpcNoBodyException, handle_exception, ErrorMessage
 from asyncrpc.commands import Command
@@ -46,43 +47,114 @@ _MAX_RETRIES = 100
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
+# base Transport class
+#
+# ----------------------------------------------------------------------------------------------------------------------
+class HTTPTransport(object):
+    __metaclass__ = ABCMeta
+
+    def __init__(self, address, connection_timeout):
+        self._log = get_logger(owner=self)
+        self._host, self._port = format_address(address)
+        self._connection_timeout = connection_timeout
+        self._url_base = 'http://{0}:{1}'.format(self._host, self._port)
+        self._url_path = '/rpc'
+
+    @property
+    def address(self):
+        return '{0}:{1}'.format(self._host, self._port)
+
+    @property
+    def url(self):
+        return '{0}{1}'.format(self._url_base, self._url_path)
+
+    @property
+    def host(self):
+        return self._host
+
+    @property
+    def port(self):
+        return self._port
+
+    @property
+    def url_base(self):
+        return self._url_base
+
+    @property
+    def url_path(self):
+        return self._url_path
+
+    @property
+    def connection_timeout(self):
+        return self._connection_timeout
+
+    @abstractmethod
+    def content(self, response):
+        return None
+
+    @abstractmethod
+    def status_code(self, response):
+        return 500
+
+    @abstractmethod
+    def __call__(self, message):
+        pass
+
+
+class SynchronousHTTP(HTTPTransport):
+    def __init__(self, address, connection_timeout):
+        super(SynchronousHTTP, self).__init__(address, connection_timeout)
+        self._post = partial(requests.post, self.url)
+
+    @retry(retry_on_exception=_if_connection_error, stop_max_attempt_number=_MAX_RETRIES)
+    def __call__(self, message):
+        return self._post(data=message)
+
+    def content(self, response):
+        return response.content
+
+    def status_code(self, response):
+        return response.status_code
+
+
+class AsynchronousHTTP(HTTPTransport):
+    def __init__(self, address, connection_timeout):
+        super(AsynchronousHTTP, self).__init__(address, connection_timeout)
+        self._post = partial(HTTPClient(self.host, port=self.port, connection_timeout=self.connection_timeout,
+                                        network_timeout=self.connection_timeout).post, self.url_path)
+
+    @retry(retry_on_exception=_if_connection_error, stop_max_attempt_number=_MAX_RETRIES)
+    def __call__(self, message):
+        return self._post(body=message)
+
+    def content(self, response):
+        return response.read()
+
+    def status_code(self, response):
+        return response.status_code
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
 # base RPC proxy specification
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class RpcProxy(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, address, slots=None, **kwargs):
-        if isinstance(address, (tuple, list)):
-            host, port = address
-        elif isinstance(address, (str, unicode)):
-            host, port = address.split(':')
-            port = int(port)
-        else:
-            raise ValueError(
-                'address, must be either a tuple/list or string of the name:port form, got {0}'.format(address))
-
-        self._address = (host, port)
+    def __init__(self, address, slots=None, connection_timeout=10, **kwargs):
         self._slots = slots
         self._log = get_logger(owner=self)
-        self._url_base = 'http://{0}:{1}'.format(host, port)
-        self._url_path = '/rpc'
+        self._transport = self.get_transport(address, connection_timeout)
+        if not isinstance(self._transport, HTTPTransport):
+            raise ValueError('transport must be an instance of HTTPTransport')
 
     @property
     def url(self):
         return '{0}{1}'.format(self._url_base, self._url_path)
 
     @abstractmethod
-    def _content(self, response):
+    def get_transport(self, address, connection_timeout):
         return None
-
-    @abstractmethod
-    def _status_code(self, response):
-        return 500
-
-    @abstractmethod
-    def _http_call(self, message):
-        pass
 
     def __getattr__(self, func):
         def func_wrapper(*args, **kwargs):
@@ -95,8 +167,8 @@ class RpcProxy(object):
         return func_wrapper
 
     def _get_result(self, response):
-        status_code = self._status_code(response)
-        content = self._content(response)
+        status_code = self._transport.status_code(response)
+        content = self._transport.content(response)
         if status_code == 200:
             if content is None:
                 raise HTTPRpcNoBodyException(self._address, traceback.format_exc())
@@ -119,51 +191,28 @@ class RpcProxy(object):
 
     def _rpc_call(self, name, *args, **kwargs):
         self._log.debug("calling {0}".format(name))
-        response = self._http_call(self._message(name, *args, **kwargs))
+        response = self._transport(self._message(name, *args, **kwargs))
         return self._get_result(response)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
-# Requests proxy implementation
+# Single instance synchronous proxy implementation
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class SingleInstanceProxy(RpcProxy):
-    def __init__(self, address, slots=None, **kwargs):
-        super(SingleInstanceProxy, self).__init__(address, slots=slots, **kwargs)
-        self._post = partial(requests.post, self.url)
-
-    @retry(retry_on_exception=_if_connection_error, stop_max_attempt_number=_MAX_RETRIES)
-    def _http_call(self, message):
-        return self._post(data=message)
-
-    def _content(self, response):
-        return response.content
-
-    def _status_code(self, response):
-        return response.status_code
+    def get_transport(self, address, connection_timeout):
+        return SynchronousHTTP(address, connection_timeout)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
-# Requests proxy implementation
+# Single instance asynchronous proxy implementation
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class AsyncSingleInstanceProxy(RpcProxy):
-    def __init__(self, address, slots=None, connection_timeout=10, **kwargs):
-        super(AsyncSingleInstanceProxy, self).__init__(address, slots=slots, **kwargs)
-        self._post = partial(HTTPClient(self._address[0], port=self._address[1], connection_timeout=connection_timeout,
-                                        network_timeout=connection_timeout).post, self._url_path)
-
-    @retry(retry_on_exception=_if_connection_error, stop_max_attempt_number=_MAX_RETRIES)
-    def _http_call(self, message):
-        return self._post(body=message)
-
-    def _content(self, response):
-        return response.read()
-
-    def _status_code(self, response):
-        return response.status_code
+    def get_transport(self, address, connection_timeout):
+        return AsynchronousHTTP(address, connection_timeout)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -178,6 +227,10 @@ class RegistryRpcProxy(RpcProxy):
         super(RegistryRpcProxy, self).__init__(address, slots=slots, **kwargs)
         self._id = instance_id
         self._owner = owner
+
+    @abstractmethod
+    def get_transport(self, address, connection_timeout):
+        return None
 
     @property
     def id(self):
@@ -207,45 +260,22 @@ class RegistryRpcProxy(RpcProxy):
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
-# Requests proxy implementation
+# Multi instance synchronous proxy implementation
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class Proxy(RegistryRpcProxy):
-    def __init__(self, instance_id, address, slots=None, owner=True, **kwargs):
-        super(Proxy, self).__init__(instance_id, address, slots=slots, owner=owner)
-        self._post = partial(requests.post, self.url)
-
-    @retry(retry_on_exception=_if_connection_error, stop_max_attempt_number=_MAX_RETRIES)
-    def _http_call(self, message):
-        return self._post(data=message)
-
-    def _content(self, response):
-        return response.content
-
-    def _status_code(self, response):
-        return response.status_code
+    def get_transport(self, address, connection_timeout):
+        return SynchronousHTTP(address, connection_timeout)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
-# Requests proxy implementation
+# Multi instance asynchronous proxy implementation
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class AsyncProxy(RegistryRpcProxy):
-    def __init__(self, instance_id, address, slots=None, owner=True, connection_timeout=10, **kwargs):
-        super(AsyncProxy, self).__init__(instance_id, address, slots=slots, owner=owner, **kwargs)
-        self._post = partial(HTTPClient(self._address[0], port=self._address[1], connection_timeout=connection_timeout,
-                                        network_timeout=connection_timeout).post, self._url_path[1:])
-
-    @retry(retry_on_exception=_if_connection_error, stop_max_attempt_number=_MAX_RETRIES)
-    def _http_call(self, message):
-        return self._post(body=message)
-
-    def _content(self, response):
-        return response.read()
-
-    def _status_code(self, response):
-        return response.status_code
+    def get_transport(self, address, connection_timeout):
+        return AsynchronousHTTP(address, connection_timeout)
 
 
 # ----------------------------------------------------------------------------------------------------------------------

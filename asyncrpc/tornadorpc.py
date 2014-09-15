@@ -10,7 +10,7 @@ from asyncrpc.server import RpcServer, shutdown_tornado
 from asyncrpc.process import BackgroundRunner
 from asyncrpc.exceptions import RpcServerNotStartedException, handle_exception, ErrorMessage
 from asyncrpc.messaging import loads, dumps
-from asyncrpc.client import RpcProxy, exposed_methods
+from asyncrpc.client import RpcProxy, exposed_methods, HTTPTransport
 from asyncrpc.handler import RpcHandler
 from asyncrpc.log import get_logger
 from tornado.ioloop import IOLoop
@@ -32,45 +32,24 @@ if USE_CURL:
     except ImportError:
         pass
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
-# synchronous tornado http rpc proxy
+# asynchronous decorator alias
 #
 # ----------------------------------------------------------------------------------------------------------------------
-class TornadoHttpRpcProxy(RpcProxy):
-    def __init__(self, address, slots=None, **kwargs):
-        """
-        an HTTP RPC proxy based on the tornado synchronous HTTPClient
+asynchronous = gen.coroutine
 
-        :param address: a (host,port) tuple
-        :param slots: the list of method names the proxy is restricted to
-        :param kwargs: named arguments (passed forward to the RpcProxy base class
-        :return: the synchronous tornado HTTP RPC proxy
-        """
-        super(TornadoHttpRpcProxy, self).__init__(address, slots=slots, **kwargs)
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# Tornado Transport Classes
+#
+# ----------------------------------------------------------------------------------------------------------------------
+class SynchronousTornadoHTTP(HTTPTransport):
+    def __init__(self, address, connection_timeout):
+        super(SynchronousTornadoHTTP, self).__init__(address, connection_timeout)
 
-    def _status_code(self, response):
-        """
-        extracts and returns the HTTP response's status code
-        :param response: an instance of a tornado HTTPResponse
-        :return: the HTTP status code
-        """
-        return response.code
-
-    def _content(self, response):
-        """
-        extracts and returns the HTTP response's body
-        :param response: and instance of a tornado HTTPResponse
-        :return: the HTTPResponse body
-        """
-        return response.body
-
-    def _http_call(self, message):
-        """
-        the HTTP RPC call
-        :param message: the message to send to the RPC server (usually an encoded tuple of method_name, args, kwargs)
-        :return: the HTTP server response
-        """
+    def __call__(self, message):
         http_client = HTTPClient()
         response = ('', None)
         try:
@@ -83,31 +62,19 @@ class TornadoHttpRpcProxy(RpcProxy):
             http_client.close()
         return response
 
-
-# ----------------------------------------------------------------------------------------------------------------------
-#
-# asynchronous decorator alias
-#
-# ----------------------------------------------------------------------------------------------------------------------
-asynchronous = gen.coroutine
-
-# ----------------------------------------------------------------------------------------------------------------------
-#
-# asynchronous tornado http rpc proxy
-#
-# ----------------------------------------------------------------------------------------------------------------------
-class TornadoAsyncHttpRpcProxy(RpcProxy):
-    def __init__(self, address, slots=None, **kwargs):
-        super(TornadoAsyncHttpRpcProxy, self).__init__(address, slots=slots, **kwargs)
-
-    def _status_code(self, response):
-        return response.code
-
-    def _content(self, response):
+    def content(self, response):
         return response.body
 
+    def status_code(self, response):
+        return response.code
+
+
+class AsynchronousTornadoHTTP(HTTPTransport):
+    def __init__(self, address, connection_timeout):
+        super(AsynchronousTornadoHTTP, self).__init__(address, connection_timeout)
+
     @gen.coroutine
-    def _http_call(self, message):
+    def __call__(self, message):
         http_client = AsyncHTTPClient()
         response = ('', None)
         try:
@@ -120,10 +87,35 @@ class TornadoAsyncHttpRpcProxy(RpcProxy):
             http_client.close()
         raise gen.Return(response)
 
+    def content(self, response):
+        return response.body
+
+    def status_code(self, response):
+        return response.code
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# synchronous tornado http rpc proxy
+#
+# ----------------------------------------------------------------------------------------------------------------------
+class TornadoHttpRpcProxy(RpcProxy):
+    def get_transport(self, address, connection_timeout):
+        return SynchronousTornadoHTTP(address, connection_timeout)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# asynchronous tornado http rpc proxy
+#
+# ----------------------------------------------------------------------------------------------------------------------
+class TornadoAsyncHttpRpcProxy(RpcProxy):
+    def get_transport(self, address, connection_timeout):
+        return AsynchronousTornadoHTTP(address, connection_timeout)
+
     @gen.coroutine
     def _rpc_call(self, name, *args, **kwargs):
         self._log.debug("calling {0}".format(name))
-        response = yield self._http_call(self._message(name, *args, **kwargs))
+        response = yield self._transport(self._message(name, *args, **kwargs))
         raise gen.Return(self._get_result(response))
 
 
