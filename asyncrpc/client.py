@@ -255,6 +255,7 @@ class RegistryRpcProxy(RpcProxy):
         return dumps((self._id, name, args, kwargs))
 
     def dispatch(self, command, *args, **kwargs):
+        # TODO: we should use a timeout here ... for slow creating objects for example
         if not command.startswith('#'):
             raise ValueError('{0} is not a valid formed command'.format(command))
         return self._rpc_call(command, *args, **kwargs)
