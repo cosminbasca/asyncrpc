@@ -32,6 +32,7 @@ if USE_CURL:
     except ImportError:
         pass
 
+ASYNC_HTTP_FORCE_INSTANCE=True
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -76,7 +77,7 @@ class AsynchronousTornadoHTTP(HTTPTransport):
 
     @gen.coroutine
     def __call__(self, message):
-        http_client = AsyncHTTPClient()
+        http_client = AsyncHTTPClient(force_instance=ASYNC_HTTP_FORCE_INSTANCE)
         response = ('', None)
         try:
             response = yield http_client.fetch(self.url, body=message, method='POST',
@@ -86,7 +87,8 @@ class AsynchronousTornadoHTTP(HTTPTransport):
             self._log.error("HTTP Error: {0}".format(e))
             handle_exception(ErrorMessage.from_exception(e, address=self.url))
         finally:
-            http_client.close()
+            if ASYNC_HTTP_FORCE_INSTANCE:
+                http_client.close()
         raise gen.Return(response)
 
     def content(self, response):
