@@ -17,6 +17,16 @@ from asyncrpc.registry import Registry
 
 __author__ = 'basca'
 
+_templates_dir = os.path.join(os.path.dirname(__file__), 'templates')
+_static_dir = os.path.join(os.path.dirname(__file__), 'static')
+
+def get_templates_dir():
+    global _templates_dir
+    return _templates_dir
+
+def get_static_dir():
+    global _static_dir
+    return _static_dir
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -44,8 +54,7 @@ class RpcRegistryViewer(object):
         self._registry = registry
         self._with_static = with_static
         self._theme = theme
-        template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-        self._jinja_env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
+        self._jinja_env = Environment(loader=FileSystemLoader(get_templates_dir()), autoescape=True)
 
     def render_template(self, template, **params):
         t = self._jinja_env.get_template(template)
@@ -64,7 +73,7 @@ class RpcRegistryViewer(object):
         app = self.registry_wsgi_app
         if self._with_static:
             app = SharedDataMiddleware(app, {
-                '/static': os.path.join(os.path.dirname(__file__), 'static')
+                '/static': get_static_dir()
             })
         return app(environ, start_response)
 
