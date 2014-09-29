@@ -14,7 +14,7 @@ from asyncrpc.log import get_logger, logger
 from asyncrpc.registry import Registry
 from werkzeug.wsgi import DispatcherMiddleware
 from werkzeug.debug import DebuggedApplication
-from requests import get, post
+from requests import get, post, ConnectionError, HTTPError, Timeout, TooManyRedirects, RequestException
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -74,10 +74,14 @@ def server_is_online(address, method='get'):
         raise ValueError('address, must be either a tuple/list or string of the name:port form')
 
     _http = get if method == 'get' else post
-    response = _http('http://{0}:{1}/ping'.format(host, port))
-    if response.status_code == 200:
-        return response.content.strip().lower() == 'pong'
-    return False
+    try:
+        response = _http('http://{0}:{1}/ping'.format(host, port))
+        if response.status_code == 200:
+            return response.content.strip().lower() == 'pong'
+        return False
+    except RequestException as ex:
+        logger.error('got an exception while checking if server is online: %s', ex)
+        return False
 
 
 def wait_for_server(address, method='get', check_every=0.5, timeout=None, to_start=True):
