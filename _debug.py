@@ -181,14 +181,13 @@ def tornadorpc_server():
             pass
 
     aclass = AClass()
-    server = TornadoRpcServer(('127.0.0.1', 8080), aclass)
+    # server = TornadoRpcServer(('127.0.0.1', 8080), aclass)
     registry = {'AClass': AClass}
 
-    # server = CherrypyWsgiRpcServer(('127.0.0.1', 8080), registry, theme=None)
-    # server = CherrypyWsgiRpcServer(('127.0.0.1', 8080), registry)
-    # server._registry.set(hash(aclass), aclass)
-    # server._registry.set("12213231231", AClass())
-    # server._registry.set("12432432432", AClass())
+    server = CherrypyWsgiRpcServer(('127.0.0.1', 8080), registry)
+    server._registry.set(hash(aclass), aclass)
+    server._registry.set("12213231231", AClass())
+    server._registry.set("12432432432", AClass())
 
     server.server_forever()
 

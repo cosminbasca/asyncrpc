@@ -7,257 +7,174 @@
 
     <!-- bootstrap stuff -->
     <meta name="viewport" content="width=device-width, initial-scale=0.8"/>
-    {% if theme == '386' %}
-    <link href="/static/bootstrap.386/css/bootstrap.min.css" rel="stylesheet"/>
-    <link href="/static/bootstrap.386/css/bootstrap-responsive.min.css" rel="stylesheet"/>
-    {% else %}
     <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet"/>
-    <link href="/static/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet"/>
-    {% endif %}
-    <style>
-        .borderless td {
-            border: none;
-        }
-
-        /* Sticky footer styles
-      -------------------------------------------------- */
-
-        html,
-        body {
-            height: 100%;
-            /* The html and body elements cannot have any padding or margin. */
-        }
-
-        /* Wrapper for page content to push down footer */
-        #wrap {
-            min-height: 100%;
-            height: auto !important;
-            height: 100%;
-            /* Negative indent footer by it's height */
-            margin: 0 auto -60px;
-        }
-
-        /* Set the fixed height of the footer here */
-        #push,
-        #footer {
-            height: 60px;
-        }
-
-        #footer {
-            background-color: #f5f5f5;
-        }
-
-        /* Lastly, apply responsive CSS fixes as necessary */
-        @media (max-width: 767px) {
-            #footer {
-                margin-left: -20px;
-                margin-right: -20px;
-                padding-left: 20px;
-                padding-right: 20px;
-            }
-        }
-
-        /* Custom page CSS
-        -------------------------------------------------- */
-        /* Not required for template or sticky footer method. */
-
-        #wrap > .container {
-            padding-top: 60px;
-        }
-
-        .container .credit {
-            margin: 20px 0;
-        }
-
-        code {
-            font-size: 80%;
-        }
-    </style>
-    <!-- Mouse-over tooltip -->
-    <script src="/static/tooltip/tooltip.js"></script>
-    <link href="/static/tooltip/tooltip.css" rel="stylesheet"/>
-    <link href="/static/css/treeview.css" rel="stylesheet"/>
-
-    <script type="application/javascript">
-        function toggleEditMode() {
-            if ($('#editMode').hasClass('active')) {
-                $('#clearAll').addClass('disabled');
-                $('#editMode').text('Enable Edit Mode');
-            } else {
-                $('#clearAll').removeClass('disabled');
-                $('#editMode').text('Disable Edit Mode');
-            }
-        }
-
-        function reload() {
-            window.location.href = "http://" + window.location.host + window.location.pathname;
-        }
-
-        function clearAll() {
-            if (!$('#clearAll').hasClass('disabled')) {
-                var params = ["clearAll=True"];
-                window.location.href = "http://" + window.location.host + window.location.pathname + '?' + params.join('&');
-            }
-        }
-    </script>
+    <link href="/static/bootstrap/css/bootstrap-theme.min.css" rel="stylesheet"/>
+    <link href="/static/docutils/style.css" rel="stylesheet"/>
 </head>
 
 <body>
-<!-- Part 1: Wrap all page content here -->
-<div id="wrap">
-    <!-- Fixed navbar -->
-    <div class="navbar navbar-fixed-top">
-        <div class="navbar-inner">
-            <div class="container">
-                <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="brand" href="#">AsyncRpc v{{version}}</a>
-
-                <div class="nav-collapse collapse">
-                    <ul class="nav">
-                        <!--<li class="active"><a href="#">Home</a></li>-->
-                        <!--<li><a href="#about">About</a></li>-->
-                        <!--<li><a href="#contact">Contact</a></li>-->
-                    </ul>
-                </div>
-                <!--/.nav-collapse -->
-            </div>
+<!-- Fixed navbar -->
+<!--<nav class="navbar navbar-default navbar-inverse" role="navigation">-->
+<nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">AsyncRpc v{{version}}</a>
         </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1"></div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container-fluid -->
+</nav>
+
+<!-- Everything else -->
+<div class="container-fluid">
+    <div class="page-header">
+        <h3>RPC Registry Viewer <em style="color: #245269;">version&nbsp;{{ version }}</em></h3>
     </div>
 
-    <!-- Everything else -->
-    <div class="container">
-        <div class="page-header">
-            <blockquote>
-                <h3>RPC Registry Viewer version&nbsp;<em>{{ version }}</em></h3>
-                <footer>managed types and instances</footer>
-            </blockquote>
-        </div>
+    <div class="panel panel-default">
+        <!-- Default panel contents -->
+        <div class="panel-heading">Registered types:</div>
 
-        <div class="panel panel-default">
-            <!-- Default panel contents -->
-            <h4>Classes:</h4>
+        <!-- Table -->
+        <table class="table table-hover table-condensed">
+            <thead>
+            <tr class="active">
+                <th>#</th>
+                <th>Type ID</th>
+                <th>Name</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in classes.iteritems() %}
+            <tr class="info">
+                <td>{{loop.index}}</td>
+                <td style="color: #245269;"><strong>{{item[0]}}</strong></td>
+                <td>{{item[1]}}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-            <!-- Table -->
-            <table class="table table-hover table-condensed">
-                <thead>
-                <tr class="active">
-                    <th>#</th>
-                    <th>Type ID</th>
-                    <th>Name</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for item in classes.iteritems() %}
-                <tr class="info">
-                    <td>{{loop.index}}</td>
-                    <td><strong>{{item[0]}}</strong></td>
-                    <td>{{item[1]}}</td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    <div class="btn-group" role="toolbar">
+        <button type="button" class="btn btn-default" onclick="reload();">
+            Reload
+        </button>
+        <button id="editMode" type="button" class="btn btn-default" data-toggle="button"
+                onclick="toggleEditMode();">
+            Enable Edit Mode
+        </button>
+        <button id="clearAll" type="button" class="btn btn-danger disabled" onclick="clearAll();">
+            Clear All Instances
+        </button>
+    </div>
 
-        <br/>
-        <br/>
+    <br/>
+    <br/>
 
-        <div class="btn-group" role="toolbar">
-            <button type="button" class="btn btn-default" onclick="reload();">
-                Reload
-            </button>
-            <button id="editMode" type="button" class="btn btn-default" data-toggle="button"
-                    onclick="toggleEditMode();">
-                Enable Edit Mode
-            </button>
-            <button id="clearAll" type="button" class="btn btn-danger disabled" onclick="clearAll();">
-                Clear All Instances
-            </button>
-        </div>
+    <div class="panel panel-default">
+        <!-- Default panel contents -->
+        <div class="panel-heading">Registered instances:</div>
 
-        <div class="panel panel-default">
-            <!-- Default panel contents -->
-            <h4>Instances:</h4>
+        <!-- Table -->
+        <table class="table table-hover table-condensed">
+            <thead>
+            <tr class="active">
+                <th>#</th>
+                <th>Instance ID</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in instances %}
+            <tr class="">
+                <td>{{loop.index}}</td>
+                <td style="color: #245269;"><em>{{item[0]}}</em></td>
+                <td>
+                    <a data-toggle="collapse" href="#collapse_instance_{{loop.index}}">
+                        <strong>{{item[1][0].__name__}}</strong> instance
+                    </a>
 
-            <!-- Table -->
-            <table class="table table-hover table-condensed">
-                <thead>
-                <tr class="active">
-                    <th>#</th>
-                    <th>Instance ID</th>
-                    <th>Description</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for item in instances %}
-                <tr class="">
-                    <td>{{loop.index}}</td>
-                    <td><em>{{item[0]}}</em></td>
-                    <td>
-                        <a data-toggle="collapse" href="#collapse_instance_{{loop.index}}">
-                            <strong>{{item[1][0].__name__}}</strong> instance
-                        </a>
-
-                        <div id="collapse_instance_{{loop.index}}" class="panel-collapse collapse">
-                            <div class="panel-body">
-                                <table class="table-condensed borderless">
-                                    <thead>
-                                    <tr class="active">
-                                        <th>attribute</th>
-                                        <th>value</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {% for k,v in item[1][1] %}
-                                    <tr>
-                                        <td valign="top">{{ k }}</td>
-                                        <td valign="top">
-                                            {% if theme == '386' %}
-                                            &rArr;
-                                            {% else %}
-                                            <i class="icon-arrow-right"></i>
-                                            {% endif %}
-                                        </td>
-                                        <td valign="top">{{ v }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
+                    <div id="collapse_instance_{{loop.index}}" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            <table class="table-condensed borderless">
+                                <thead>
+                                <tr class="active">
+                                    <th>attribute</th>
+                                    <th>value</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for k,v in item[1][1] %}
+                                <tr>
+                                    <td valign="top">{{ k }}</td>
+                                    <td valign="top">
+                                        <i class="icon-arrow-right"></i>
+                                    </td>
+                                    <td valign="top">{{ v }}</td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
-                    </td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="panel-footer">
+            <small><em>click the instance description to reveal more details</em></small>
         </div>
     </div>
-
-    <div class="footer navbar-fixed-bottom">
-        <div class="container">
-            <p class="text-center text-muted credit">
-                AsyncRpc v{{version}} by <a href="mailto:cosmin.basca@gmail.com">Cosmin Basca</a> &copy; University of
-                Zurich.
-            </p>
-        </div>
-    </div>
-
-    <!-- Le javascript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
-    {% if theme == '386' %}
-    <script src="/static/bootstrap.386/js/bootstrap.min.js"></script>
-    <script type="application/javascript">
-        _386 = { fastLoad: true };
-    </script>
-    {% else %}
-    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
-    {% endif %}
-
 </div>
+
+<div class="footer navbar-fixed-bottom">
+    <div class="container">
+        <p class="text-center text-muted credit">
+            AsyncRpc v{{version}} by <a href="mailto:cosmin.basca@gmail.com">Cosmin Basca</a> &copy; University of
+            Zurich.
+        </p>
+    </div>
+</div>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="/static/js/jquery-2.1.1.min.js"></script>
+<!--<script src="/static/js/jquery-1.11.1.min.js"></script>-->
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="/static/bootstrap/js/bootstrap.min.js"></script>
+<script type="application/javascript">
+    function toggleEditMode() {
+        if ($('#editMode').hasClass('active')) {
+            $('#clearAll').addClass('disabled');
+            $('#editMode').text('Enable Edit Mode');
+        } else {
+            $('#clearAll').removeClass('disabled');
+            $('#editMode').text('Disable Edit Mode');
+        }
+    }
+
+    function reload() {
+        window.location.href = "http://" + window.location.host + window.location.pathname;
+    }
+
+    function clearAll() {
+        if (!$('#clearAll').hasClass('disabled')) {
+            var params = ["clearAll=True"];
+            window.location.href = "http://" + window.location.host + window.location.pathname + '?' + params.join('&');
+        }
+    }
+</script>
+
 </body>
 </html>
