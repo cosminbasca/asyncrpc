@@ -1,3 +1,4 @@
+{% import asyncrpc.tornadoutil as util %}
 <!doctype html>
 
 <html>
@@ -12,7 +13,7 @@
     <link href="/static/bootstrap.386/css/bootstrap-responsive.min.css" rel="stylesheet"/>
     {% else %}
     <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet"/>
-    <link href="/static/bootstrap/css/bootstrap-theme.min.css" rel="stylesheet"/>
+    <link href="/static/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet"/>
     {% end %}
     <link href="/static/docutils/style.css" rel="stylesheet"/>
     <style>
@@ -119,11 +120,6 @@
                 <div class="nav-collapse collapse">
                     <ul class="nav navbar-nav">
                         <li class="dropdown">
-                            <!--<a href="#" class="dropdown-toggle" data-toggle="dropdown">Themes <b class="caret"></b></a>-->
-                            <!--<ul class="dropdown-menu">-->
-                            <!--<li><a href="#" data-theme="default" class="theme-link">Default</a></li>-->
-                            <!--<li><a href="#" data-theme="386" class="theme-link">386</a></li>-->
-                            <!--</ul>-->
                         </li>
                     </ul>
                 </div>
@@ -137,7 +133,7 @@
         <!-- Default panel contents -->
         <div class="page-header">
             <blockquote>
-                <h3>Class <em>{{ str(type(instance))[1:-1].replace("'", "").replace("class ","") }}</em></h3>
+                <h3>Class <em>{{ util.format_class(instance) }}</em></h3>
                 <footer>publicly exposed RPC api</footer>
             </blockquote>
         </div>
@@ -169,13 +165,7 @@
                 </td>
                 <td>
                     <a data-toggle="collapse" href="#collapse{{i}}">
-                        {{ ', '.join(
-
-                        list(info[1]['args'])[1:] +
-                        (['*args'] if info[1]['varargs'] else []) +
-                        (['**kwargs'] if info[1]['keywords'] else [])
-
-                        ) }}
+                        {{ util.format_description(info[1]) }}
                     </a>
 
                     <div id="collapse{{i}}" class="panel-collapse collapse">
@@ -193,7 +183,7 @@
                                         <i class="icon-arrow-right"></i>
                                         {% end %}
                                     </td>
-                                    <td valign="top">{{ v[1:] if k=='args' else v }}</td>
+                                    <td valign="top">{{ util.format_args(k, v) }}</td>
                                 </tr>
                                 {% end %}
                                 {% end %}
@@ -205,7 +195,7 @@
                 <td>
                     {% if info[2] %}
                     <a data-toggle="collapse" href="#collapse_doc{{i}}">
-                        {{ info[2][info[2].find("<dt>")+4: info[2].find("</dt>")] }}
+                        {{ util.format_info(info[2]) }}
                     </a>
 
                     <div id="collapse_doc{{i}}" class="panel-collapse collapse">
@@ -222,30 +212,31 @@
         </table>
 
     </div>
-</div>
 
-<div class="footer navbar-fixed-bottom">
-    <div class="container">
-        <p class="text-center text-muted credit">
-            AsyncRpc v{{version}} by <a href="mailto:cosmin.basca@gmail.com">Cosmin Basca</a> &copy; University of
-            Zurich.
-        </p>
+
+    <div class="footer navbar-fixed-bottom">
+        <div class="container">
+            <p class="text-center text-muted credit">
+                AsyncRpc v{{version}} by <a href="mailto:cosmin.basca@gmail.com">Cosmin Basca</a> &copy; University of
+                Zurich.
+            </p>
+        </div>
     </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
+
+    {% if theme == '386' %}
+    <script src="/static/bootstrap.386/js/bootstrap.min.js"></script>
+    <script type="application/javascript">
+        _386 = { fastLoad: true };
+    </script>
+    {% else %}
+    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+    {% end %}
+
 </div>
-
-<!-- Le javascript
-================================================== -->
-<!-- Placed at the end of the document so the pages load faster -->
-<script src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
-
-{% if theme == '386' %}
-<script src="/static/bootstrap.386/js/bootstrap.min.js"></script>
-<script type="application/javascript">
-    _386 = { fastLoad: true };
-</script>
-{% else %}
-<script src="/static/bootstrap/js/bootstrap.min.js"></script>
-{% end %}
-
 </body>
 </html>

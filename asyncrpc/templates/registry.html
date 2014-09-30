@@ -7,7 +7,13 @@
 
     <!-- bootstrap stuff -->
     <meta name="viewport" content="width=device-width, initial-scale=0.8"/>
-    <link href="/static/bootstrap{{'.386' if theme == '386' else ''}}/css/bootstrap.css" rel="stylesheet"/>
+    {% if theme == '386' %}
+    <link href="/static/bootstrap.386/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/static/bootstrap.386/css/bootstrap-responsive.min.css" rel="stylesheet"/>
+    {% else %}
+    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/static/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet"/>
+    {% endif %}
     <style>
         .borderless td {
             border: none;
@@ -243,11 +249,13 @@
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
-    <script src="/static/bootstrap{{'.386' if theme == '386' else ''}}/js/bootstrap.min.js"></script>
     {% if theme == '386' %}
+    <script src="/static/bootstrap.386/js/bootstrap.min.js"></script>
     <script type="application/javascript">
         _386 = { fastLoad: true };
     </script>
+    {% else %}
+    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
     {% endif %}
 
 </div>
