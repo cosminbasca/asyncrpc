@@ -19,4 +19,5 @@ def format_class(instance):
     return str(type(instance))[1:-1].replace("'", "").replace("class ","")
 
 def async_method_class(info):
-    return 'warning' if info[0] else ''
+    # return 'warning' if info[0] else ''
+    return 'info' if info[0] else ''

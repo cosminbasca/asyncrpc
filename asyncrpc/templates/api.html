@@ -15,8 +15,8 @@
 
 <body>
 <!-- Fixed navbar -->
-<!--<nav class="navbar navbar-default navbar-inverse" role="navigation">-->
-<nav class="navbar navbar-default" role="navigation">
+<!--<nav class="navbar navbar-default navbar-inverse navbar-fixed-top" role="navigation">-->
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
     <div class="container-fluid">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
@@ -30,7 +30,13 @@
             <a class="navbar-brand" href="#">AsyncRpc v{{version}}</a>
         </div>
         <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1"></div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <form class="navbar-form navbar-left">
+                <button type="button" class="btn btn-default" onclick="reload();">
+                    Reload
+                </button>
+            </form>
+        </div>
         <!-- /.navbar-collapse -->
     </div>
     <!-- /.container-fluid -->
@@ -38,6 +44,9 @@
 
 <!-- Everything else -->
 <div class="container-fluid">
+    <br/>
+    <br/>
+
     <!-- Default panel contents -->
     <div class="page-header">
         <h3>Class <em style="color: #245269;">{{ util.format_class(instance) }}</em></h3>
@@ -117,7 +126,7 @@
 </div>
 
 
-<div class="footer navbar-fixed-bottom">
+<div class="navbar-fixed-bottom" style="background-color: rgba(255, 255, 255, 0.7);">
     <div class="container">
         <p class="text-center text-muted credit">
             AsyncRpc v{{version}} by <a href="mailto:cosmin.basca@gmail.com">Cosmin Basca</a> &copy; University of
