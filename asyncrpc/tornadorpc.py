@@ -1,3 +1,4 @@
+from abc import ABCMeta
 from collections import OrderedDict
 import inspect
 import os
@@ -204,15 +205,18 @@ def decorated_nethods(cls, *decorator_names):
             name = next_line.split('def')[1].split('(')[0].strip()
             yield (name)
 
+class TornadoRpcRequestHandler(web.RequestHandler):
+    __metaclass__ = ABCMeta
 
-class InstanceViewerHandler(web.RequestHandler):
     def __init__(self, application, request, **kwargs):
-        super(InstanceViewerHandler, self).__init__(application, request, **kwargs)
+        super(TornadoRpcRequestHandler, self).__init__(application, request, **kwargs)
         if not isinstance(application, TornadoRpcApplication):
             raise ValueError('application must be an instance of TornadoRpcApplication')
         self._instance = application.instance
         self._theme = application.theme
 
+
+class InstanceViewerHandler(TornadoRpcRequestHandler):
     def get(self, *args, **kwargs):
         async_methods = set(decorated_nethods(self._instance.__class__, "asynchronous", "gen.coroutine"))
         methods = exposed_methods(self._instance, with_private=False)
