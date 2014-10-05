@@ -19,6 +19,7 @@ from tornado import gen
 from tornado import web
 from tornado.process import task_id
 from docutils.core import publish_parts
+from asyncrpc.wsgi import get_templates_dir, get_static_dir
 
 __author__ = 'basca'
 
@@ -32,7 +33,7 @@ if USE_CURL:
     except ImportError:
         pass
 
-ASYNC_HTTP_FORCE_INSTANCE=True
+ASYNC_HTTP_FORCE_INSTANCE = True
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -272,19 +273,40 @@ class TornadoRpcApplication(web.Application):
 # single instance http rpc tornado server
 #
 # ----------------------------------------------------------------------------------------------------------------------
+_RESERVED_ROUTES = ('/', '/rpc', '/ping')
+
+
 class TornadoRpcServer(RpcServer):
-    def __init__(self, address, instance, multiprocess=False, theme=None, *args, **kwargs):
+    def __init__(self, address, instance, multiprocess=False, theme=None, handlers=None, debug=False,
+                 xsrf_cookies=False, *args, **kwargs):
         super(TornadoRpcServer, self).__init__(address, *args, **kwargs)
-        settings = {'template_path': os.path.join(os.path.dirname(__file__), 'templates'),
-                    'static_path': os.path.join(os.path.dirname(__file__), 'static'),
-                    # 'xsrf_cookies': True,
-                    # 'debug': True,
+        settings = {
+            'template_path': get_templates_dir(),
+            'static_path': get_static_dir(),
+            'xsrf_cookies': xsrf_cookies,
+            'debug': debug
         }
-        app = TornadoRpcApplication(instance, handlers=[
+        self._log.info('with debug          :%s', debug)
+        self._log.info('with xsrf_cookies   :%s', xsrf_cookies)
+
+        # add the extra handlers
+        if not handlers:
+            handlers = dict()
+        if not isinstance(handlers, dict):
+            raise ValueError('handlers must be None or a dict instance')
+
+        app_handlers = [
             web.url(r"/", InstanceViewerHandler),
             web.url(r"/rpc", TornadoRequestHandler),
             web.url(r"/ping", PingRequestHandler),
-        ], theme=theme, **settings)
+        ]
+        for route, handler in handlers.iteritems():
+            if route in _RESERVED_ROUTES:
+                self._log.error('route %s already exists cannot override', route)
+            else:
+                app_handlers.append(web.url(route, handler))
+
+        app = TornadoRpcApplication(instance, handlers=app_handlers, theme=theme, **settings)
         self._multiprocess = multiprocess
         self._server = HTTPServer(app)
         self._sockets = bind_sockets(address[1], address=address[0])

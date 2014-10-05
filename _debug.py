@@ -181,7 +181,7 @@ def tornadorpc_server():
             pass
 
     aclass = AClass()
-    server = TornadoRpcServer(('127.0.0.1', 8080), aclass)
+    server = TornadoRpcServer(('127.0.0.1', 8080), aclass, debug=True)
     #
     # registry = {'AClass': AClass}
     # server = CherrypyWsgiRpcServer(('127.0.0.1', 8080), registry)
