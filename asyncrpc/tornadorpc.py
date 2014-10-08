@@ -166,7 +166,7 @@ class TornadoAsyncHttpRpcProxy(RpcProxy):
 def async_call(address):
     """
     create and perform an asynchronous HTTP RPC call to a tornado (single instance) RPC server
-    :param address: a (host,port) tuple
+    :param address: a (host,port) tuple or "ip:port" string
     :return: a tornado Future of the RPC response (or an error otherwise)
     """
     return TornadoAsyncHttpRpcProxy(tuple(address) if isinstance(address, list) else address)
@@ -175,7 +175,7 @@ def async_call(address):
 def call(address):
     """
     create and perform a synchronous HTTP RPC call to a tornado (single instance) RCP server
-    :param address: a (host,port) tuple
+    :param address: a (host,port) tuple or "ip:port" string
     :return: the actual RPC response (or an error otherwise)
     """
     return TornadoHttpRpcProxy(tuple(address) if isinstance(address, list) else address)
