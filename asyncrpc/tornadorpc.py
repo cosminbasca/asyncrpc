@@ -11,7 +11,7 @@ from asyncrpc.server import RpcServer, shutdown_tornado
 from asyncrpc.process import BackgroundRunner
 from asyncrpc.exceptions import RpcServerNotStartedException, handle_exception, ErrorMessage
 from asyncrpc.messaging import loads, dumps
-from asyncrpc.client import RpcProxy, exposed_methods, HTTPTransport
+from asyncrpc.client import RpcProxy, exposed_methods, HTTPTransport, BaseHTTPTransport, MultiCastHTTPTransport
 from asyncrpc.handler import RpcHandler
 from asyncrpc.log import get_logger
 from tornado.ioloop import IOLoop
@@ -48,7 +48,7 @@ asynchronous = gen.coroutine
 # Tornado Transport Classes
 #
 # ----------------------------------------------------------------------------------------------------------------------
-class SynchronousTornadoHTTP(HTTPTransport):
+class SynchronousTornadoHTTP(BaseHTTPTransport):
     def __init__(self, address, connection_timeout):
         super(SynchronousTornadoHTTP, self).__init__(address, connection_timeout)
 
@@ -73,7 +73,7 @@ class SynchronousTornadoHTTP(HTTPTransport):
         return response.code
 
 
-class AsynchronousTornadoHTTP(HTTPTransport):
+class AsynchronousTornadoHTTP(BaseHTTPTransport):
     def __init__(self, address, connection_timeout):
         super(AsynchronousTornadoHTTP, self).__init__(address, connection_timeout)
 
@@ -100,6 +100,30 @@ class AsynchronousTornadoHTTP(HTTPTransport):
         return response.code
 
 
+class MulticastAsynchronousTornadoHTTP(MultiCastHTTPTransport):
+    @gen.coroutine
+    def __call__(self, message):
+        http_client = AsyncHTTPClient(force_instance=ASYNC_HTTP_FORCE_INSTANCE)
+        response = ('', None)
+        try:
+            response = yield [
+                http_client.fetch(url, body=message, method='POST', connect_timeout=self.connection_timeout,
+                                  request_timeout=self.connection_timeout) for url in self.urls
+            ]
+        except HTTPError as e:
+            self._log.error("HTTP Error: {0}".format(e))
+            handle_exception(ErrorMessage.from_exception(e, address=self.urls))
+        finally:
+            if ASYNC_HTTP_FORCE_INSTANCE:
+                http_client.close()
+        raise gen.Return(response)
+
+    def content(self, response):
+        return response.body
+
+    def status_code(self, response):
+        return response.code
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # synchronous tornado http rpc proxy
@@ -123,10 +147,13 @@ class TornadoHttpRpcProxy(RpcProxy):
 # ----------------------------------------------------------------------------------------------------------------------
 class TornadoAsyncHttpRpcProxy(RpcProxy):
     def __init__(self, address, slots=None, connection_timeout=DEFAULT_TORNADO_CONNECTION_TIMEOUT, **kwargs):
-        super(TornadoAsyncHttpRpcProxy, self).__init__(address, slots=slots, connection_timeout=connection_timeout,
-                                                       **kwargs)
+        self._is_multicast = isinstance(address, (list, set))
+        super(TornadoAsyncHttpRpcProxy, self).__init__(
+            address, slots=slots, connection_timeout=connection_timeout, **kwargs)
 
     def get_transport(self, address, connection_timeout):
+        if self._is_multicast:
+            return MulticastAsynchronousTornadoHTTP(address, connection_timeout)
         return AsynchronousTornadoHTTP(address, connection_timeout)
 
     @gen.coroutine
@@ -204,6 +231,7 @@ def decorated_nethods(cls, *decorator_names):
             next_line = sourcelines[i + 1]
             name = next_line.split('def')[1].split('(')[0].strip()
             yield (name)
+
 
 class TornadoRpcRequestHandler(web.RequestHandler):
     __metaclass__ = ABCMeta

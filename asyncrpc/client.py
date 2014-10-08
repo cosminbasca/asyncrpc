@@ -53,32 +53,11 @@ _MAX_RETRIES = 100
 class HTTPTransport(object):
     __metaclass__ = ABCMeta
 
+    @abstractmethod
     def __init__(self, address, connection_timeout):
         self._log = get_logger(owner=self)
-        self._host, self._port = format_address(address)
         self._connection_timeout = connection_timeout
-        self._url_base = 'http://{0}:{1}'.format(self._host, self._port)
         self._url_path = '/rpc'
-
-    @property
-    def address(self):
-        return '{0}:{1}'.format(self._host, self._port)
-
-    @property
-    def url(self):
-        return '{0}{1}'.format(self._url_base, self._url_path)
-
-    @property
-    def host(self):
-        return self._host
-
-    @property
-    def port(self):
-        return self._port
-
-    @property
-    def url_base(self):
-        return self._url_base
 
     @property
     def url_path(self):
@@ -101,7 +80,79 @@ class HTTPTransport(object):
         pass
 
 
-class SynchronousHTTP(HTTPTransport):
+class BaseHTTPTransport(HTTPTransport):
+    __metaclass__ = ABCMeta
+
+    def __init__(self, address, connection_timeout):
+        super(BaseHTTPTransport, self).__init__(address, connection_timeout)
+        self._host, self._port = format_address(address)
+        self._url_base = 'http://{0}:{1}'.format(self._host, self._port)
+
+    @property
+    def address(self):
+        return '{0}:{1}'.format(self._host, self._port)
+
+    @property
+    def url(self):
+        return '{0}{1}'.format(self._url_base, self._url_path)
+
+    @property
+    def host(self):
+        return self._host
+
+    @property
+    def port(self):
+        return self._port
+
+    @property
+    def url_base(self):
+        return self._url_base
+
+    @abstractmethod
+    def content(self, response):
+        return None
+
+    @abstractmethod
+    def status_code(self, response):
+        return 500
+
+    @abstractmethod
+    def __call__(self, message):
+        pass
+
+
+class MultiCastHTTPTransport(HTTPTransport):
+    __metaclass__ = ABCMeta
+
+    def __init__(self, address, connection_timeout):
+        super(MultiCastHTTPTransport, self).__init__(address, connection_timeout)
+        if not isinstance(address, (list, set)):
+            address = [address]
+        self._addresses = [format_address(addr) for addr in address]
+        self._url_bases = map(lambda h, p: 'http://{0}:{1}'.format(h, p), self._addresses)
+
+    @property
+    def urls(self):
+        return map(lambda base: '{0}{1}'.format(base, self._url_path), self._url_bases)
+
+    @property
+    def addressess(self):
+        return map(lambda h, p: '{0}:{1}'.format(h, p), self._addresses)
+
+    @abstractmethod
+    def content(self, response):
+        return None
+
+    @abstractmethod
+    def status_code(self, response):
+        return 500
+
+    @abstractmethod
+    def __call__(self, message):
+        pass
+
+
+class SynchronousHTTP(BaseHTTPTransport):
     def __init__(self, address, connection_timeout):
         super(SynchronousHTTP, self).__init__(address, connection_timeout)
         self._post = partial(requests.post, self.url)
@@ -117,7 +168,7 @@ class SynchronousHTTP(HTTPTransport):
         return response.status_code
 
 
-class AsynchronousHTTP(HTTPTransport):
+class AsynchronousHTTP(BaseHTTPTransport):
     def __init__(self, address, connection_timeout):
         super(AsynchronousHTTP, self).__init__(address, connection_timeout)
         self._post = partial(HTTPClient(self.host, port=self.port, connection_timeout=self.connection_timeout,
@@ -139,6 +190,7 @@ class AsynchronousHTTP(HTTPTransport):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 DEFAULT_CONNECTION_TIMEOUT = 10
+
 
 class RpcProxy(object):
     __metaclass__ = ABCMeta
