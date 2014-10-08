@@ -80,11 +80,11 @@ class HTTPTransport(object):
         pass
 
 
-class BaseHTTPTransport(HTTPTransport):
+class SingleCastHTTPTransport(HTTPTransport):
     __metaclass__ = ABCMeta
 
     def __init__(self, address, connection_timeout):
-        super(BaseHTTPTransport, self).__init__(address, connection_timeout)
+        super(SingleCastHTTPTransport, self).__init__(address, connection_timeout)
         self._host, self._port = format_address(address)
         self._url_base = 'http://{0}:{1}'.format(self._host, self._port)
 
@@ -129,7 +129,7 @@ class MultiCastHTTPTransport(HTTPTransport):
         if not isinstance(address, (list, set)):
             address = [address]
         self._addresses = [format_address(addr) for addr in address]
-        self._url_bases = map(lambda h, p: 'http://{0}:{1}'.format(h, p), self._addresses)
+        self._url_bases = map(lambda addr: 'http://{0}:{1}'.format(*addr), self._addresses)
 
     @property
     def urls(self):
@@ -137,7 +137,7 @@ class MultiCastHTTPTransport(HTTPTransport):
 
     @property
     def addressess(self):
-        return map(lambda h, p: '{0}:{1}'.format(h, p), self._addresses)
+        return map(lambda addr: '{0}:{1}'.format(*addr), self._addresses)
 
     @abstractmethod
     def content(self, response):
@@ -152,7 +152,7 @@ class MultiCastHTTPTransport(HTTPTransport):
         pass
 
 
-class SynchronousHTTP(BaseHTTPTransport):
+class SynchronousHTTP(SingleCastHTTPTransport):
     def __init__(self, address, connection_timeout):
         super(SynchronousHTTP, self).__init__(address, connection_timeout)
         self._post = partial(requests.post, self.url)
@@ -168,7 +168,7 @@ class SynchronousHTTP(BaseHTTPTransport):
         return response.status_code
 
 
-class AsynchronousHTTP(BaseHTTPTransport):
+class AsynchronousHTTP(SingleCastHTTPTransport):
     def __init__(self, address, connection_timeout):
         super(AsynchronousHTTP, self).__init__(address, connection_timeout)
         self._post = partial(HTTPClient(self.host, port=self.port, connection_timeout=self.connection_timeout,

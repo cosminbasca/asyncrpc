@@ -11,7 +11,7 @@ from asyncrpc.server import RpcServer, shutdown_tornado
 from asyncrpc.process import BackgroundRunner
 from asyncrpc.exceptions import RpcServerNotStartedException, handle_exception, ErrorMessage
 from asyncrpc.messaging import loads, dumps
-from asyncrpc.client import RpcProxy, exposed_methods, HTTPTransport, BaseHTTPTransport, MultiCastHTTPTransport
+from asyncrpc.client import RpcProxy, exposed_methods, SingleCastHTTPTransport, MultiCastHTTPTransport
 from asyncrpc.handler import RpcHandler
 from asyncrpc.log import get_logger
 from tornado.ioloop import IOLoop
@@ -48,7 +48,7 @@ asynchronous = gen.coroutine
 # Tornado Transport Classes
 #
 # ----------------------------------------------------------------------------------------------------------------------
-class SynchronousTornadoHTTP(BaseHTTPTransport):
+class SynchronousTornadoHTTP(SingleCastHTTPTransport):
     def __init__(self, address, connection_timeout):
         super(SynchronousTornadoHTTP, self).__init__(address, connection_timeout)
 
@@ -73,7 +73,7 @@ class SynchronousTornadoHTTP(BaseHTTPTransport):
         return response.code
 
 
-class AsynchronousTornadoHTTP(BaseHTTPTransport):
+class AsynchronousTornadoHTTP(SingleCastHTTPTransport):
     def __init__(self, address, connection_timeout):
         super(AsynchronousTornadoHTTP, self).__init__(address, connection_timeout)
 
@@ -398,4 +398,3 @@ class TornadoManager(object):
     @property
     def bound_address(self):
         return self._runner.bound_address
-
