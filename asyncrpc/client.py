@@ -201,6 +201,7 @@ class RpcProxy(object):
         self._transport = self.get_transport(address, connection_timeout)
         if not isinstance(self._transport, HTTPTransport):
             raise ValueError('transport must be an instance of HTTPTransport')
+        self._is_multicast = isinstance(self._transport, MultiCastHTTPTransport)
 
     @property
     def url(self):
@@ -246,6 +247,8 @@ class RpcProxy(object):
     def _rpc_call(self, name, *args, **kwargs):
         self._log.debug("calling {0}".format(name))
         response = self._transport(self._message(name, *args, **kwargs))
+        if self._is_multicast:
+            return map(self._get_result, response)
         return self._get_result(response)
 
 
