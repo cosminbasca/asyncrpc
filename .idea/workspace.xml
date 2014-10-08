@@ -4,6 +4,7 @@
     <list default="true" readonly="true" id="5afc6fb3-898e-4aae-a67e-6f6d4cf5c5f1" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/__version__.py" afterPath="$PROJECT_DIR$/asyncrpc/__version__.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/client.py" afterPath="$PROJECT_DIR$/asyncrpc/client.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/tornadorpc.py" afterPath="$PROJECT_DIR$/asyncrpc/tornadorpc.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <list id="738e94f3-25f0-48f0-9d00-449166a0a064" name="Failed commit: Default" comment="asyncrpc version 0.6.4&#10;&#10;- using geventhttpclient instead of grequests for asynchronous mode (no monkey patching )" />
@@ -43,8 +44,8 @@
       <file leaf-file-name="client.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/asyncrpc/client.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.84628975" vertical-offset="3290" max-vertical-offset="6966">
-              <caret line="250" column="50" selection-start-line="250" selection-start-column="50" selection-end-line="250" selection-end-column="50" />
+            <state vertical-scroll-proportion="0.8621908" vertical-offset="3290" max-vertical-offset="6966">
+              <caret line="251" column="8" selection-start-line="251" selection-start-column="8" selection-end-line="251" selection-end-column="8" />
               <folding />
             </state>
           </provider>
@@ -53,8 +54,8 @@
       <file leaf-file-name="tornadorpc.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/asyncrpc/tornadorpc.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="2000" max-vertical-offset="7308">
-              <caret line="162" column="37" selection-start-line="162" selection-start-column="37" selection-end-line="162" selection-end-column="37" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="2144" max-vertical-offset="7344">
+              <caret line="164" column="52" selection-start-line="164" selection-start-column="52" selection-end-line="164" selection-end-column="52" />
               <folding>
                 <element signature="e#0#23#0" expanded="true" />
               </folding>
@@ -120,8 +121,8 @@
         <option value="$PROJECT_DIR$/asyncrpc/tornadoutil.py" />
         <option value="$PROJECT_DIR$/asyncrpc/templates/api.html" />
         <option value="$PROJECT_DIR$/_debug.py" />
-        <option value="$PROJECT_DIR$/asyncrpc/tornadorpc.py" />
         <option value="$PROJECT_DIR$/asyncrpc/client.py" />
+        <option value="$PROJECT_DIR$/asyncrpc/tornadorpc.py" />
         <option value="$PROJECT_DIR$/asyncrpc/__version__.py" />
       </list>
     </option>
@@ -1517,7 +1518,11 @@
       <created>1412782970033</created>
       <updated>1412782970034</updated>
     </task>
-    <option name="localTasksCounter" value="238" />
+    <task id="LOCAL-00238" summary="asyncrpc version 0.10.3&#10;&#10;- tornado supports parallel multicasts in async mode ! :)">
+      <created>1412784742052</created>
+      <updated>1412784742052</updated>
+    </task>
+    <option name="localTasksCounter" value="239" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -1542,7 +1547,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="739" y="50" width="1682" height="1255" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32796487" sideWeight="0.49918962" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -1601,7 +1606,6 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="asyncrpc version 0.7.2&#10;&#10;- argspec preserved for decorated functions&#10;- new asynchronous alias for decorator!" />
     <MESSAGE value="asyncrpc version 0.7.4&#10;&#10;- beutified a bit more" />
     <MESSAGE value="asyncrpc version 0.8.0&#10;&#10;- beutified a bit more" />
     <MESSAGE value="asyncrpc version 0.8.1&#10;&#10;- sorted argspec" />
@@ -1626,7 +1630,8 @@
     <MESSAGE value="asyncrpc version 0.9.15&#10;&#10;- ability to add extra handlers to tornado based server ..." />
     <MESSAGE value="asyncrpc version 0.10.1&#10;&#10;- tornado supports parallel multicasts in async mode ! :)" />
     <MESSAGE value="asyncrpc version 0.10.2&#10;&#10;- tornado supports parallel multicasts in async mode ! :)" />
-    <option name="LAST_COMMIT_MESSAGE" value="asyncrpc version 0.10.2&#10;&#10;- tornado supports parallel multicasts in async mode ! :)" />
+    <MESSAGE value="asyncrpc version 0.10.3&#10;&#10;- tornado supports parallel multicasts in async mode ! :)" />
+    <option name="LAST_COMMIT_MESSAGE" value="asyncrpc version 0.10.3&#10;&#10;- tornado supports parallel multicasts in async mode ! :)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -1983,8 +1988,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/asyncrpc/tornadorpc.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="2000" max-vertical-offset="7308">
-          <caret line="162" column="37" selection-start-line="162" selection-start-column="37" selection-end-line="162" selection-end-column="37" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="2144" max-vertical-offset="7344">
+          <caret line="164" column="52" selection-start-line="164" selection-start-column="52" selection-end-line="164" selection-end-column="52" />
           <folding>
             <element signature="e#0#23#0" expanded="true" />
           </folding>
@@ -2001,8 +2006,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/asyncrpc/client.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.84628975" vertical-offset="3290" max-vertical-offset="6966">
-          <caret line="250" column="50" selection-start-line="250" selection-start-column="50" selection-end-line="250" selection-end-column="50" />
+        <state vertical-scroll-proportion="0.8621908" vertical-offset="3290" max-vertical-offset="6966">
+          <caret line="251" column="8" selection-start-line="251" selection-start-column="8" selection-end-line="251" selection-end-column="8" />
           <folding />
         </state>
       </provider>

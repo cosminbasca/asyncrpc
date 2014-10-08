@@ -160,6 +160,8 @@ class TornadoAsyncHttpRpcProxy(RpcProxy):
     def _rpc_call(self, name, *args, **kwargs):
         self._log.debug("calling {0}".format(name))
         response = yield self._transport(self._message(name, *args, **kwargs))
+        if self._is_multicast:
+            response = map(self._get_result, response)
         raise gen.Return(self._get_result(response))
 
 

@@ -248,7 +248,7 @@ class RpcProxy(object):
         self._log.debug("calling {0}".format(name))
         response = self._transport(self._message(name, *args, **kwargs))
         if self._is_multicast:
-            return map(self._get_result, response)
+            response = map(self._get_result, response)
         return self._get_result(response)
 
 
