@@ -221,15 +221,15 @@ class InstanceViewerHandler(TornadoRpcRequestHandler):
         async_methods = set(decorated_nethods(self._instance.__class__, "asynchronous", "gen.coroutine"))
         methods = exposed_methods(self._instance, with_private=False)
 
-        def _is_decorated(name):
-            return name in async_methods
+        def _is_decorated(method_name):
+            return method_name in async_methods
 
-        def _argspec(name, method):
-            if _is_decorated(name):
-                original = method.func_closure[0].cell_contents
+        def _argspec(methond_name, method_impl):
+            if _is_decorated(methond_name):
+                original = method_impl.func_closure[0].cell_contents
                 spec = inspect.getargspec(original)
             else:
-                spec = inspect.getargspec(method)
+                spec = inspect.getargspec(method_impl)
             spec = spec._asdict()
             if spec['defaults']:
                 r_defaults = list(reversed(spec['defaults']))
@@ -237,8 +237,8 @@ class InstanceViewerHandler(TornadoRpcRequestHandler):
                 spec['defaults'] = list(reversed([(r_args[i], val) for i, val in enumerate(r_defaults)]))
             return spec
 
-        def _doc(method):
-            docstring = inspect.getdoc(method)
+        def _doc(method_impl):
+            docstring = inspect.getdoc(method_impl)
             if docstring:
                 docstring = '\n\t'.join([line.strip() for line in docstring.split('\n')])
                 return publish_parts(docstring, writer_name='html')['fragment'].replace('param', '')
