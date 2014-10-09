@@ -48,6 +48,21 @@ class RpcServerNotStartedException(Exception):
     pass
 
 
+class BackgroundRunnerException(Exception):
+    def __init__(self, message, ex_type, ex_class, tb):
+        super(BackgroundRunnerException, self).__init__(message)
+        self._type = ex_type
+        self._class = ex_class
+        self._tb = ''.join(traceback.format_list(tb)) if tb else ''
+
+    def __str__(self):
+        return """
+BackgroundRunnerException: {0}
+Type: {1}, Class: {2}
+{3}
+        """.format(self.message, self._type, self._class, self._tb)
+
+
 class RpcRemoteException(Exception):
     def __init__(self, message, address, error, remote_type=None):
         super(RpcRemoteException, self).__init__(message.message if isinstance(message, BaseException) else message)

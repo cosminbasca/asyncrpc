@@ -151,6 +151,9 @@ class MultiCastHTTPTransport(HTTPTransport):
     def __call__(self, message):
         pass
 
+    def __len__(self):
+        return len(self._addresses)
+
 
 class SynchronousHTTP(SingleCastHTTPTransport):
     def __init__(self, address, connection_timeout):
@@ -202,6 +205,11 @@ class RpcProxy(object):
         if not isinstance(self._transport, HTTPTransport):
             raise ValueError('transport must be an instance of HTTPTransport')
         self._is_multicast = isinstance(self._transport, MultiCastHTTPTransport)
+        print 'TRANSPORT = ',self._transport
+
+    @property
+    def is_multicast(self):
+        return self._is_multicast
 
     @property
     def url(self):
@@ -238,16 +246,17 @@ class RpcProxy(object):
             else:
                 return response
         else:
-            self._log.error('HTTP exception (status code: {0})\nServer response: {1}'.format(status_code, content))
+            self._log.error('HTTP exception (status code: %s)\nServer response: %s', status_code, content)
             abort(status_code)
 
     def _message(self, name, *args, **kwargs):
         return dumps((name, args, kwargs))
 
     def _rpc_call(self, name, *args, **kwargs):
-        self._log.debug("calling {0}".format(name))
+        self._log.debug("calling %s", name)
         response = self._transport(self._message(name, *args, **kwargs))
         if self._is_multicast:
+            self._log.debug('multicast call to %s sources', len(self._transport))
             response = map(self._get_result, response)
         return self._get_result(response)
 
@@ -299,7 +308,7 @@ class RegistryRpcProxy(RpcProxy):
     def release(self):
         if self._owner:
             try:
-                self._log.debug('releasing server-side instance {0}'.format(self._id))
+                self._log.debug('releasing server-side instance %s', self._id)
                 self.dispatch(Command.RELEASE)
             except ConnectionError:
                 pass
@@ -358,14 +367,14 @@ class ProxyFactory(object):
         if not _proxy:
             _proxy = Proxy(typeid, address)
             self._cache[(address, typeid)] = _proxy
-        self._log.debug("get proxy: {0}".format(_proxy))
+        self._log.debug("get proxy: %s", _proxy)
         return _proxy
 
     def create(self, address, typeid, slots=None, async=False, connection_timeout=10, *args, **kwargs):
         creator = self._proxy(address, typeid)
-        self._log.debug("create {0} proxy".format('async' if async else 'blocking'))
+        self._log.debug("create %s proxy", 'async' if async else 'blocking')
         instance_id = creator.dispatch(Command.NEW, *args, **kwargs)
-        self._log.debug("got new instance id: {0}".format(instance_id))
+        self._log.debug("got new instance id: %s", instance_id)
         if async:
             return AsyncProxy(instance_id, address, slots=slots, connection_timeout=connection_timeout)
         return Proxy(instance_id, address, slots=slots)

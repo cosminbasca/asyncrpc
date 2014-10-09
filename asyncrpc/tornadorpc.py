@@ -18,7 +18,6 @@ from tornado.ioloop import IOLoop
 from tornado.httpclient import AsyncHTTPClient, HTTPError, HTTPClient
 from tornado import gen
 from tornado import web
-from tornado.process import task_id
 from docutils.core import publish_parts
 from asyncrpc.wsgi import get_templates_dir, get_static_dir
 
@@ -60,7 +59,7 @@ class SynchronousTornadoHTTP(SingleCastHTTPTransport):
                                          connect_timeout=self.connection_timeout,
                                          request_timeout=self.connection_timeout)
         except HTTPError as e:
-            self._log.error("HTTP Error: {0}".format(e))
+            self._log.error("HTTP Error: %s", e)
             handle_exception(ErrorMessage.from_exception(e, address=self.url))
         finally:
             http_client.close()
@@ -86,7 +85,7 @@ class AsynchronousTornadoHTTP(SingleCastHTTPTransport):
                                                connect_timeout=self.connection_timeout,
                                                request_timeout=self.connection_timeout)
         except HTTPError as e:
-            self._log.error("HTTP Error: {0}".format(e))
+            self._log.error("HTTP Error: %s", e)
             handle_exception(ErrorMessage.from_exception(e, address=self.url))
         finally:
             if ASYNC_HTTP_FORCE_INSTANCE:
@@ -111,7 +110,7 @@ class MulticastAsynchronousTornadoHTTP(MultiCastHTTPTransport):
                                   request_timeout=self.connection_timeout) for url in self.urls
             ]
         except HTTPError as e:
-            self._log.error("HTTP Error: {0}".format(e))
+            self._log.error("HTTP Error: %s", e)
             handle_exception(ErrorMessage.from_exception(e, address=self.urls))
         finally:
             if ASYNC_HTTP_FORCE_INSTANCE:
@@ -147,20 +146,23 @@ class TornadoHttpRpcProxy(RpcProxy):
 # ----------------------------------------------------------------------------------------------------------------------
 class TornadoAsyncHttpRpcProxy(RpcProxy):
     def __init__(self, address, slots=None, connection_timeout=DEFAULT_TORNADO_CONNECTION_TIMEOUT, **kwargs):
-        self._is_multicast = isinstance(address, (list, set))
         super(TornadoAsyncHttpRpcProxy, self).__init__(
             address, slots=slots, connection_timeout=connection_timeout, **kwargs)
 
     def get_transport(self, address, connection_timeout):
-        if self._is_multicast:
+        if isinstance(address, (list, set)):
             return MulticastAsynchronousTornadoHTTP(address, connection_timeout)
         return AsynchronousTornadoHTTP(address, connection_timeout)
 
     @gen.coroutine
     def _rpc_call(self, name, *args, **kwargs):
-        self._log.debug("calling {0}".format(name))
-        response = yield self._transport(self._message(name, *args, **kwargs))
-        if self._is_multicast:
+        self._log.debug("calling %s", name)
+        message = self._message(name, *args, **kwargs)
+        self._log.debug("mesage %s", message)
+        response = yield self._transport(message)
+        self._log.debug('called it, have response = %s', response)
+        if self.is_multicast:
+            self._log.debug('multicast call to %s sources', len(self._transport))
             response = map(self._get_result, response)
         raise gen.Return(self._get_result(response))
 
@@ -203,7 +205,7 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
     def post(self, *args, **kwargs):
         try:
             name, args, kwargs = loads(self.request.body)
-            self._log.debug('calling function: "{0}"'.format(name))
+            self._log.debug('calling function: "%s"', name)
             result = self.rpc()(name, *args, **kwargs)
             if isinstance(result, Future):
                 result = yield result
@@ -211,7 +213,7 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
         except Exception, e:
             error = ErrorMessage.from_exception(e, address='{0}://{1}'.format(self.request.protocol, self.request.host))
             result = None
-            self._log.error('error: {0}, traceback: \n{1}'.format(e, traceback.format_exc()))
+            self._log.error('error: %s, traceback: \n%s', e, traceback.format_exc())
         response = dumps((result, error))
         self.write(response)
 
@@ -358,7 +360,7 @@ class TornadoRpcServer(RpcServer):
                 self._log.info('starting tornado server in single-process mode')
             IOLoop.instance().start()
         except Exception, e:
-            self._log.error("exception in serve_forever: {0}".format(e))
+            self._log.error("exception in serve_forever: %s", e)
         finally:
             self._log.info('closing the server ...')
             self.stop()

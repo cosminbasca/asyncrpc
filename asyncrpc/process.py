@@ -5,9 +5,11 @@ import os
 from threading import Thread
 import socket
 import errno
+import traceback
 from gevent import reinit
 from gevent.monkey import patch_all
-from asyncrpc.exceptions import InvalidStateException
+import sys
+from asyncrpc.exceptions import InvalidStateException, BackgroundRunnerException
 from asyncrpc.log import get_logger
 from asyncrpc.server import RpcServer, server_is_online
 from asyncrpc.client import dispatch
@@ -32,7 +34,7 @@ class BackgroundRunner(object):
         self._log = get_logger(owner=server_class)
 
         self._address = address if address else ('127.0.0.1', 0)
-        self._log.debug('server address is {0}'.format(self._address))
+        self._log.debug('server address is %s', self._address)
         self._server_class = server_class
 
         self._gevent_patch = gevent_patch
@@ -45,6 +47,7 @@ class BackgroundRunner(object):
         self._stop = lambda: None
 
 
+    # noinspection PyBroadException
     def _background_start(self, writer, shutdown_event, *args, **kwargs):
         try:
             if self._gevent_patch:
@@ -63,6 +66,11 @@ class BackgroundRunner(object):
                     if type(err.args) != tuple or err[0] not in [errno.ETIMEDOUT, errno.EAGAIN, errno.EADDRINUSE]:
                         raise
                     retries -= 1
+                except Exception:
+                    ex_type, ex_class, tb = sys.exc_info()
+                    writer.send((ex_type, ex_class, traceback.extract_tb(tb)))
+                    writer.close()
+                    return
 
             if server:
                 def port_check(_port, _server):
@@ -107,16 +115,21 @@ class BackgroundRunner(object):
         self._process = Process(target=self._background_start, args=(writer, self._shutdown_event,) + args,
                                 kwargs=kwargs)
         self._process.name = type(self).__name__ + '-' + self._process.name
-        self._log.debug('starting background process: {0}'.format(self._process.name))
+        self._log.debug('starting background process: %s', self._process.name)
         self._process.start()
 
-        self._log.info('started background process with pid: {0}'.format(self._process.pid))
+        self._log.info('started background process with pid: %s', self._process.pid)
 
         writer.close()
         self._log.debug('waiting for bound address .. ')
-        self._bound_address = reader.recv()
+        response = reader.recv()
         reader.close()
-        self._log.info('server started on {0}'.format(self._bound_address))
+        if isinstance(response, tuple) and len(response) == 3:
+            raise BackgroundRunnerException("Exception occured while starting the background server process",
+                                            response[0], response[1], response[2])
+        self._bound_address = response
+
+        self._log.info('server started on %s', self._bound_address)
         self._stop = Finalize(self, type(self)._finalize,
                               args=(self._process, self._shutdown_event, self._state, self._log), exitpriority=0)
 

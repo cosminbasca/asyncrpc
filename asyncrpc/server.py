@@ -153,12 +153,12 @@ class CherrypyWsgiRpcServer(WsgiRpcServer):
         engine.exit()
 
     def server_forever(self, *args, **kwargs):
-        self._log.info('starting cherrypy server with a minimum of {0} threads and {1} max threads'.format(
-            self._server.numthreads, self._server.maxthreads if self._server.maxthreads else 'no'))
+        self._log.info('starting cherrypy server with a minimum of %s threads and %s max threads',
+            self._server.numthreads, self._server.maxthreads if self._server.maxthreads else 'no')
         try:
             self._server.start()
         except Exception, e:
-            self._log.error("exception in serve_forever: {0}".format(e))
+            self._log.error("exception in serve_forever: %s", e)
         finally:
             self._log.info('closing the server ...')
             self.stop()
@@ -203,7 +203,7 @@ class TornadoWsgiRpcServer(WsgiRpcServer):
         try:
             ioloop.IOLoop.instance().start()
         except Exception, e:
-            self._log.error("exception in serve_forever: {0}".format(e))
+            self._log.error("exception in serve_forever: %s", e)
         finally:
             self._log.info('closing the server ...')
             self.stop()
