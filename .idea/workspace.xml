@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="5afc6fb3-898e-4aae-a67e-6f6d4cf5c5f1" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/__version__.py" afterPath="$PROJECT_DIR$/asyncrpc/__version__.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/asyncrpc/tornadorpc.py" afterPath="$PROJECT_DIR$/asyncrpc/tornadorpc.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
@@ -55,8 +54,8 @@
       <file leaf-file-name="tornadorpc.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/asyncrpc/tornadorpc.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.37468982" vertical-offset="1624" max-vertical-offset="7416">
-              <caret line="107" column="12" selection-start-line="107" selection-start-column="12" selection-end-line="107" selection-end-column="12" />
+            <state vertical-scroll-proportion="0.2853598" vertical-offset="1624" max-vertical-offset="7290">
+              <caret line="103" column="32" selection-start-line="103" selection-start-column="32" selection-end-line="103" selection-end-column="32" />
               <folding>
                 <element signature="e#0#23#0" expanded="true" />
               </folding>
@@ -133,8 +132,8 @@
         <option value="$PROJECT_DIR$/asyncrpc/test/test_manager.py" />
         <option value="$PROJECT_DIR$/asyncrpc/client.py" />
         <option value="$PROJECT_DIR$/asyncrpc/util.py" />
-        <option value="$PROJECT_DIR$/asyncrpc/tornadorpc.py" />
         <option value="$PROJECT_DIR$/asyncrpc/__version__.py" />
+        <option value="$PROJECT_DIR$/asyncrpc/tornadorpc.py" />
       </list>
     </option>
   </component>
@@ -1561,7 +1560,11 @@
       <created>1412870560033</created>
       <updated>1412870560034</updated>
     </task>
-    <option name="localTasksCounter" value="246" />
+    <task id="LOCAL-00246" summary="asyncrpc version 0.10.10&#10;&#10;- tests pass">
+      <created>1412871523040</created>
+      <updated>1412871523040</updated>
+    </task>
+    <option name="localTasksCounter" value="247" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -1645,7 +1648,6 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="asyncrpc version 0.8.4&#10;&#10;- address is defaulted to string not tuple !" />
     <MESSAGE value="asyncrpc version 0.8.5&#10;&#10;- stop is properly supported now" />
     <MESSAGE value="asyncrpc version 0.8.6&#10;&#10;- cherrypy bus stopping as well ..." />
     <MESSAGE value="asyncrpc version 0.8.7&#10;&#10;- cherrypy bus exiting ..." />
@@ -1670,7 +1672,8 @@
     <MESSAGE value="asyncrpc version 0.10.5&#10;&#10;- bug fixing with multicasts ..." />
     <MESSAGE value="asyncrpc version 0.10.7&#10;&#10;- tests pass" />
     <MESSAGE value="asyncrpc version 0.10.9&#10;&#10;- tests pass" />
-    <option name="LAST_COMMIT_MESSAGE" value="asyncrpc version 0.10.9&#10;&#10;- tests pass" />
+    <MESSAGE value="asyncrpc version 0.10.10&#10;&#10;- tests pass" />
+    <option name="LAST_COMMIT_MESSAGE" value="asyncrpc version 0.10.10&#10;&#10;- tests pass" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -2041,7 +2044,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/asyncrpc/__version__.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.033994336" vertical-offset="0" max-vertical-offset="1059">
+        <state vertical-scroll-proportion="0.044665013" vertical-offset="0" max-vertical-offset="806">
           <caret line="2" column="20" selection-start-line="2" selection-start-column="20" selection-end-line="2" selection-end-column="20" />
           <folding />
         </state>
@@ -2059,8 +2062,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/asyncrpc/tornadorpc.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.37468982" vertical-offset="1624" max-vertical-offset="7416">
-          <caret line="107" column="12" selection-start-line="107" selection-start-column="12" selection-end-line="107" selection-end-column="12" />
+        <state vertical-scroll-proportion="0.2853598" vertical-offset="1624" max-vertical-offset="7290">
+          <caret line="103" column="32" selection-start-line="103" selection-start-column="32" selection-end-line="103" selection-end-column="32" />
           <folding>
             <element signature="e#0#23#0" expanded="true" />
           </folding>
