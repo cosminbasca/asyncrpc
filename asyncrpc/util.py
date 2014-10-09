@@ -2,7 +2,7 @@ __author__ = 'basca'
 
 __types_list = (list, tuple)
 __types_str = (str, unicode)
-
+__types_all =  __types_str + __types_list
 
 def format_address(address):
     if isinstance(address, __types_str):
@@ -20,6 +20,6 @@ def format_addresses(address):
         size = len(address)
         if size == 1:
             return format_address(address[0])
-        elif size >=2 and isinstance(address[1], __types_str):
+        elif size >=2 and isinstance(address[1], __types_all):
             return map(format_address, address)
     return format_address(address)
