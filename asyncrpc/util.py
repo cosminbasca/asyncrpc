@@ -18,6 +18,10 @@ def format_address(address):
 def format_addresses(address):
     if isinstance(address, __types_list):
         size = len(address)
-        if (size >=2 and isinstance(address[1], __types_str)) or size == 1:
+        if size == 1:
+            return format_address(address[0])
+        elif size >=2 and isinstance(address[1], __types_str):
             return map(format_address, address)
+        else:
+            raise ValueError('multiple addresses must all be strings of the "ip:port" format')
     return format_address(address)
