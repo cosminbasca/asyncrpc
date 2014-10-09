@@ -54,8 +54,8 @@
       <file leaf-file-name="util.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/asyncrpc/util.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0989011" vertical-offset="0" max-vertical-offset="728">
-              <caret line="4" column="0" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.5686813" vertical-offset="0" max-vertical-offset="728">
+              <caret line="23" column="47" selection-start-line="23" selection-start-column="47" selection-end-line="23" selection-end-column="47" />
               <folding />
             </state>
           </provider>
@@ -1536,7 +1536,11 @@
       <created>1412866733035</created>
       <updated>1412866733036</updated>
     </task>
-    <option name="localTasksCounter" value="243" />
+    <task id="LOCAL-00243" summary="asyncrpc version 0.10.9&#10;&#10;- tests pass">
+      <created>1412867319039</created>
+      <updated>1412867319039</updated>
+    </task>
+    <option name="localTasksCounter" value="244" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -2036,8 +2040,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/asyncrpc/util.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0989011" vertical-offset="0" max-vertical-offset="728">
-          <caret line="4" column="0" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.5686813" vertical-offset="0" max-vertical-offset="728">
+          <caret line="23" column="47" selection-start-line="23" selection-start-column="47" selection-end-line="23" selection-end-column="47" />
           <folding />
         </state>
       </provider>
