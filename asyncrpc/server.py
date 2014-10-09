@@ -33,7 +33,7 @@ class RpcServer(object):
         else:
             raise ValueError('address, must be either a tuple/list or string of the name:port form')
 
-        self._log = get_logger(owner=self)
+        self._logger = get_logger(owner=self)
         self._address = (host, port)
 
     @property
@@ -153,16 +153,16 @@ class CherrypyWsgiRpcServer(WsgiRpcServer):
         engine.exit()
 
     def server_forever(self, *args, **kwargs):
-        self._log.info('starting cherrypy server with a minimum of %s threads and %s max threads',
+        self._logger.info('starting cherrypy server with a minimum of %s threads and %s max threads',
             self._server.numthreads, self._server.maxthreads if self._server.maxthreads else 'no')
         try:
             self._server.start()
         except Exception, e:
-            self._log.error("exception in serve_forever: %s", e)
+            self._logger.error("exception in serve_forever: %s", e)
         finally:
-            self._log.info('closing the server ...')
+            self._logger.info('closing the server ...')
             self.stop()
-            self._log.info('server shutdown complete')
+            self._logger.info('server shutdown complete')
 
     @property
     def bound_address(self):
@@ -198,16 +198,16 @@ class TornadoWsgiRpcServer(WsgiRpcServer):
         loop.add_callback(shutdown_tornado, loop, self._server)
 
     def server_forever(self, *args, **kwargs):
-        self._log.info(
+        self._logger.info(
             'starting tornado server in single-process mode')
         try:
             ioloop.IOLoop.instance().start()
         except Exception, e:
-            self._log.error("exception in serve_forever: %s", e)
+            self._logger.error("exception in serve_forever: %s", e)
         finally:
-            self._log.info('closing the server ...')
+            self._logger.info('closing the server ...')
             self.stop()
-            self._log.info('server shutdown complete')
+            self._logger.info('server shutdown complete')
 
     @property
     def bound_address(self):

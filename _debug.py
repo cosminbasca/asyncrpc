@@ -3,16 +3,19 @@ from multiprocessing.managers import BaseManager
 from multiprocessing.pool import ThreadPool
 import random
 from time import time, sleep
+import traceback
 from gevent.pool import Pool
 import numpy as np
 from tornado import gen
-from asyncrpc import CherrypyWsgiRpcServer
+from asyncrpc import CherrypyWsgiRpcServer, TornadoManager, TornadoAsyncHttpRpcProxy, get_logger, \
+    AsyncSingleInstanceProxy
 from asyncrpc.client import hidden
 from asyncrpc.manager import AsyncManager
 from asyncrpc.log import set_level
 from asyncrpc.tornadorpc import async_call, call, TornadoRpcServer, asynchronous
 
-set_level('info', name='asyncrpc')
+# set_level('info', name='asyncrpc')
+set_level('critical', name='asyncrpc')
 
 __author__ = 'basca'
 
@@ -121,6 +124,36 @@ def async_vs_blocking():
 
     del manager
 
+class MyClass2(object):
+    def __init__(self, counter=0):
+        self._c = counter
+
+    def add(self, value=1):
+        self._c += value
+        return self._c
+
+    def dec(self, value=1):
+        self._c -= value
+
+    def current_counter(self):
+        return self._c
+
+class AsyncClass(object):
+    def __init__(self):
+        self._log = get_logger(owner=self)
+        self._log.debug('################ CREATED ASYNCCLASS INSTANCE')
+
+    @asynchronous
+    def sum(self, addr, val):
+        self._log.debug('################ CALLING SUM')
+        vals = yield async_call(addr).add(val)
+        self._log.debug('################ VALS = %s',vals)
+        sv = sum(vals)
+        raise gen.Return(sv)
+
+    def some(self, x, y):
+        return x + y
+
 
 def test_tornadorpc(async=False):
     calls = 10000
@@ -191,8 +224,37 @@ def tornadorpc_server():
 
     server.server_forever()
 
+
+@asynchronous
+def do_multicast():
+    print 'multicast .. '
+    try:
+        instance = AsyncClass()
+        manager = TornadoManager(instance, async=True)
+        manager.start()
+
+        i1 = MyClass2(counter=1)
+        i2 = MyClass2(counter=2)
+        m1 = TornadoManager(i1, async=True)
+        m2 = TornadoManager(i2, async=True)
+        m1.start()
+        m2.start()
+
+        cc = call(manager.bound_address).some(10, 11)
+        print 'CC1 = ',cc
+
+        cc = AsyncSingleInstanceProxy(manager.bound_address).sum([ m1.bound_address, m2.bound_address ], 1)
+        print 'CC2 = ', cc
+
+        del m1
+        del m2
+        del manager
+    except Exception as ex:
+        print 'EXCEption ex: ',ex
+        print traceback.format_exc()
+
 if __name__ == '__main__':
-    pass
+    # pass
     # cherrypy ...
     # no workload
     # bench_gevent_man(async=False, workload=False) # DID: 414 calls / second, total calls: 10000
@@ -211,4 +273,5 @@ if __name__ == '__main__':
 
     # test_tornadorpc(async=False)      # DID: 153 calls / second, total calls: 10000
     # test_tornadorpc(async=True)         # DID: 207 calls / second, total calls: 10000
-    tornadorpc_server()
+    # tornadorpc_server()
+    do_multicast()

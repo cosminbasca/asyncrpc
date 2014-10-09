@@ -4,7 +4,7 @@ import inspect
 import socket
 import traceback
 from geventhttpclient import HTTPClient
-from asyncrpc.util import format_address
+from asyncrpc.util import format_address, format_addresses
 from asyncrpc.log import get_logger
 from asyncrpc.exceptions import HTTPRpcNoBodyException, handle_exception, ErrorMessage
 from asyncrpc.commands import Command
@@ -53,9 +53,8 @@ _MAX_RETRIES = 100
 class HTTPTransport(object):
     __metaclass__ = ABCMeta
 
-    @abstractmethod
     def __init__(self, address, connection_timeout):
-        self._log = get_logger(owner=self)
+        self._logger = get_logger(owner=self)
         self._connection_timeout = connection_timeout
         self._url_path = '/rpc'
 
@@ -130,6 +129,7 @@ class MultiCastHTTPTransport(HTTPTransport):
             address = [address]
         self._addresses = [format_address(addr) for addr in address]
         self._url_bases = map(lambda addr: 'http://{0}:{1}'.format(*addr), self._addresses)
+        self._num_sources = len(self._addresses)
 
     @property
     def urls(self):
@@ -138,6 +138,10 @@ class MultiCastHTTPTransport(HTTPTransport):
     @property
     def addressess(self):
         return map(lambda addr: '{0}:{1}'.format(*addr), self._addresses)
+
+    @property
+    def num_sources(self):
+        return self._num_sources
 
     @abstractmethod
     def content(self, response):
@@ -150,9 +154,6 @@ class MultiCastHTTPTransport(HTTPTransport):
     @abstractmethod
     def __call__(self, message):
         pass
-
-    def __len__(self):
-        return len(self._addresses)
 
 
 class SynchronousHTTP(SingleCastHTTPTransport):
@@ -199,13 +200,13 @@ class RpcProxy(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, address, slots=None, connection_timeout=DEFAULT_CONNECTION_TIMEOUT, **kwargs):
+        address = format_addresses(address)
         self._slots = slots
-        self._log = get_logger(owner=self)
+        self._logger = get_logger(owner=self)
         self._transport = self.get_transport(address, connection_timeout)
         if not isinstance(self._transport, HTTPTransport):
             raise ValueError('transport must be an instance of HTTPTransport')
         self._is_multicast = isinstance(self._transport, MultiCastHTTPTransport)
-        print 'TRANSPORT = ',self._transport
 
     @property
     def is_multicast(self):
@@ -246,19 +247,26 @@ class RpcProxy(object):
             else:
                 return response
         else:
-            self._log.error('HTTP exception (status code: %s)\nServer response: %s', status_code, content)
+            self._logger.error('HTTP exception (status code: %s)\nServer response: %s', status_code, content)
             abort(status_code)
+
+    def _process_response(self, response):
+        if self.is_multicast:
+            self._logger.debug('multicast call to %s sources', self._transport.num_sources)
+            result = map(self._get_result, response)
+        else:
+            self._logger.debug('single call')
+            result = self._get_result(response)
+        return result
 
     def _message(self, name, *args, **kwargs):
         return dumps((name, args, kwargs))
 
     def _rpc_call(self, name, *args, **kwargs):
-        self._log.debug("calling %s", name)
+        self._logger.debug("calling %s", name)
         response = self._transport(self._message(name, *args, **kwargs))
-        if self._is_multicast:
-            self._log.debug('multicast call to %s sources', len(self._transport))
-            response = map(self._get_result, response)
-        return self._get_result(response)
+        result = self._process_response(response)
+        return result
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -308,7 +316,7 @@ class RegistryRpcProxy(RpcProxy):
     def release(self):
         if self._owner:
             try:
-                self._log.debug('releasing server-side instance %s', self._id)
+                self._logger.debug('releasing server-side instance %s', self._id)
                 self.dispatch(Command.RELEASE)
             except ConnectionError:
                 pass
@@ -352,9 +360,9 @@ class AsyncProxy(RegistryRpcProxy):
 # ----------------------------------------------------------------------------------------------------------------------
 class ProxyFactory(object):
     def __init__(self):
-        self._log = get_logger(owner=self)
+        self._logger = get_logger(owner=self)
         self._cache = dict()
-        self._log.debug("proxy factory initialized")
+        self._logger.debug("proxy factory initialized")
 
     @staticmethod
     def instance():
@@ -367,14 +375,14 @@ class ProxyFactory(object):
         if not _proxy:
             _proxy = Proxy(typeid, address)
             self._cache[(address, typeid)] = _proxy
-        self._log.debug("get proxy: %s", _proxy)
+        self._logger.debug("get proxy: %s", _proxy)
         return _proxy
 
     def create(self, address, typeid, slots=None, async=False, connection_timeout=10, *args, **kwargs):
         creator = self._proxy(address, typeid)
-        self._log.debug("create %s proxy", 'async' if async else 'blocking')
+        self._logger.debug("create %s proxy", 'async' if async else 'blocking')
         instance_id = creator.dispatch(Command.NEW, *args, **kwargs)
-        self._log.debug("got new instance id: %s", instance_id)
+        self._logger.debug("got new instance id: %s", instance_id)
         if async:
             return AsyncProxy(instance_id, address, slots=slots, connection_timeout=connection_timeout)
         return Proxy(instance_id, address, slots=slots)

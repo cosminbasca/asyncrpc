@@ -27,7 +27,7 @@ class AsyncManager(object):
             if not self._runner.is_running:
                 raise RpcServerNotStartedException('the rcp server has not been started!')
             proxy = create(self.bound_address, type_id, slots, self._async, self._connection_timeout, *args, **kwargs)
-            self._log.debug(
+            self._logger.debug(
                 'created proxy {0} for instance id: {1} of typeid: {2}'.format(type(proxy), proxy.id, type_id))
             return proxy
 
@@ -37,7 +37,7 @@ class AsyncManager(object):
 
     def __init__(self, address=('127.0.0.1', 0), async=False, gevent_patch=False, retries=100, connection_timeout=10,
                  backend=None, **kwargs):
-        self._log = get_logger(owner=self)
+        self._logger = get_logger(owner=self)
         self._async = async
         self._backend = backend
         self._connection_timeout = connection_timeout

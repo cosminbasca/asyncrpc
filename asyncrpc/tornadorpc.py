@@ -59,7 +59,7 @@ class SynchronousTornadoHTTP(SingleCastHTTPTransport):
                                          connect_timeout=self.connection_timeout,
                                          request_timeout=self.connection_timeout)
         except HTTPError as e:
-            self._log.error("HTTP Error: %s", e)
+            self._logger.error("HTTP Error: %s", e)
             handle_exception(ErrorMessage.from_exception(e, address=self.url))
         finally:
             http_client.close()
@@ -85,7 +85,7 @@ class AsynchronousTornadoHTTP(SingleCastHTTPTransport):
                                                connect_timeout=self.connection_timeout,
                                                request_timeout=self.connection_timeout)
         except HTTPError as e:
-            self._log.error("HTTP Error: %s", e)
+            self._logger.error("HTTP Error: %s", e)
             handle_exception(ErrorMessage.from_exception(e, address=self.url))
         finally:
             if ASYNC_HTTP_FORCE_INSTANCE:
@@ -110,7 +110,7 @@ class MulticastAsynchronousTornadoHTTP(MultiCastHTTPTransport):
                                   request_timeout=self.connection_timeout) for url in self.urls
             ]
         except HTTPError as e:
-            self._log.error("HTTP Error: %s", e)
+            self._logger.error("HTTP Error: %s", e)
             handle_exception(ErrorMessage.from_exception(e, address=self.urls))
         finally:
             if ASYNC_HTTP_FORCE_INSTANCE:
@@ -156,15 +156,10 @@ class TornadoAsyncHttpRpcProxy(RpcProxy):
 
     @gen.coroutine
     def _rpc_call(self, name, *args, **kwargs):
-        self._log.debug("calling %s", name)
-        message = self._message(name, *args, **kwargs)
-        self._log.debug("mesage %s", message)
-        response = yield self._transport(message)
-        self._log.debug('called it, have response = %s', response)
-        if self.is_multicast:
-            self._log.debug('multicast call to %s sources', len(self._transport))
-            response = map(self._get_result, response)
-        raise gen.Return(self._get_result(response))
+        self._logger.debug("calling %s", name)
+        response = yield self._transport(self._message(name, *args, **kwargs))
+        result = self._process_response(response)
+        raise gen.Return(result)
 
 
 def async_call(address):
@@ -196,7 +191,7 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
         if not isinstance(application, TornadoRpcApplication):
             raise ValueError('application must be an instance of TornadoRpcApplication')
         self._instance = application.instance
-        self._log = get_logger(owner=self)
+        self._logger = get_logger(owner=self)
 
     def get_instance(self, *args, **kwargs):
         return self._instance
@@ -205,7 +200,7 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
     def post(self, *args, **kwargs):
         try:
             name, args, kwargs = loads(self.request.body)
-            self._log.debug('calling function: "%s"', name)
+            self._logger.debug('calling function: "%s"', name)
             result = self.rpc()(name, *args, **kwargs)
             if isinstance(result, Future):
                 result = yield result
@@ -213,7 +208,7 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
         except Exception, e:
             error = ErrorMessage.from_exception(e, address='{0}://{1}'.format(self.request.protocol, self.request.host))
             result = None
-            self._log.error('error: %s, traceback: \n%s', e, traceback.format_exc())
+            self._logger.error('error: %s, traceback: \n%s', e, traceback.format_exc())
         response = dumps((result, error))
         self.write(response)
 
@@ -322,8 +317,8 @@ class TornadoRpcServer(RpcServer):
             'xsrf_cookies': xsrf_cookies,
             'debug': debug
         }
-        self._log.info('with debug          :%s', debug)
-        self._log.info('with xsrf_cookies   :%s', xsrf_cookies)
+        self._logger.info('with debug          :%s', debug)
+        self._logger.info('with xsrf_cookies   :%s', xsrf_cookies)
 
         # add the extra handlers
         if not handlers:
@@ -338,7 +333,7 @@ class TornadoRpcServer(RpcServer):
         ]
         for route, handler in handlers.iteritems():
             if route in _RESERVED_ROUTES:
-                self._log.error('route %s already exists cannot override', route)
+                self._logger.error('route %s already exists cannot override', route)
             else:
                 app_handlers.append(web.url(route, handler))
 
@@ -353,18 +348,18 @@ class TornadoRpcServer(RpcServer):
     def server_forever(self, *args, **kwargs):
         try:
             if self._multiprocess:
-                self._log.info('starting tornado server in multi-process mode')
+                self._logger.info('starting tornado server in multi-process mode')
                 self._server.start(0)
                 self._server.add_sockets(self._sockets)
             else:
-                self._log.info('starting tornado server in single-process mode')
+                self._logger.info('starting tornado server in single-process mode')
             IOLoop.instance().start()
         except Exception, e:
-            self._log.error("exception in serve_forever: %s", e)
+            self._logger.error("exception in serve_forever: %s", e)
         finally:
-            self._log.info('closing the server ...')
+            self._logger.info('closing the server ...')
             self.stop()
-            self._log.info('server shutdown complete')
+            self._logger.info('server shutdown complete')
 
     @property
     def bound_address(self):
@@ -378,7 +373,7 @@ class TornadoRpcServer(RpcServer):
 
 class TornadoManager(object):
     def __init__(self, instance, address=('127.0.0.1', 0), async=False, gevent_patch=False, retries=100, **kwargs):
-        self._log = get_logger(owner=self)
+        self._logger = get_logger(owner=self)
         self._async = async
         self._instance = instance
         self._runner = BackgroundRunner(server_class=TornadoRpcServer, address=address, gevent_patch=gevent_patch,

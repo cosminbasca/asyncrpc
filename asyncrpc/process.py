@@ -31,10 +31,10 @@ class BackgroundRunner(object):
         if not issubclass(server_class, RpcServer):
             raise ValueError('server_class must be a subclass of RpcServer')
 
-        self._log = get_logger(owner=server_class)
+        self._logger = get_logger(owner=server_class)
 
         self._address = address if address else ('127.0.0.1', 0)
-        self._log.debug('server address is %s', self._address)
+        self._logger.debug('server address is %s', self._address)
         self._server_class = server_class
 
         self._gevent_patch = gevent_patch
@@ -74,24 +74,24 @@ class BackgroundRunner(object):
 
             if server:
                 def port_check(_port, _server):
-                    self._log.debug('started port checker')
+                    self._logger.debug('started port checker')
                     while _port == _server.bound_address[1]:
                         sleep(0.01)
                     writer.send(_server.bound_address)
                     writer.close()
-                    self._log.debug('port checker finalized')
+                    self._logger.debug('port checker finalized')
 
                 port = self._address[1]
                 if port == 0:  # find out the bound port if the initial port is 0
-                    self._log.debug('port is 0, start waiting thread for bound port ... ')
+                    self._logger.debug('port is 0, start waiting thread for bound port ... ')
                     checker = Thread(target=port_check, args=(port, server))
                     checker.daemon = True
                     checker.start()
 
                 def wait_for_shutdown():
-                    self._log.debug('started server stopper thread')
+                    self._logger.debug('started server stopper thread')
                     shutdown_event.wait()
-                    self._log.debug('server shutdown event received')
+                    self._logger.debug('server shutdown event received')
                     server.stop()
                     os._exit(0)
 
@@ -100,11 +100,11 @@ class BackgroundRunner(object):
                 stopper.start()
 
                 server.start()
-                self._log.debug('server shutdown successfully')
+                self._logger.debug('server shutdown successfully')
             else:
                 writer.stop()
         except Exception, err:
-            self._log.error(
+            self._logger.error(
                 'Rpc server exited. {0}'.format('Exception on exit: {0}'.format(err if err.message else '')))
 
     def start(self, wait=True, *args, **kwargs):
@@ -115,13 +115,13 @@ class BackgroundRunner(object):
         self._process = Process(target=self._background_start, args=(writer, self._shutdown_event,) + args,
                                 kwargs=kwargs)
         self._process.name = type(self).__name__ + '-' + self._process.name
-        self._log.debug('starting background process: %s', self._process.name)
+        self._logger.debug('starting background process: %s', self._process.name)
         self._process.start()
 
-        self._log.info('started background process with pid: %s', self._process.pid)
+        self._logger.info('started background process with pid: %s', self._process.pid)
 
         writer.close()
-        self._log.debug('waiting for bound address .. ')
+        self._logger.debug('waiting for bound address .. ')
         response = reader.recv()
         reader.close()
         if isinstance(response, tuple) and len(response) == 3:
@@ -129,16 +129,16 @@ class BackgroundRunner(object):
                                             response[0], response[1], response[2])
         self._bound_address = response
 
-        self._log.info('server started on %s', self._bound_address)
+        self._logger.info('server started on %s', self._bound_address)
         self._stop = Finalize(self, type(self)._finalize,
-                              args=(self._process, self._shutdown_event, self._state, self._log), exitpriority=0)
+                              args=(self._process, self._shutdown_event, self._state, self._logger), exitpriority=0)
 
         if wait:
             max_retries = self._retries
             while True:
                 if server_is_online(self._bound_address):
                     self._state.value = State.STARTED
-                    self._log.info('server started OK')
+                    self._logger.info('server started OK')
                     return True
                 if max_retries == 0:
                     return False
@@ -147,11 +147,11 @@ class BackgroundRunner(object):
         return True
 
     def restart(self, wait=None):
-        self._log.debug('restart')
+        self._logger.debug('restart')
         self._stop()
         self._state.value = State.INITIAL
         self.start(wait=wait)
-        self._log.debug('restarted')
+        self._logger.debug('restarted')
 
     def stop(self):
         self._stop()

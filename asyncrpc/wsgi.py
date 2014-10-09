@@ -97,7 +97,7 @@ class RpcRegistryMiddleware(RpcHandler):
         self._types_registry = types_registry
         self._registry = registry
         self._mutex = RLock()
-        self._log = get_logger(owner=self)
+        self._logger = get_logger(owner=self)
 
         self._handlers = {
             Command.NEW: self._handler_new,
@@ -115,7 +115,7 @@ class RpcRegistryMiddleware(RpcHandler):
             instance = _class(*args, **kwargs)
             instance_id = hash(instance)
             self._registry.set(instance_id, instance)
-            self._log.debug('got instance id:%s', instance_id)
+            self._logger.debug('got instance id:%s', instance_id)
             return instance_id
         finally:
             self._mutex.release()
@@ -133,7 +133,7 @@ class RpcRegistryMiddleware(RpcHandler):
         self._registry.clear()
 
     def get_instance(self, instance_id):
-        self._log.debug('ACCESS ID %s', instance_id)
+        self._logger.debug('ACCESS ID %s', instance_id)
         instance = self._registry.get(instance_id, None)
         if not instance:
             raise InvalidInstanceId('instance with id:{0} not registered'.format(instance_id))
@@ -146,19 +146,19 @@ class RpcRegistryMiddleware(RpcHandler):
             if name.startswith('#'):
                 command_handler = self._handlers.get(name, None)
                 if command_handler:
-                    self._log.info('command: "%s"', name[1:])
+                    self._logger.info('command: "%s"', name[1:])
                     result = command_handler(object_id, name, *args, **kwargs)
                 else:
-                    self._log.error('command "%s" not found', name)
+                    self._logger.error('command "%s" not found', name)
                     raise CommandNotFoundException('command {0} not defined'.format(name[1:]))
             else:
-                self._log.debug('calling function: "%s"', name)
+                self._logger.debug('calling function: "%s"', name)
                 result = self.rpc(object_id)(name, *args, **kwargs)
             error = None
         except Exception, e:
             error = ErrorMessage.from_exception(e, address=request.host_url)
             result = None
-            self._log.error('error: %s, traceback: \n%s', e, traceback.format_exc())
+            self._logger.error('error: %s, traceback: \n%s', e, traceback.format_exc())
 
         response = Response(dumps((result, error, )), mimetype='text/plain')
         return response(environ, start_response)
