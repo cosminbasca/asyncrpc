@@ -102,19 +102,26 @@ class AsynchronousTornadoHTTP(SingleCastHTTPTransport):
 class MulticastAsynchronousTornadoHTTP(MultiCastHTTPTransport):
     @gen.coroutine
     def __call__(self, message):
-        http_client = AsyncHTTPClient(force_instance=ASYNC_HTTP_FORCE_INSTANCE)
+        # http_client = AsyncHTTPClient(force_instance=ASYNC_HTTP_FORCE_INSTANCE)
+        clients = [( AsyncHTTPClient(force_instance=ASYNC_HTTP_FORCE_INSTANCE), url ) for url in self.urls ]
         response = ('', None)
         try:
+            # response = yield [
+            #     http_client.fetch(url, body=message, method='POST', connect_timeout=self.connection_timeout,
+            #                       request_timeout=self.connection_timeout) for url in self.urls
+            # ]
             response = yield [
-                http_client.fetch(url, body=message, method='POST', connect_timeout=self.connection_timeout,
-                                  request_timeout=self.connection_timeout) for url in self.urls
+                client.fetch(url, body=message, method='POST', connect_timeout=self.connection_timeout,
+                                  request_timeout=self.connection_timeout) for client, url in clients
             ]
         except HTTPError as e:
             self._logger.error("HTTP Error: %s", e)
             handle_exception(ErrorMessage.from_exception(e, address=self.urls))
         finally:
             if ASYNC_HTTP_FORCE_INSTANCE:
-                http_client.close()
+                # http_client.close()
+                for client, url in clients:
+                    client.close()
         raise gen.Return(response)
 
     def content(self, response):
