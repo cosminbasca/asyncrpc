@@ -5,6 +5,7 @@ from asyncrpc.log import set_level, get_logger
 from asyncrpc.manager import AsyncManager
 from asyncrpc.tornadorpc import TornadoManager, TornadoHttpRpcProxy, TornadoAsyncHttpRpcProxy, asynchronous, async_call
 from tornado import gen
+from cPickle import dumps, loads
 
 __author__ = 'basca'
 
@@ -191,6 +192,96 @@ class TestManager(TestCase):
         self.assertIsInstance(manager, AsyncManager)
 
         my_instance = manager.MyClass(counter=10)
+        self.assertIsInstance(my_instance, AsyncProxy)
+
+        self.assertEqual(my_instance.current_counter(), 10)
+        my_instance.add(20)
+        self.assertEqual(my_instance.current_counter(), 30)
+        my_instance.dec(30)
+        self.assertEqual(my_instance.current_counter(), 0)
+
+        del manager
+        return SUCCESS
+
+    @capture_exception
+    def test_07_tornadomanager_blocking_pickle(self):
+        instance = MyClass(counter=10)
+        manager = TornadoManager(instance, async=False)
+        manager.start()
+
+        self.assertIsInstance(manager, TornadoManager)
+
+        my_instance = manager.proxy()
+        _rep = dumps(my_instance)
+        my_instance = loads(_rep)
+
+        self.assertIsInstance(my_instance, TornadoHttpRpcProxy)
+
+        self.assertEqual(my_instance.current_counter(), 10)
+        my_instance.add(20)
+        self.assertEqual(my_instance.current_counter(), 30)
+        my_instance.dec(30)
+        self.assertEqual(my_instance.current_counter(), 0)
+
+        del manager
+        return SUCCESS
+
+    @capture_exception
+    def test_08_tornadomanager_async_pickle(self):
+        instance = MyClass(counter=10)
+        manager = TornadoManager(instance, async=True)
+        manager.start()
+        self.assertIsInstance(manager, TornadoManager)
+
+        my_instance = AsyncSingleInstanceProxy(manager.bound_address)
+        _rep = dumps(my_instance)
+        my_instance = loads(_rep)
+
+        cc = my_instance.current_counter()
+        self.assertEqual(cc, 10)
+        my_instance.add(20)
+        cc = my_instance.current_counter()
+        self.assertEqual(cc, 30)
+        my_instance.dec(30)
+        cc = my_instance.current_counter()
+        self.assertEqual(cc, 0)
+
+        del manager
+        return SUCCESS
+
+    @capture_exception
+    def test_09_geventmanager_blocking_pickle(self):
+        manager = self._threaded_manager(async=False)
+        manager.start()
+
+        self.assertIsInstance(manager, AsyncManager)
+
+        my_instance = manager.MyClass(counter=10)
+        my_instance.owner = False
+        _rep = dumps(my_instance)
+        my_instance = loads(_rep)
+        self.assertIsInstance(my_instance, Proxy)
+
+        self.assertEqual(my_instance.current_counter(), 10)
+        my_instance.add(20)
+        self.assertEqual(my_instance.current_counter(), 30)
+        my_instance.dec(30)
+        self.assertEqual(my_instance.current_counter(), 0)
+
+        del manager
+        return SUCCESS
+
+    @capture_exception
+    def test_10_geventmanager_async_pickle(self):
+        manager = self._threaded_manager(async=True)
+        manager.start()
+
+        self.assertIsInstance(manager, AsyncManager)
+
+        my_instance = manager.MyClass(counter=10)
+        my_instance.owner = False
+        _rep = dumps(my_instance)
+        my_instance = loads(_rep)
         self.assertIsInstance(my_instance, AsyncProxy)
 
         self.assertEqual(my_instance.current_counter(), 10)

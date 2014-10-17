@@ -315,6 +315,14 @@ class RegistryRpcProxy(RpcProxy):
     def id(self):
         return self._id
 
+    @property
+    def owner(self):
+        return self._owner
+
+    @owner.setter
+    def owner(self, value):
+        self._owner = True if value else False
+
     def __del__(self):
         self.release()
 
