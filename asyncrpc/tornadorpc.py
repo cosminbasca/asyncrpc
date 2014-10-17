@@ -132,8 +132,8 @@ DEFAULT_TORNADO_CONNECTION_TIMEOUT = 300
 
 
 class TornadoHttpRpcProxy(RpcProxy):
-    def __init__(self, address, slots=None, connection_timeout=DEFAULT_TORNADO_CONNECTION_TIMEOUT, **kwargs):
-        super(TornadoHttpRpcProxy, self).__init__(address, slots=slots, connection_timeout=connection_timeout, **kwargs)
+    def __init__(self, address, slots=None, connection_timeout=DEFAULT_TORNADO_CONNECTION_TIMEOUT):
+        super(TornadoHttpRpcProxy, self).__init__(address, slots=slots, connection_timeout=connection_timeout)
 
     def get_transport(self, address, connection_timeout):
         return SynchronousTornadoHTTP(address, connection_timeout)
@@ -145,9 +145,9 @@ class TornadoHttpRpcProxy(RpcProxy):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class TornadoAsyncHttpRpcProxy(RpcProxy):
-    def __init__(self, address, slots=None, connection_timeout=DEFAULT_TORNADO_CONNECTION_TIMEOUT, **kwargs):
+    def __init__(self, address, slots=None, connection_timeout=DEFAULT_TORNADO_CONNECTION_TIMEOUT):
         super(TornadoAsyncHttpRpcProxy, self).__init__(
-            address, slots=slots, connection_timeout=connection_timeout, **kwargs)
+            address, slots=slots, connection_timeout=connection_timeout)
 
     def get_transport(self, address, connection_timeout):
         if isinstance(address, (list, set)):

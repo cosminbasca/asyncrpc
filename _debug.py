@@ -215,7 +215,7 @@ def tornadorpc_server():
 
     aclass = AClass()
     server = TornadoRpcServer(('127.0.0.1', 8080), aclass, debug=True)
-    #
+
     # registry = {'AClass': AClass}
     # server = CherrypyWsgiRpcServer(('127.0.0.1', 8080), registry)
     # server._registry.set(hash(aclass), aclass)
@@ -273,5 +273,5 @@ if __name__ == '__main__':
 
     # test_tornadorpc(async=False)      # DID: 153 calls / second, total calls: 10000
     # test_tornadorpc(async=True)         # DID: 207 calls / second, total calls: 10000
-    # tornadorpc_server()
-    do_multicast()
+    tornadorpc_server()
+    # do_multicast()

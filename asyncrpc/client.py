@@ -199,11 +199,13 @@ DEFAULT_CONNECTION_TIMEOUT = 10
 class RpcProxy(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, address, slots=None, connection_timeout=DEFAULT_CONNECTION_TIMEOUT, **kwargs):
+    def __init__(self, address, slots=None, connection_timeout=DEFAULT_CONNECTION_TIMEOUT):
         address = format_addresses(address)
+        self._address = address
+        self._connection_timeout = connection_timeout
         self._slots = slots
         self._logger = get_logger(owner=self)
-        self._transport = self.get_transport(address, connection_timeout)
+        self._transport = self.get_transport(self._address, self._connection_timeout)
         if not isinstance(self._transport, HTTPTransport):
             raise ValueError('transport must be an instance of HTTPTransport')
         self._is_multicast = isinstance(self._transport, MultiCastHTTPTransport)
@@ -268,6 +270,9 @@ class RpcProxy(object):
         result = self._process_response(response)
         return result
 
+    def __reduce__(self):
+        return self.__class__, (self._address, self._slots, self._connection_timeout)
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -297,8 +302,8 @@ class AsyncSingleInstanceProxy(RpcProxy):
 class RegistryRpcProxy(RpcProxy):
     __metaclass__ = ABCMeta
 
-    def __init__(self, instance_id, address, slots=None, owner=True, **kwargs):
-        super(RegistryRpcProxy, self).__init__(address, slots=slots, **kwargs)
+    def __init__(self, instance_id, address, slots=None, connection_timeout=DEFAULT_CONNECTION_TIMEOUT, owner=True):
+        super(RegistryRpcProxy, self).__init__(address, slots=slots, connection_timeout=connection_timeout)
         self._id = instance_id
         self._owner = owner
 
@@ -332,6 +337,8 @@ class RegistryRpcProxy(RpcProxy):
             raise ValueError('{0} is not a valid formed command'.format(command))
         return self._rpc_call(command, *args, **kwargs)
 
+    def __reduce__(self):
+        return self.__class__, (self._id, self._address, self._slots, self._connection_timeout, self._owner)
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
