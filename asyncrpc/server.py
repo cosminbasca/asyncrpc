@@ -64,7 +64,7 @@ class RpcServer(object):
         self.server_forever(*args, **kwargs)
 
 
-def server_is_online(address, method='get'):
+def server_is_online(address, method='get', log_error=True):
     if isinstance(address, (tuple, list)):
         host, port = address
     elif isinstance(address, (str, unicode)):
@@ -80,13 +80,14 @@ def server_is_online(address, method='get'):
             return response.content.strip().lower() == 'pong'
         return False
     except RequestException as ex:
-        logger.error('got an exception while checking if server is online: %s', ex)
+        if log_error:
+            logger.error('got an exception while checking if server is online: %s', ex)
         return False
 
 
 def wait_for_server(address, method='get', check_every=0.5, timeout=None, to_start=True):
     def _test():
-        return server_is_online(address, method=method) == to_start
+        return server_is_online(address, method=method, log_error=False) == to_start
 
     def _wait():
         while True:
