@@ -16,6 +16,8 @@ from retrying import retry
 
 __author__ = 'basca'
 
+DEFAULT_GEVENTHTTPCLIENT_CONCURENCY = 1
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # general utility functions & constants
@@ -53,7 +55,7 @@ _MAX_RETRIES = 100
 class HTTPTransport(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, address, connection_timeout):
+    def __init__(self, address, connection_timeout, **kwargs):
         self._logger = get_logger(owner=self)
         self._connection_timeout = connection_timeout
         self._url_path = '/rpc'
@@ -82,8 +84,8 @@ class HTTPTransport(object):
 class SingleCastHTTPTransport(HTTPTransport):
     __metaclass__ = ABCMeta
 
-    def __init__(self, address, connection_timeout):
-        super(SingleCastHTTPTransport, self).__init__(address, connection_timeout)
+    def __init__(self, address, connection_timeout, **kwargs):
+        super(SingleCastHTTPTransport, self).__init__(address, connection_timeout, **kwargs)
         self._host, self._port = format_address(address)
         self._url_base = 'http://{0}:{1}'.format(self._host, self._port)
 
@@ -123,8 +125,8 @@ class SingleCastHTTPTransport(HTTPTransport):
 class MultiCastHTTPTransport(HTTPTransport):
     __metaclass__ = ABCMeta
 
-    def __init__(self, address, connection_timeout):
-        super(MultiCastHTTPTransport, self).__init__(address, connection_timeout)
+    def __init__(self, address, connection_timeout, **kwargs):
+        super(MultiCastHTTPTransport, self).__init__(address, connection_timeout, **kwargs)
         if not isinstance(address, (list, set)):
             address = [address]
         self._addresses = [format_address(addr) for addr in address]
@@ -173,10 +175,11 @@ class SynchronousHTTP(SingleCastHTTPTransport):
 
 
 class AsynchronousHTTP(SingleCastHTTPTransport):
-    def __init__(self, address, connection_timeout):
+    def __init__(self, address, connection_timeout, concurrency=DEFAULT_GEVENTHTTPCLIENT_CONCURENCY):
         super(AsynchronousHTTP, self).__init__(address, connection_timeout)
-        self._post = partial(HTTPClient(self.host, port=self.port, connection_timeout=self.connection_timeout,
-                                        network_timeout=self.connection_timeout).post, self.url_path)
+        self._post = partial(HTTPClient(
+            self.host, port=self.port, connection_timeout=self.connection_timeout,
+            network_timeout=self.connection_timeout, concurrency=concurrency).post, self.url_path)
 
     @retry(retry_on_exception=_if_connection_error, stop_max_attempt_number=_MAX_RETRIES)
     def __call__(self, message):
@@ -290,8 +293,13 @@ class SingleInstanceProxy(RpcProxy):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class AsyncSingleInstanceProxy(RpcProxy):
+    def __init__(self, address, slots=None, connection_timeout=DEFAULT_CONNECTION_TIMEOUT,
+                 concurrency=DEFAULT_GEVENTHTTPCLIENT_CONCURENCY):
+        self._concurrency = concurrency
+        super(AsyncSingleInstanceProxy, self).__init__(address, slots=slots, connection_timeout=connection_timeout)
+
     def get_transport(self, address, connection_timeout):
-        return AsynchronousHTTP(address, connection_timeout)
+        return AsynchronousHTTP(address, connection_timeout, concurrency=self._concurrency)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -348,6 +356,7 @@ class RegistryRpcProxy(RpcProxy):
     def __reduce__(self):
         return self.__class__, (self._id, self._address, self._slots, self._connection_timeout, self._owner)
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # Multi instance synchronous proxy implementation
@@ -364,8 +373,14 @@ class Proxy(RegistryRpcProxy):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class AsyncProxy(RegistryRpcProxy):
+    def __init__(self, instance_id, address, slots=None, connection_timeout=DEFAULT_CONNECTION_TIMEOUT, owner=True,
+                 concurrency=DEFAULT_GEVENTHTTPCLIENT_CONCURENCY):
+        self._concurrency = concurrency
+        super(AsyncProxy, self).__init__(instance_id, address, slots=slots, connection_timeout=connection_timeout,
+                                         owner=owner)
+
     def get_transport(self, address, connection_timeout):
-        return AsynchronousHTTP(address, connection_timeout)
+        return AsynchronousHTTP(address, connection_timeout, concurrency=self._concurrency)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
