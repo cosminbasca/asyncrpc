@@ -23,17 +23,41 @@ from asyncrpc.wsgi import get_templates_dir, get_static_dir
 
 __author__ = 'basca'
 
-# USE_CURL = True
-USE_CURL = False
-if USE_CURL:
-    try:
-        from tornado.curl_httpclient import CurlAsyncHTTPClient
+class TornadoConfig(object):
+    def __init__(self):
+        self._use_curl = False
+        self._force_instance = True
+        self._log = get_logger(owner=self)
 
-        AsyncHTTPClient.configure(CurlAsyncHTTPClient)
-    except ImportError:
-        pass
+    @property
+    def use_curl(self):
+        return self._use_curl
 
-ASYNC_HTTP_FORCE_INSTANCE = True
+    @use_curl.setter
+    def use_curl(self, value):
+        self._use_curl = value
+        if self._use_curl:
+            try:
+                AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
+            except ImportError, err:
+                self._use_curl = False
+                self._log.warn('could not configure Tornado Web to use cURL. Reason: %s', err)
+        else:
+            AsyncHTTPClient.configure("tornado.httpclient.AsyncHTTPClient")
+
+    @property
+    def force_instance(self):
+        return self._force_instance
+
+    @force_instance.setter
+    def force_instance(self, value):
+        self._force_instance = value
+
+    @staticmethod
+    def instance():
+        if not hasattr(TornadoConfig, "_instance"):
+            TornadoConfig._instance = TornadoConfig()
+        return TornadoConfig._instance
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -75,10 +99,11 @@ class SynchronousTornadoHTTP(SingleCastHTTPTransport):
 class AsynchronousTornadoHTTP(SingleCastHTTPTransport):
     def __init__(self, address, connection_timeout):
         super(AsynchronousTornadoHTTP, self).__init__(address, connection_timeout)
+        self._force_instance = TornadoConfig.instance().force_instance
 
     @gen.coroutine
     def __call__(self, message):
-        http_client = AsyncHTTPClient(force_instance=ASYNC_HTTP_FORCE_INSTANCE)
+        http_client = AsyncHTTPClient(force_instance=self._force_instance)
         response = ('', None)
         try:
             response = yield http_client.fetch(self.url, body=message, method='POST',
@@ -88,7 +113,7 @@ class AsynchronousTornadoHTTP(SingleCastHTTPTransport):
             self._logger.error("HTTP Error: %s", e)
             handle_exception(ErrorMessage.from_exception(e, address=self.url))
         finally:
-            if ASYNC_HTTP_FORCE_INSTANCE:
+            if self._force_instance:
                 http_client.close()
         raise gen.Return(response)
 
@@ -100,9 +125,13 @@ class AsynchronousTornadoHTTP(SingleCastHTTPTransport):
 
 
 class MulticastAsynchronousTornadoHTTP(MultiCastHTTPTransport):
+    def __init__(self, address, connection_timeout, **kwargs):
+        super(MulticastAsynchronousTornadoHTTP, self).__init__(address, connection_timeout, **kwargs)
+        self._force_instance = TornadoConfig.instance().force_instance
+
     @gen.coroutine
     def __call__(self, message):
-        clients = [( AsyncHTTPClient(force_instance=ASYNC_HTTP_FORCE_INSTANCE), url ) for url in self.urls]
+        clients = [( AsyncHTTPClient(force_instance=self._force_instance), url ) for url in self.urls]
         response = ('', None)
         try:
             response = yield [
@@ -113,7 +142,7 @@ class MulticastAsynchronousTornadoHTTP(MultiCastHTTPTransport):
             self._logger.error("HTTP Error: %s", e)
             handle_exception(ErrorMessage.from_exception(e, address=self.urls))
         finally:
-            if ASYNC_HTTP_FORCE_INSTANCE:
+            if self._force_instance:
                 [client.close() for client, url in clients]
         raise gen.Return(response)
 

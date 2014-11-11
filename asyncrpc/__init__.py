@@ -9,7 +9,7 @@ from server import RpcServer, CherrypyWsgiRpcServer, TornadoWsgiRpcServer
 from wsgi import RpcRegistryViewer, RpcRegistryMiddleware
 from messaging import dumps, loads, register, registered_libs, select
 from registry import Registry
-from tornadorpc import TornadoManager, TornadoAsyncHttpRpcProxy, TornadoHttpRpcProxy
+from tornadorpc import TornadoManager, TornadoAsyncHttpRpcProxy, TornadoHttpRpcProxy, TornadoConfig
 from util import format_address
 
 set_level('critical', name='cherrypy.error')
