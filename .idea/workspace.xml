@@ -56,38 +56,28 @@
       <file leaf-file-name="tornadorpc.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/asyncrpc/tornadorpc.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="8260">
-              <caret line="46" column="0" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="3580" max-vertical-offset="8260">
+              <caret line="207" column="7" selection-start-line="207" selection-start-column="7" selection-end-line="207" selection-end-column="7" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="process.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/asyncrpc/process.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="2080" max-vertical-offset="3600">
-              <caret line="155" column="19" selection-start-line="155" selection-start-column="19" selection-end-line="155" selection-end-column="19" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="client.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="client.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/asyncrpc/client.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.62510186" vertical-offset="2593" max-vertical-offset="8960">
-              <caret line="183" column="104" selection-start-line="183" selection-start-column="104" selection-end-line="183" selection-end-column="104" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="4633" max-vertical-offset="8960">
+              <caret line="270" column="30" selection-start-line="270" selection-start-column="30" selection-end-line="270" selection-end-column="30" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="manager.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/asyncrpc/manager.py">
+      <file leaf-file-name="__version__.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/asyncrpc/__version__.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="73" max-vertical-offset="1340">
-              <caret line="43" column="31" selection-start-line="43" selection-start-column="31" selection-end-line="43" selection-end-column="31" />
+            <state vertical-scroll-proportion="0.032599837" vertical-offset="0" max-vertical-offset="1227">
+              <caret line="2" column="19" selection-start-line="2" selection-start-column="19" selection-end-line="2" selection-end-column="19" />
               <folding />
             </state>
           </provider>
@@ -114,8 +104,8 @@
     <detection-done>true</detection-done>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="712" />
-    <option name="y" value="62" />
+    <option name="x" value="241" />
+    <option name="y" value="57" />
     <option name="width" value="1586" />
     <option name="height" value="1350" />
   </component>
@@ -2075,11 +2065,11 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="712" y="62" width="1586" height="1350" extended-state="1" />
-    <editor active="false" />
+    <frame x="241" y="57" width="1586" height="1350" extended-state="1" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5768116" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.43277645" sideWeight="0.49970606" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4326693" sideWeight="0.49970606" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.329429" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3207547" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -2476,6 +2466,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.60943854" vertical-offset="4411" max-vertical-offset="12680">
           <caret line="268" column="81" selection-start-line="268" selection-start-column="38" selection-end-line="268" selection-end-column="81" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2491,14 +2482,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.1233616" vertical-offset="0" max-vertical-offset="1297">
           <caret line="8" column="57" selection-start-line="8" selection-start-column="57" selection-end-line="8" selection-end-column="57" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/asyncrpc/tornadorpc.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="8260">
-          <caret line="46" column="0" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -2519,18 +2502,26 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/asyncrpc/__version__.py">
+    <entry file="file://$PROJECT_DIR$/asyncrpc/tornadorpc.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.032599837" vertical-offset="0" max-vertical-offset="1227">
-          <caret line="2" column="19" selection-start-line="2" selection-start-column="19" selection-end-line="2" selection-end-column="19" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="3580" max-vertical-offset="8260">
+          <caret line="207" column="7" selection-start-line="207" selection-start-column="7" selection-end-line="207" selection-end-column="7" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/asyncrpc/client.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.62510186" vertical-offset="2593" max-vertical-offset="8960">
-          <caret line="183" column="104" selection-start-line="183" selection-start-column="104" selection-end-line="183" selection-end-column="104" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="4633" max-vertical-offset="8960">
+          <caret line="270" column="30" selection-start-line="270" selection-start-column="30" selection-end-line="270" selection-end-column="30" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/asyncrpc/__version__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.032599837" vertical-offset="0" max-vertical-offset="1227">
+          <caret line="2" column="19" selection-start-line="2" selection-start-column="19" selection-end-line="2" selection-end-column="19" />
           <folding />
         </state>
       </provider>
