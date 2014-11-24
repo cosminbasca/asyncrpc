@@ -194,7 +194,7 @@ class AsynchronousHTTP(SingleCastHTTPTransport):
                     self._post = partial(HTTPClient(
                         self.host, port=self.port, connection_timeout=self.connection_timeout,
                         network_timeout=self.connection_timeout, concurrency=self._concurrency).post, self.url_path)
-                    return self._port(body=message)
+                    return self._post(body=message)
                 else:
                     raise e
             else:
