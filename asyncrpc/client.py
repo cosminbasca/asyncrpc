@@ -3,6 +3,7 @@ from functools import partial
 import inspect
 import socket
 import traceback
+import errno
 from geventhttpclient import HTTPClient
 from asyncrpc.util import format_address, format_addresses
 from asyncrpc.log import get_logger
@@ -177,13 +178,27 @@ class SynchronousHTTP(SingleCastHTTPTransport):
 class AsynchronousHTTP(SingleCastHTTPTransport):
     def __init__(self, address, connection_timeout, concurrency=DEFAULT_GEVENTHTTPCLIENT_CONCURENCY):
         super(AsynchronousHTTP, self).__init__(address, connection_timeout)
+        self._concurrency = concurrency
         self._post = partial(HTTPClient(
             self.host, port=self.port, connection_timeout=self.connection_timeout,
-            network_timeout=self.connection_timeout, concurrency=concurrency).post, self.url_path)
+            network_timeout=self.connection_timeout, concurrency=self._concurrency).post, self.url_path)
 
     @retry(retry_on_exception=_if_connection_error, stop_max_attempt_number=_MAX_RETRIES)
     def __call__(self, message):
-        return self._post(body=message)
+        try:
+            return self._post(body=message)
+        except socket.error as e:
+            if isinstance(e.args, tuple):
+                if e[0] == errno.EPIPE:
+                    self._logger.debug("connection closed, recreate")
+                    self._post = partial(HTTPClient(
+                        self.host, port=self.port, connection_timeout=self.connection_timeout,
+                        network_timeout=self.connection_timeout, concurrency=self._concurrency).post, self.url_path)
+                    return self._port(body=message)
+                else:
+                    raise e
+            else:
+                raise e
 
     def content(self, response):
         return response.read()

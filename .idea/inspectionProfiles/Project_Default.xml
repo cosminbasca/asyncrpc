@@ -12,32 +12,6 @@
       </option>
     </inspection_tool>
     <inspection_tool class="PyPep8Inspection" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
-    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
-      <option name="ignoredIdentifiers">
-        <value>
-          <list size="18">
-            <item index="0" class="java.lang.String" itemvalue="red.passwords.PasswordsManager.get_passwords" />
-            <item index="1" class="java.lang.String" itemvalue="abc.abstractproperty.get" />
-            <item index="2" class="java.lang.String" itemvalue="abc.abstractproperty.install" />
-            <item index="3" class="java.lang.String" itemvalue="cyqplanner.generator.cysparql" />
-            <item index="4" class="java.lang.String" itemvalue="cysparql.query.*" />
-            <item index="5" class="java.lang.String" itemvalue="numpy.log" />
-            <item index="6" class="java.lang.String" itemvalue="numpy.maximum" />
-            <item index="7" class="java.lang.String" itemvalue="numpy.minimum" />
-            <item index="8" class="java.lang.String" itemvalue="matplotlib.cm.jet" />
-            <item index="9" class="java.lang.String" itemvalue="cyqplanner.matrix.PlanMatrix.matrix" />
-            <item index="10" class="java.lang.String" itemvalue="numpy.number" />
-            <item index="11" class="java.lang.String" itemvalue="numpy.random_integers" />
-            <item index="12" class="java.lang.String" itemvalue="cysparql.get_stars" />
-            <item index="13" class="java.lang.String" itemvalue="msgpackutil.hooks._cybloom.cybloom" />
-            <item index="14" class="java.lang.String" itemvalue="msgpackutil.hooks._cytokyotygr.cytokyotygr" />
-            <item index="15" class="java.lang.String" itemvalue="gevent.socket.*" />
-            <item index="16" class="java.lang.String" itemvalue="geventmanager.rpcproxy.*" />
-            <item index="17" class="java.lang.String" itemvalue="multiprocessing.managers.State.value" />
-          </list>
-        </value>
-      </option>
-    </inspection_tool>
     <inspection_tool class="SpellCheckingInspection" enabled="false" level="TYPO" enabled_by_default="false">
       <option name="processCode" value="true" />
       <option name="processLiterals" value="true" />
