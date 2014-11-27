@@ -18,7 +18,6 @@ __levels__ = {
 
 fileConfig(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logging.ini'))
 
-
 def get_logger(group=None, owner=None):
     name = None
     if isinstance(owner, basestring):
@@ -38,4 +37,10 @@ def set_level(level, name=None, default=logging.WARNING):
     current_logger.setLevel(level)
 
 
+# general logger
 logger = get_logger(sys.modules[__name__])
+
+# the null logger
+null_logger = logging.getLogger('null')
+del null_logger.handlers[:]
+null_logger.addHandler(logging.NullHandler())
