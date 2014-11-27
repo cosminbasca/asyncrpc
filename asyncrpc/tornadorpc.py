@@ -6,6 +6,7 @@ import traceback
 from tornado.concurrent import Future
 from tornado.httpserver import HTTPServer
 from tornado.netutil import bind_sockets
+from tornado.process import fork_processes
 from asyncrpc.__version__ import str_version
 from asyncrpc.server import RpcServer, shutdown_tornado
 from asyncrpc.process import BackgroundRunner
@@ -366,22 +367,21 @@ class TornadoRpcServer(RpcServer):
             else:
                 app_handlers.append(web.url(route, handler))
 
-        app = TornadoRpcApplication(instance, handlers=app_handlers, theme=theme, **settings)
+        self._app = TornadoRpcApplication(instance, handlers=app_handlers, theme=theme, **settings)
         self._multiprocess = multiprocess
-        self._server = HTTPServer(app)
         self._sockets = bind_sockets(address[1], address=address[0])
-        if not self._multiprocess:
-            self._server.add_sockets(self._sockets)
         self._bound_address = self._sockets[0].getsockname()
+        self._server = None
 
     def server_forever(self, *args, **kwargs):
         try:
             if self._multiprocess:
                 self._logger.info('starting tornado server in multi-process mode')
-                self._server.start(0)
-                self._server.add_sockets(self._sockets)
+                fork_processes(0)
             else:
                 self._logger.info('starting tornado server in single-process mode')
+            self._server = HTTPServer(self._app)
+            self._server.add_sockets(self._sockets)
             IOLoop.instance().start()
         except Exception, e:
             self._logger.error("exception in serve_forever: %s", e)

@@ -182,7 +182,8 @@ class CherrypyWsgiRpcServer(WsgiRpcServer):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 def shutdown_tornado(loop, server):
-    server.stop()
+    if server:
+        server.stop()
     loop.stop()
 
 
