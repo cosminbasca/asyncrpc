@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import OrderedDict
-from functools import partial
 from threading import Thread
 from time import sleep
 from cherrypy import engine
@@ -14,7 +13,7 @@ from asyncrpc.log import get_logger, logger
 from asyncrpc.registry import Registry
 from werkzeug.wsgi import DispatcherMiddleware
 from werkzeug.debug import DebuggedApplication
-from requests import get, post, ConnectionError, HTTPError, Timeout, TooManyRedirects, RequestException
+from requests import get, post, RequestException
 
 # ----------------------------------------------------------------------------------------------------------------------
 #

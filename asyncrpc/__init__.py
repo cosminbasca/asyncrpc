@@ -2,7 +2,7 @@ __author__ = 'basca'
 
 from client import hidden, AsyncProxy, Proxy, SingleInstanceProxy, AsyncSingleInstanceProxy, create, dispatch, \
     ProxyFactory, RpcProxy, RegistryRpcProxy
-from log import get_logger, set_level, logger
+from log import  set_logging_level, get_logger, disable_logging, logger
 from manager import AsyncManager
 from process import BackgroundRunner
 from server import RpcServer, CherrypyWsgiRpcServer, TornadoWsgiRpcServer
@@ -12,5 +12,5 @@ from registry import Registry
 from tornadorpc import TornadoManager, TornadoAsyncHttpRpcProxy, TornadoHttpRpcProxy, TornadoConfig
 from util import format_address
 
-set_level('critical', name='cherrypy.error')
-set_level('critical', name='rdflib')
+disable_logging('cherrypy.error')
+disable_logging('rdflib')

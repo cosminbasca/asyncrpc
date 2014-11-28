@@ -19,16 +19,18 @@ with open('README') as f:
 
 pip_deps = [
     'gevent>=1.0.1',
+    'geventhttpclient>=1.1',
     'nose>=1.3.0',
     'rednose>=0.3',
-    'psutil>=2.1.1',
-    'requests>=2.3.0',
-    'geventhttpclient>=1.1',
-    'cherrypy>=3.5.0',
+    'psutil>=2.1.3',
+    'requests>=2.4.3',
+    'cherrypy>=3.6.0',
     'Werkzeug>=0.9.6',
     'Jinja2>=2.7.3',
-    'retrying>=1.2.2',
+    'retrying>=1.3.2',
     'docutils>=0.12',
+    'logbook>=0.8.0',
+    'frozendict>=0.4',
 ]
 
 manual_deps = [

@@ -1,7 +1,7 @@
 import traceback
 from unittest import TestCase
 from asyncrpc.client import Proxy, AsyncProxy, AsyncSingleInstanceProxy
-from asyncrpc.log import set_level, get_logger
+from asyncrpc.log import set_logging_level
 from asyncrpc.manager import AsyncManager
 from asyncrpc.tornadorpc import TornadoManager, TornadoHttpRpcProxy, TornadoAsyncHttpRpcProxy, asynchronous, async_call
 from tornado import gen
@@ -58,7 +58,7 @@ def capture_exception(func):
 
 class TestManager(TestCase):
     def setUp(self):
-        set_level('critical')
+        set_logging_level('critical')
         # set_level('debug')
 
     def _threaded_manager(self, async=False):
