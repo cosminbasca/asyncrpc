@@ -13,6 +13,7 @@ logging_levels = frozendict({
     'warning': logging.WARNING,
     'error': logging.ERROR,
     'critical': logging.CRITICAL,
+    'disabled': logging.CRITICAL + 100,
 })
 
 LEVEL = 'critical'
