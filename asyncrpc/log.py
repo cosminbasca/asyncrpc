@@ -15,8 +15,9 @@ logging_levels = frozendict({
     'critical': logging.CRITICAL,
 })
 
+LEVEL = 'critical'
 
-def get_logger(group=None, owner=None, level='critical'):
+def get_logger(group=None, owner=None, level=LEVEL):
     name = None
     if isinstance(owner, basestring):
         name = '{0}.{1}'.format(group, owner) if isinstance(group, basestring) else owner
@@ -39,4 +40,4 @@ def disable_logging(name=None):
     current_logger.setLevel(logging.CRITICAL + 100)  # this disables logging effectivelly
 
 
-logger = get_logger(sys.modules[__name__])
+logger = get_logger(sys.modules[__name__], level=LEVEL)
