@@ -55,7 +55,11 @@ setup(
         'Programming Language :: JavaScript',
         'Topic :: Software Development'
     ],
-    packages=[NAME, '{0}/test'.format(NAME)],
+    packages=[
+        NAME,
+        '{0}/templates'.format(NAME),
+        '{0}/test'.format(NAME),
+    ],
     package_data={
         NAME: ['static/*.ico',
                'static/js/*.*',

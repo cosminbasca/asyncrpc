@@ -80,7 +80,7 @@ def server_is_online(address, method='get', log_error=True):
         return False
     except RequestException as ex:
         if log_error:
-            logger.error('got an exception while checking if server is online: %s', ex)
+            logger.error('got an exception while checking if server is online: {0}', ex)
         return False
 
 
@@ -142,9 +142,12 @@ class WsgiRpcServer(RpcServer):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class CherrypyWsgiRpcServer(WsgiRpcServer):
+    def __init__(self, address, types_registry, *args, **kwargs):
+        super(CherrypyWsgiRpcServer, self).__init__(address, types_registry, *args, **kwargs)
+        self._bound_address = None
+
     def _init_wsgi_server(self, address, wsgi_app, *args, **kwargs):
         self._server = CherryPyWSGIServer(address, wsgi_app)
-        self._bound_address = None
 
     def stop(self):
         super(CherrypyWsgiRpcServer, self).stop()
@@ -153,12 +156,12 @@ class CherrypyWsgiRpcServer(WsgiRpcServer):
         engine.exit()
 
     def server_forever(self, *args, **kwargs):
-        self._logger.info('starting cherrypy server with a minimum of %s threads and %s max threads',
+        self._logger.info('starting cherrypy server with a minimum of {0} threads and {1} max threads',
             self._server.numthreads, self._server.maxthreads if self._server.maxthreads else 'no')
         try:
             self._server.start()
         except Exception, e:
-            self._logger.error("exception in serve_forever: %s", e)
+            self._logger.error("exception in serve_forever: {0}", e)
         finally:
             self._logger.info('closing the server ...')
             self.stop()
@@ -199,12 +202,11 @@ class TornadoWsgiRpcServer(WsgiRpcServer):
         loop.add_callback(shutdown_tornado, loop, self._server)
 
     def server_forever(self, *args, **kwargs):
-        self._logger.info(
-            'starting tornado server in single-process mode')
+        self._logger.info('starting tornado server in single-process mode')
         try:
             ioloop.IOLoop.instance().start()
         except Exception, e:
-            self._logger.error("exception in serve_forever: %s", e)
+            self._logger.error("exception in serve_forever: {0}", e)
         finally:
             self._logger.info('closing the server ...')
             self.stop()

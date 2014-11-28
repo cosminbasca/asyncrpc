@@ -16,7 +16,7 @@ logging_levels = frozendict({
 })
 
 
-def get_logger(group=None, owner=None):
+def get_logger(group=None, owner=None, level='critical'):
     name = None
     if isinstance(owner, basestring):
         name = '{0}.{1}'.format(group, owner) if isinstance(group, basestring) else owner
@@ -25,8 +25,7 @@ def get_logger(group=None, owner=None):
         if group == '__main__':
             group = os.path.splitext(os.path.basename(sys.modules[group].__file__))[0]
         name = '{0}.{1}'.format(group, owner.__name__ if isclass(owner) else owner.__class__.__name__)
-    return Logger(name)
-
+    return Logger(name, level=level)
 
 def set_logging_level(level, name=None, default='error'):
     if isinstance(level, basestring):

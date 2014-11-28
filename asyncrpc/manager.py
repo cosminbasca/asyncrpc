@@ -27,8 +27,9 @@ class AsyncManager(object):
             if not self._runner.is_running:
                 raise RpcServerNotStartedException('the rcp server has not been started!')
             proxy = create(self.bound_address, type_id, slots, self._async, self._connection_timeout, *args, **kwargs)
-            self._logger.debug(
-                'created proxy {0} for instance id: {1} of typeid: {2}'.format(type(proxy), proxy.id, type_id))
+            if __debug__:
+                self._logger.debug('created proxy {0} for instance id: {1} of typeid: {2}',
+                                   type(proxy), proxy.id, type_id)
             return proxy
 
         proxy_creator.__name__ = type_id

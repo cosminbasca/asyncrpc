@@ -1,7 +1,6 @@
 from abc import ABCMeta
 from collections import OrderedDict
 import inspect
-import os
 import traceback
 from tornado.concurrent import Future
 from tornado.httpserver import HTTPServer
@@ -15,12 +14,12 @@ from asyncrpc.messaging import loads, dumps
 from asyncrpc.client import RpcProxy, exposed_methods, SingleCastHTTPTransport, MultiCastHTTPTransport
 from asyncrpc.handler import RpcHandler
 from asyncrpc.log import get_logger
+from asyncrpc.util import get_templates_dir, get_static_dir
 from tornado.ioloop import IOLoop
 from tornado.httpclient import AsyncHTTPClient, HTTPError, HTTPClient
 from tornado import gen
 from tornado import web
 from docutils.core import publish_parts
-from asyncrpc.wsgi import get_templates_dir, get_static_dir
 
 __author__ = 'basca'
 
@@ -42,7 +41,7 @@ class TornadoConfig(object):
                 AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
             except ImportError, err:
                 self._use_curl = False
-                self._log.warn('could not configure Tornado Web to use cURL. Reason: %s', err)
+                self._log.warn('could not configure Tornado Web to use cURL. Reason: {0}', err)
         else:
             AsyncHTTPClient.configure("tornado.httpclient.AsyncHTTPClient")
 
@@ -84,7 +83,7 @@ class SynchronousTornadoHTTP(SingleCastHTTPTransport):
                                          connect_timeout=self.connection_timeout,
                                          request_timeout=self.connection_timeout)
         except HTTPError as e:
-            self._logger.error("HTTP Error: %s", e)
+            self._logger.error("HTTP Error: {0}", e)
             handle_exception(ErrorMessage.from_exception(e, address=self.url))
         finally:
             http_client.close()
@@ -111,7 +110,7 @@ class AsynchronousTornadoHTTP(SingleCastHTTPTransport):
                                                connect_timeout=self.connection_timeout,
                                                request_timeout=self.connection_timeout)
         except HTTPError as e:
-            self._logger.error("HTTP Error: %s", e)
+            self._logger.error("HTTP Error: {0}", e)
             handle_exception(ErrorMessage.from_exception(e, address=self.url))
         finally:
             if self._force_instance:
@@ -140,7 +139,7 @@ class MulticastAsynchronousTornadoHTTP(MultiCastHTTPTransport):
                              request_timeout=self.connection_timeout) for client, url in clients
             ]
         except HTTPError as e:
-            self._logger.error("HTTP Error: %s", e)
+            self._logger.error("HTTP Error: {0}", e)
             handle_exception(ErrorMessage.from_exception(e, address=self.urls))
         finally:
             if self._force_instance:
@@ -186,7 +185,8 @@ class TornadoAsyncHttpRpcProxy(RpcProxy):
 
     @gen.coroutine
     def _rpc_call(self, name, *args, **kwargs):
-        self._logger.debug("calling %s", name)
+        if __debug__:
+            self._logger.debug("calling {0}", name)
         response = yield self._transport(self._message(name, *args, **kwargs))
         result = self._process_response(response)
         raise gen.Return(result)
@@ -230,7 +230,8 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
     def post(self, *args, **kwargs):
         try:
             name, args, kwargs = loads(self.request.body)
-            self._logger.debug('calling function: "%s"', name)
+            if __debug__:
+                self._logger.debug('calling function: "{0}"', name)
             result = self.rpc()(name, *args, **kwargs)
             if isinstance(result, Future):
                 result = yield result
@@ -238,7 +239,7 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
         except Exception, e:
             error = ErrorMessage.from_exception(e, address='{0}://{1}'.format(self.request.protocol, self.request.host))
             result = None
-            self._logger.error('error: %s, traceback: \n%s', e, traceback.format_exc())
+            self._logger.error('error: {0}, traceback: \n{1}', e, traceback.format_exc())
         response = dumps((result, error))
         self.write(response)
 
@@ -347,8 +348,8 @@ class TornadoRpcServer(RpcServer):
             'xsrf_cookies': xsrf_cookies,
             'debug': debug
         }
-        self._logger.info('with debug          :%s', debug)
-        self._logger.info('with xsrf_cookies   :%s', xsrf_cookies)
+        self._logger.info('with debug          :{0}', debug)
+        self._logger.info('with xsrf_cookies   :{0}', xsrf_cookies)
 
         # add the extra handlers
         if not handlers:
@@ -363,7 +364,7 @@ class TornadoRpcServer(RpcServer):
         ]
         for route, handler in handlers.iteritems():
             if route in _RESERVED_ROUTES:
-                self._logger.error('route %s already exists cannot override', route)
+                self._logger.error('route {0} already exists cannot override', route)
             else:
                 app_handlers.append(web.url(route, handler))
 
@@ -384,7 +385,7 @@ class TornadoRpcServer(RpcServer):
             self._server.add_sockets(self._sockets)
             IOLoop.instance().start()
         except Exception, e:
-            self._logger.error("exception in serve_forever: %s", e)
+            self._logger.error("exception in serve_forever: {0}", e)
         finally:
             self._logger.info('closing the server ...')
             self.stop()

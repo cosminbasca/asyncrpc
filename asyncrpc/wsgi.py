@@ -1,32 +1,21 @@
-from collections import OrderedDict
 import os
-from threading import RLock
 import traceback
+from threading import RLock
+from collections import OrderedDict
 from werkzeug.wsgi import SharedDataMiddleware
 from asyncrpc.commands import Command
-from asyncrpc.exceptions import CommandNotFoundException, InvalidInstanceId, RpcRemoteException, InvalidTypeId, \
-    ErrorMessage
+from asyncrpc.exceptions import CommandNotFoundException, InvalidInstanceId, InvalidTypeId, ErrorMessage
 from asyncrpc.handler import RpcHandler
 from asyncrpc.log import get_logger
 from asyncrpc.__version__ import str_version
 from asyncrpc.messaging import dumps, loads
+from asyncrpc.registry import Registry
 from werkzeug.wrappers import Response, Request
 from inspect import isclass
 from jinja2 import Environment, FileSystemLoader
-from asyncrpc.registry import Registry
+from asyncrpc.util import get_templates_dir, get_static_dir
 
 __author__ = 'basca'
-
-_templates_dir = os.path.join(os.path.dirname(__file__), 'templates')
-_static_dir = os.path.join(os.path.dirname(__file__), 'static')
-
-def get_templates_dir():
-    global _templates_dir
-    return _templates_dir
-
-def get_static_dir():
-    global _static_dir
-    return _static_dir
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -115,7 +104,8 @@ class RpcRegistryMiddleware(RpcHandler):
             instance = _class(*args, **kwargs)
             instance_id = hash(instance)
             self._registry.set(instance_id, instance)
-            self._logger.debug('got instance id:%s', instance_id)
+            if __debug__:
+                self._logger.debug('got instance ID:{0}', instance_id)
             return instance_id
         finally:
             self._mutex.release()
@@ -133,7 +123,8 @@ class RpcRegistryMiddleware(RpcHandler):
         self._registry.clear()
 
     def get_instance(self, instance_id):
-        self._logger.debug('ACCESS ID %s', instance_id)
+        if __debug__:
+            self._logger.debug('access ID:{0}', instance_id)
         instance = self._registry.get(instance_id, None)
         if not instance:
             raise InvalidInstanceId('instance with id:{0} not registered'.format(instance_id))
@@ -146,19 +137,21 @@ class RpcRegistryMiddleware(RpcHandler):
             if name.startswith('#'):
                 command_handler = self._handlers.get(name, None)
                 if command_handler:
-                    self._logger.info('command: "%s"', name[1:])
+                    if __debug__:
+                        self._logger.debug('command: "{0}"', name[1:])
                     result = command_handler(object_id, name, *args, **kwargs)
                 else:
-                    self._logger.error('command "%s" not found', name)
+                    self._logger.error('command "{0}" not found', name)
                     raise CommandNotFoundException('command {0} not defined'.format(name[1:]))
             else:
-                self._logger.debug('calling function: "%s"', name)
+                if __debug__:
+                    self._logger.debug('calling function: "{0}"', name)
                 result = self.rpc(object_id)(name, *args, **kwargs)
             error = None
         except Exception, e:
             error = ErrorMessage.from_exception(e, address=request.host_url)
             result = None
-            self._logger.error('error: %s, traceback: \n%s', e, traceback.format_exc())
+            self._logger.error('error: {0}, traceback: \n{1}', e, traceback.format_exc())
 
         response = Response(dumps((result, error, )), mimetype='text/plain')
         return response(environ, start_response)

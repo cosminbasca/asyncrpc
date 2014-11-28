@@ -190,7 +190,8 @@ class AsynchronousHTTP(SingleCastHTTPTransport):
         except socket.error as e:
             if isinstance(e.args, tuple):
                 if e[0] == errno.EPIPE:
-                    self._logger.debug("connection closed, recreate")
+                    if __debug__:
+                        self._logger.debug("connection closed, recreate")
                     self._post = partial(HTTPClient(
                         self.host, port=self.port, connection_timeout=self.connection_timeout,
                         network_timeout=self.connection_timeout, concurrency=self._concurrency).post, self.url_path)
@@ -267,15 +268,17 @@ class RpcProxy(object):
             else:
                 return response
         else:
-            self._logger.error('HTTP exception (status code: %s)\nServer response: %s', status_code, content)
+            self._logger.error('HTTP exception (status code: {0})\nServer response: {1}', status_code, content)
             abort(status_code)
 
     def _process_response(self, response):
         if self.is_multicast:
-            self._logger.debug('multicast call to %s sources', self._transport.num_sources)
+            if __debug__:
+                self._logger.debug('multicast call to {0} sources', self._transport.num_sources)
             result = map(self._get_result, response)
         else:
-            self._logger.debug('single call')
+            if __debug__:
+                self._logger.debug('single call')
             result = self._get_result(response)
         return result
 
@@ -283,7 +286,8 @@ class RpcProxy(object):
         return dumps((name, args, kwargs))
 
     def _rpc_call(self, name, *args, **kwargs):
-        self._logger.debug("calling %s", name)
+        if __debug__:
+            self._logger.debug("calling {0}", name)
         response = self._transport(self._message(name, *args, **kwargs))
         result = self._process_response(response)
         return result
@@ -352,7 +356,8 @@ class RegistryRpcProxy(RpcProxy):
     def release(self):
         if self._owner:
             try:
-                self._logger.debug('releasing server-side instance %s', self._id)
+                if __debug__:
+                    self._logger.debug('releasing server-side instance {0}', self._id)
                 self.dispatch(Command.RELEASE)
             except ConnectionError:
                 pass
@@ -363,7 +368,6 @@ class RegistryRpcProxy(RpcProxy):
         return dumps((self._id, name, args, kwargs))
 
     def dispatch(self, command, *args, **kwargs):
-        # TODO: we should use a timeout here ... for slow creating objects for example
         if not command.startswith('#'):
             raise ValueError('{0} is not a valid formed command'.format(command))
         return self._rpc_call(command, *args, **kwargs)
@@ -407,7 +411,8 @@ class ProxyFactory(object):
     def __init__(self):
         self._logger = get_logger(owner=self)
         self._cache = dict()
-        self._logger.debug("proxy factory initialized")
+        if __debug__:
+            self._logger.debug("proxy factory initialized")
 
     @staticmethod
     def instance():
@@ -420,14 +425,17 @@ class ProxyFactory(object):
         if not _proxy:
             _proxy = Proxy(typeid, address)
             self._cache[(address, typeid)] = _proxy
-        self._logger.debug("get proxy: %s", _proxy)
+        if __debug__:
+            self._logger.debug("get proxy: {0}", _proxy)
         return _proxy
 
     def create(self, address, typeid, slots=None, async=False, connection_timeout=10, *args, **kwargs):
         creator = self._proxy(address, typeid)
-        self._logger.debug("create %s proxy", 'async' if async else 'blocking')
+        if __debug__:
+            self._logger.debug("create {0} proxy", 'async' if async else 'blocking')
         instance_id = creator.dispatch(Command.NEW, *args, **kwargs)
-        self._logger.debug("got new instance id: %s", instance_id)
+        if __debug__:
+            self._logger.debug("got new instance id: {0}", instance_id)
         if async:
             return AsyncProxy(instance_id, address, slots=slots, connection_timeout=connection_timeout)
         return Proxy(instance_id, address, slots=slots)
