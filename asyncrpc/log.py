@@ -7,13 +7,16 @@ from frozendict import frozendict
 
 __author__ = 'basca'
 
+
+DISABLED = logging.CRITICAL + 100
+
 logging_levels = frozendict({
     'debug': logging.DEBUG,
     'info': logging.INFO,
     'warning': logging.WARNING,
     'error': logging.ERROR,
     'critical': logging.CRITICAL,
-    'disabled': logging.CRITICAL + 100,
+    'disabled': DISABLED,
 })
 
 LEVEL = 'critical'

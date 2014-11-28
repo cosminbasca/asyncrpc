@@ -2,7 +2,7 @@ __author__ = 'basca'
 
 from client import hidden, AsyncProxy, Proxy, SingleInstanceProxy, AsyncSingleInstanceProxy, create, dispatch, \
     ProxyFactory, RpcProxy, RegistryRpcProxy
-from log import  set_logging_level, get_logger, disable_logging, logger
+from log import  set_logging_level, get_logger, disable_logging, logger, LEVEL, DISABLED, logging_levels
 from manager import AsyncManager
 from process import BackgroundRunner
 from server import RpcServer, CherrypyWsgiRpcServer, TornadoWsgiRpcServer
