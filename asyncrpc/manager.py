@@ -1,11 +1,13 @@
 from collections import OrderedDict
+import logging
 from asyncrpc.exceptions import RpcServerNotStartedException
-from asyncrpc.log import get_logger
 from asyncrpc.client import create, exposed_methods
 from asyncrpc.process import BackgroundRunner
 from asyncrpc.server import CherrypyWsgiRpcServer, TornadoWsgiRpcServer
 
 __author__ = 'basca'
+
+LOG = logging.getLogger(__name__)
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -28,8 +30,7 @@ class AsyncManager(object):
                 raise RpcServerNotStartedException('the rcp server has not been started!')
             proxy = create(self.bound_address, type_id, slots, self._async, self._connection_timeout, *args, **kwargs)
             if __debug__:
-                self._logger.debug('created proxy {0} for instance id: {1} of typeid: {2}',
-                                   type(proxy), proxy.id, type_id)
+                LOG.debug('created proxy %s for instance id: %s of typeid: %s', type(proxy), proxy.id, type_id)
             return proxy
 
         proxy_creator.__name__ = type_id
@@ -38,7 +39,6 @@ class AsyncManager(object):
 
     def __init__(self, address=('127.0.0.1', 0), async=False, gevent_patch=False, retries=100, connection_timeout=10,
                  backend=None, **kwargs):
-        self._logger = get_logger(owner=self)
         self._async = async
         self._backend = backend
         self._connection_timeout = connection_timeout

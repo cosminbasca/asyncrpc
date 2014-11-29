@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import OrderedDict
+import logging
 from threading import Thread
 from time import sleep
 from cherrypy import engine
@@ -9,12 +10,13 @@ from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado import ioloop
 from asyncrpc.wsgi import RpcRegistryMiddleware, RpcRegistryViewer, ping_middleware
-from asyncrpc.log import get_logger, logger
 from asyncrpc.registry import Registry
 from werkzeug.wsgi import DispatcherMiddleware
 from werkzeug.debug import DebuggedApplication
 from requests import get, post, RequestException
 
+
+LOG = logging.getLogger(__name__)
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # Base RPC Server
@@ -32,7 +34,6 @@ class RpcServer(object):
         else:
             raise ValueError('address, must be either a tuple/list or string of the name:port form')
 
-        self._logger = get_logger(owner=self)
         self._address = (host, port)
 
     @property
@@ -80,7 +81,7 @@ def server_is_online(address, method='get', log_error=True):
         return False
     except RequestException as ex:
         if log_error:
-            logger.error('got an exception while checking if server is online: {0}', ex)
+            LOG.error('got an exception while checking if server is online: %s', ex)
         return False
 
 
@@ -156,16 +157,16 @@ class CherrypyWsgiRpcServer(WsgiRpcServer):
         engine.exit()
 
     def server_forever(self, *args, **kwargs):
-        self._logger.info('starting cherrypy server with a minimum of {0} threads and {1} max threads',
+        LOG.info('starting cherrypy server with a minimum of %s threads and %s max threads',
             self._server.numthreads, self._server.maxthreads if self._server.maxthreads else 'no')
         try:
             self._server.start()
         except Exception, e:
-            self._logger.error("exception in serve_forever: {0}", e)
+            LOG.error("exception in serve_forever: %s", e)
         finally:
-            self._logger.info('closing the server ...')
+            LOG.info('closing the server ...')
             self.stop()
-            self._logger.info('server shutdown complete')
+            LOG.info('server shutdown complete')
 
     @property
     def bound_address(self):
@@ -202,15 +203,15 @@ class TornadoWsgiRpcServer(WsgiRpcServer):
         loop.add_callback(shutdown_tornado, loop, self._server)
 
     def server_forever(self, *args, **kwargs):
-        self._logger.info('starting tornado server in single-process mode')
+        LOG.info('starting tornado server in single-process mode')
         try:
             ioloop.IOLoop.instance().start()
         except Exception, e:
-            self._logger.error("exception in serve_forever: {0}", e)
+            LOG.error("exception in serve_forever: %s", e)
         finally:
-            self._logger.info('closing the server ...')
+            LOG.info('closing the server ...')
             self.stop()
-            self._logger.info('server shutdown complete')
+            LOG.info('server shutdown complete')
 
     @property
     def bound_address(self):

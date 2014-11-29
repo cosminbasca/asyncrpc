@@ -1,4 +1,4 @@
-import os
+import logging
 import traceback
 from threading import RLock
 from collections import OrderedDict
@@ -6,7 +6,6 @@ from werkzeug.wsgi import SharedDataMiddleware
 from asyncrpc.commands import Command
 from asyncrpc.exceptions import CommandNotFoundException, InvalidInstanceId, InvalidTypeId, ErrorMessage
 from asyncrpc.handler import RpcHandler
-from asyncrpc.log import get_logger
 from asyncrpc.__version__ import str_version
 from asyncrpc.messaging import dumps, loads
 from asyncrpc.registry import Registry
@@ -17,6 +16,8 @@ from asyncrpc.util import get_templates_dir, get_static_dir
 
 __author__ = 'basca'
 
+
+LOG = logging.getLogger(__name__)
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # WSGI simple ping middleware
@@ -86,7 +87,6 @@ class RpcRegistryMiddleware(RpcHandler):
         self._types_registry = types_registry
         self._registry = registry
         self._mutex = RLock()
-        self._logger = get_logger(owner=self)
 
         self._handlers = {
             Command.NEW: self._handler_new,
@@ -105,7 +105,7 @@ class RpcRegistryMiddleware(RpcHandler):
             instance_id = hash(instance)
             self._registry.set(instance_id, instance)
             if __debug__:
-                self._logger.debug('got instance ID:{0}', instance_id)
+                LOG.debug('got instance ID:%s', instance_id)
             return instance_id
         finally:
             self._mutex.release()
@@ -124,7 +124,7 @@ class RpcRegistryMiddleware(RpcHandler):
 
     def get_instance(self, instance_id):
         if __debug__:
-            self._logger.debug('access ID:{0}', instance_id)
+            LOG.debug('access ID:%s', instance_id)
         instance = self._registry.get(instance_id, None)
         if not instance:
             raise InvalidInstanceId('instance with id:{0} not registered'.format(instance_id))
@@ -138,20 +138,20 @@ class RpcRegistryMiddleware(RpcHandler):
                 command_handler = self._handlers.get(name, None)
                 if command_handler:
                     if __debug__:
-                        self._logger.debug('command: "{0}"', name[1:])
+                        LOG.debug('command: "%s"', name[1:])
                     result = command_handler(object_id, name, *args, **kwargs)
                 else:
-                    self._logger.error('command "{0}" not found', name)
+                    LOG.error('command "%s" not found', name)
                     raise CommandNotFoundException('command {0} not defined'.format(name[1:]))
             else:
                 if __debug__:
-                    self._logger.debug('calling function: "{0}"', name)
+                    LOG.debug('calling function: "%s"', name)
                 result = self.rpc(object_id)(name, *args, **kwargs)
             error = None
         except Exception, e:
             error = ErrorMessage.from_exception(e, address=request.host_url)
             result = None
-            self._logger.error('error: {0}, traceback: \n{1}', e, traceback.format_exc())
+            LOG.error('error: %s, traceback: \n%s', e, traceback.format_exc())
 
         response = Response(dumps((result, error, )), mimetype='text/plain')
         return response(environ, start_response)

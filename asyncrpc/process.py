@@ -6,19 +6,17 @@ from threading import Thread
 import socket
 import errno
 import traceback
+import logging
 from gevent import reinit
 from gevent.monkey import patch_all
 import sys
 from asyncrpc.exceptions import InvalidStateException, BackgroundRunnerException
-from asyncrpc.log import get_logger
 from asyncrpc.server import RpcServer, server_is_online
-from asyncrpc.client import dispatch
-from asyncrpc.commands import Command
 from time import sleep
-from requests import get, post
 
 __author__ = 'basca'
 
+LOG = logging.getLogger(__name__)
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # Background server runner
@@ -31,11 +29,9 @@ class BackgroundRunner(object):
         if not issubclass(server_class, RpcServer):
             raise ValueError('server_class must be a subclass of RpcServer')
 
-        self._logger = get_logger(owner=server_class)
-
         self._address = address if address else ('127.0.0.1', 0)
         if __debug__:
-            self._logger.debug('server address is {0}', self._address)
+            LOG.debug('server address is %s', self._address)
         self._server_class = server_class
 
         self._gevent_patch = gevent_patch
@@ -76,28 +72,28 @@ class BackgroundRunner(object):
             if server:
                 def port_check(_port, _server):
                     if __debug__:
-                        self._logger.debug('started port checker')
+                        LOG.debug('started port checker')
                     while _port == _server.bound_address[1]:
                         sleep(0.01)
                     writer.send(_server.bound_address)
                     writer.close()
                     if __debug__:
-                        self._logger.debug('port checker finalized')
+                        LOG.debug('port checker finalized')
 
                 port = self._address[1]
                 if port == 0:  # find out the bound port if the initial port is 0
                     if __debug__:
-                        self._logger.debug('port is 0, start waiting thread for bound port ... ')
+                        LOG.debug('port is 0, start waiting thread for bound port ... ')
                     checker = Thread(target=port_check, args=(port, server))
                     checker.daemon = True
                     checker.start()
 
                 def wait_for_shutdown():
                     if __debug__:
-                        self._logger.debug('started server stopper thread')
+                        LOG.debug('started server stopper thread')
                     shutdown_event.wait()
                     if __debug__:
-                        self._logger.debug('server shutdown event received')
+                        LOG.debug('server shutdown event received')
                     server.stop()
                     os._exit(0)
 
@@ -107,11 +103,11 @@ class BackgroundRunner(object):
 
                 server.start()
                 if __debug__:
-                    self._logger.debug('server shutdown successfully')
+                    LOG.debug('server shutdown successfully')
             else:
                 writer.stop()
         except Exception, err:
-            self._logger.error('Rpc server exited. Exception on exit: {0}', err if err.message else '')
+            LOG.error('Rpc server exited. Exception on exit: %s', err if err.message else '')
 
     def start(self, wait=True, *args, **kwargs):
         if self._state.value != State.INITIAL:
@@ -122,15 +118,15 @@ class BackgroundRunner(object):
                                 kwargs=kwargs)
         self._process.name = ''.join((type(self).__name__, '-', self._process.name))
         if __debug__:
-            self._logger.debug('starting background process: {0}', self._process.name)
+            LOG.debug('starting background process: %s', self._process.name)
         self._process.start()
 
         if __debug__:
-            self._logger.debug('started background process with pid: {0}', self._process.pid)
+            LOG.debug('started background process with pid: %s', self._process.pid)
 
         writer.close()
         if __debug__:
-            self._logger.debug('waiting for bound address .. ')
+            LOG.debug('waiting for bound address .. ')
         response = reader.recv()
         reader.close()
         if isinstance(response, tuple) and len(response) == 3:
@@ -138,16 +134,16 @@ class BackgroundRunner(object):
                                             response[0], response[1], response[2])
         self._bound_address = response
 
-        self._logger.info('server started on {0}', self._bound_address)
-        self._stop = Finalize(self, type(self)._finalize,
-                              args=(self._process, self._shutdown_event, self._state, self._logger), exitpriority=0)
+        LOG.info('server started on %s', self._bound_address)
+        self._stop = Finalize(self, type(self)._finalize, args=(self._process, self._shutdown_event, self._state),
+                              exitpriority=0)
 
         if wait:
             max_retries = self._retries
             while True:
                 if server_is_online(self._bound_address):
                     self._state.value = State.STARTED
-                    self._logger.info('server started OK')
+                    LOG.info('server started OK')
                     return True
                 if max_retries == 0:
                     return False
@@ -157,35 +153,41 @@ class BackgroundRunner(object):
 
     def restart(self, wait=None):
         if __debug__:
-            self._logger.debug('restart')
+            LOG.debug('restart')
         self._stop()
         self._state.value = State.INITIAL
         self.start(wait=wait)
         if __debug__:
-            self._logger.debug('restarted')
+            LOG.debug('restarted')
 
     def stop(self):
         self._stop()
 
     @staticmethod
-    def _finalize(process, shutdown_event, state, logger):
+    def _finalize(process, shutdown_event, state):
         if process.is_alive():
-            logger.info('setting the shutdown event')
+            if __debug__:
+                LOG.debug('setting the shutdown event')
             shutdown_event.set()
 
-            logger.info('wait for server-starter process to terminate')
+            if __debug__:
+                LOG.debug('wait for server-starter process to terminate')
             process.join(timeout=0.2)
 
             if process.is_alive():
-                logger.info('server-starter still alive')
+                if __debug__:
+                    LOG.debug('server-starter still alive')
                 if hasattr(process, 'terminate'):
-                    logger.info('trying to "terminate()" manager process')
+                    if __debug__:
+                        LOG.debug('trying to "terminate()" manager process')
                     process.terminate()
                     process.join(timeout=10.0)
                     if process.is_alive():
-                        logger.warn('server-starter still alive after terminate!')
+                        if __debug__:
+                            LOG.debug('server-starter still alive after terminate!')
             else:
-                logger.info('server-starter process has terminated')
+                if __debug__:
+                    LOG.debug('server-starter process has terminated')
         state.value = State.SHUTDOWN
 
     def __enter__(self):

@@ -11,11 +11,11 @@ from asyncrpc import CherrypyWsgiRpcServer, TornadoManager, TornadoAsyncHttpRpcP
     AsyncSingleInstanceProxy
 from asyncrpc.client import hidden
 from asyncrpc.manager import AsyncManager
-from asyncrpc.log import set_logging_level
+from asyncrpc.log import set_logger_level
 from asyncrpc.tornadorpc import async_call, call, TornadoRpcServer, asynchronous
 
 # set_level('info', name='asyncrpc')
-set_logging_level('critical', name='asyncrpc')
+set_logger_level('critical', name='asyncrpc')
 
 __author__ = 'basca'
 

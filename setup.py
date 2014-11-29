@@ -29,7 +29,6 @@ pip_deps = [
     'Jinja2>=2.7.3',
     'retrying>=1.3.2',
     'docutils>=0.12',
-    'logbook>=0.8.0',
     'frozendict>=0.4',
 ]
 
