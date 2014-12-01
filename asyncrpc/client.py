@@ -5,6 +5,7 @@ import socket
 import traceback
 import errno
 from geventhttpclient import HTTPClient
+from asyncrpc.log import debug, error, warn, info
 from asyncrpc.util import format_address, format_addresses
 from asyncrpc.exceptions import HTTPRpcNoBodyException, handle_exception, ErrorMessage
 from asyncrpc.commands import Command
@@ -13,12 +14,10 @@ from asyncrpc.messaging import dumps, loads
 import requests
 from requests.exceptions import ConnectionError
 from retrying import retry
-import logging
 
 
 __author__ = 'basca'
 
-LOG = logging.getLogger(__name__)
 DEFAULT_GEVENTHTTPCLIENT_CONCURENCY = 1
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -191,8 +190,7 @@ class AsynchronousHTTP(SingleCastHTTPTransport):
         except socket.error as e:
             if isinstance(e.args, tuple):
                 if e[0] == errno.EPIPE:
-                    if __debug__:
-                        LOG.debug("connection closed, recreate")
+                    debug("connection closed, recreate")
                     self._post = partial(HTTPClient(
                         self.host, port=self.port, connection_timeout=self.connection_timeout,
                         network_timeout=self.connection_timeout, concurrency=self._concurrency).post, self.url_path)
@@ -214,6 +212,7 @@ class AsynchronousHTTP(SingleCastHTTPTransport):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 DEFAULT_CONNECTION_TIMEOUT = 10
+
 
 
 class RpcProxy(object):
@@ -261,24 +260,22 @@ class RpcProxy(object):
             response = loads(content)
             if isinstance(response, tuple) and len(response) == 2 and \
                     (isinstance(response[1], ErrorMessage) or response[1] is None):
-                result, error = response
-                if not error:
+                result, remote_error = response
+                if not remote_error:
                     return result
-                handle_exception(error)
+                handle_exception(remote_error)
             else:
                 return response
         else:
-            LOG.error('HTTP exception (status code: %s)\nServer response: %s', status_code, content)
+            error('HTTP exception (status code: %s)\nServer response: %s', status_code, content)
             abort(status_code)
 
     def _process_response(self, response):
         if self.is_multicast:
-            if __debug__:
-                LOG.debug('multicast call to %s sources', self._transport.num_sources)
+            debug('multicast call to %s sources', self._transport.num_sources)
             result = map(self._get_result, response)
         else:
-            if __debug__:
-                LOG.debug('single call')
+            debug('single call')
             result = self._get_result(response)
         return result
 
@@ -286,8 +283,7 @@ class RpcProxy(object):
         return dumps((name, args, kwargs))
 
     def _rpc_call(self, name, *args, **kwargs):
-        if __debug__:
-            LOG.debug('calling "%s"', name)
+        debug('calling "%s"', name)
         response = self._transport(self._message(name, *args, **kwargs))
         result = self._process_response(response)
         return result
@@ -356,8 +352,7 @@ class RegistryRpcProxy(RpcProxy):
     def release(self):
         if self._owner:
             try:
-                if __debug__:
-                    LOG.debug('releasing server-side instance %s', self._id)
+                debug('releasing server-side instance %s', self._id)
                 self.dispatch(Command.RELEASE)
             except ConnectionError:
                 pass
@@ -410,8 +405,7 @@ class AsyncProxy(RegistryRpcProxy):
 class ProxyFactory(object):
     def __init__(self):
         self._cache = dict()
-        if __debug__:
-            LOG.debug("proxy factory initialized")
+        debug("proxy factory initialized")
 
     @staticmethod
     def instance():
@@ -424,17 +418,14 @@ class ProxyFactory(object):
         if not _proxy:
             _proxy = Proxy(typeid, address)
             self._cache[(address, typeid)] = _proxy
-        if __debug__:
-            LOG.debug("get proxy: %s", _proxy)
+        debug("get proxy: %s", _proxy)
         return _proxy
 
     def create(self, address, typeid, slots=None, async=False, connection_timeout=10, *args, **kwargs):
         creator = self._proxy(address, typeid)
-        if __debug__:
-            LOG.debug("create %s proxy", 'async' if async else 'blocking')
+        debug("create %s proxy", 'async' if async else 'blocking')
         instance_id = creator.dispatch(Command.NEW, *args, **kwargs)
-        if __debug__:
-            LOG.debug("got new instance id: %s", instance_id)
+        debug("got new instance id: %s", instance_id)
         if async:
             return AsyncProxy(instance_id, address, slots=slots, connection_timeout=connection_timeout)
         return Proxy(instance_id, address, slots=slots)

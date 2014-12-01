@@ -1,7 +1,6 @@
 from abc import ABCMeta
 from collections import OrderedDict
 import inspect
-import logging
 import traceback
 from tornado.concurrent import Future
 from tornado.httpserver import HTTPServer
@@ -15,6 +14,7 @@ from asyncrpc.messaging import loads, dumps
 from asyncrpc.client import RpcProxy, exposed_methods, SingleCastHTTPTransport, MultiCastHTTPTransport
 from asyncrpc.handler import RpcHandler
 from asyncrpc.util import get_templates_dir, get_static_dir
+from asyncrpc.log import debug, info, warn, error
 from tornado.ioloop import IOLoop
 from tornado.httpclient import AsyncHTTPClient, HTTPError, HTTPClient
 from tornado import gen
@@ -23,7 +23,6 @@ from docutils.core import publish_parts
 
 __author__ = 'basca'
 
-LOG = logging.getLogger(__name__)
 
 class TornadoConfig(object):
     def __init__(self):
@@ -42,7 +41,7 @@ class TornadoConfig(object):
                 AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
             except ImportError, err:
                 self._use_curl = False
-                LOG.warn('could not configure Tornado Web to use cURL. Reason: %s', err)
+                warn('could not configure Tornado Web to use cURL. Reason: %s', err)
         else:
             AsyncHTTPClient.configure("tornado.httpclient.AsyncHTTPClient")
 
@@ -84,7 +83,7 @@ class SynchronousTornadoHTTP(SingleCastHTTPTransport):
                                          connect_timeout=self.connection_timeout,
                                          request_timeout=self.connection_timeout)
         except HTTPError as e:
-            LOG.error("HTTP Error: %s", e)
+            error("HTTP Error: %s", e)
             handle_exception(ErrorMessage.from_exception(e, address=self.url))
         finally:
             http_client.close()
@@ -111,7 +110,7 @@ class AsynchronousTornadoHTTP(SingleCastHTTPTransport):
                                                connect_timeout=self.connection_timeout,
                                                request_timeout=self.connection_timeout)
         except HTTPError as e:
-            LOG.error("HTTP Error: %s", e)
+            error("HTTP Error: %s", e)
             handle_exception(ErrorMessage.from_exception(e, address=self.url))
         finally:
             if self._force_instance:
@@ -140,7 +139,7 @@ class MulticastAsynchronousTornadoHTTP(MultiCastHTTPTransport):
                              request_timeout=self.connection_timeout) for client, url in clients
             ]
         except HTTPError as e:
-            LOG.error("HTTP Error: %s", e)
+            error("HTTP Error: %s", e)
             handle_exception(ErrorMessage.from_exception(e, address=self.urls))
         finally:
             if self._force_instance:
@@ -186,8 +185,7 @@ class TornadoAsyncHttpRpcProxy(RpcProxy):
 
     @gen.coroutine
     def _rpc_call(self, name, *args, **kwargs):
-        if __debug__:
-            LOG.debug('calling "%s"', name)
+        debug('calling "%s"', name)
         response = yield self._transport(self._message(name, *args, **kwargs))
         result = self._process_response(response)
         raise gen.Return(result)
@@ -230,17 +228,16 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
     def post(self, *args, **kwargs):
         try:
             name, args, kwargs = loads(self.request.body)
-            if __debug__:
-                LOG.debug('calling function: "%s"', name)
+            debug('calling function: "%s"', name)
             result = self.rpc()(name, *args, **kwargs)
             if isinstance(result, Future):
                 result = yield result
-            error = None
+            execution_error = None
         except Exception, e:
-            error = ErrorMessage.from_exception(e, address='{0}://{1}'.format(self.request.protocol, self.request.host))
+            execution_error = ErrorMessage.from_exception(e, address='{0}://{1}'.format(self.request.protocol, self.request.host))
             result = None
-            LOG.error('error: %s, traceback: \n%s', e, traceback.format_exc())
-        response = dumps((result, error))
+            error('error: %s, traceback: \n%s', e, traceback.format_exc())
+        response = dumps((result, execution_error))
         self.write(response)
 
 
@@ -348,8 +345,8 @@ class TornadoRpcServer(RpcServer):
             'xsrf_cookies': xsrf_cookies,
             'debug': debug
         }
-        LOG.info('with debug          :%s', debug)
-        LOG.info('with xsrf_cookies   :%s', xsrf_cookies)
+        info('with debug          :%s', debug)
+        info('with xsrf_cookies   :%s', xsrf_cookies)
 
         # add the extra handlers
         if not handlers:
@@ -364,7 +361,7 @@ class TornadoRpcServer(RpcServer):
         ]
         for route, handler in handlers.iteritems():
             if route in _RESERVED_ROUTES:
-                LOG.error('route %s already exists cannot override', route)
+                error('route %s already exists cannot override', route)
             else:
                 app_handlers.append(web.url(route, handler))
 
@@ -377,19 +374,19 @@ class TornadoRpcServer(RpcServer):
     def server_forever(self, *args, **kwargs):
         try:
             if self._multiprocess:
-                LOG.info('starting tornado server in multi-process mode')
+                info('starting tornado server in multi-process mode')
                 fork_processes(0)
             else:
-                LOG.info('starting tornado server in single-process mode')
+                info('starting tornado server in single-process mode')
             self._server = HTTPServer(self._app)
             self._server.add_sockets(self._sockets)
             IOLoop.instance().start()
         except Exception, e:
-            LOG.error("exception in serve_forever: %s", e)
+            error("exception in serve_forever: %s", e)
         finally:
-            LOG.info('closing the server ...')
+            info('closing the server ...')
             self.stop()
-            LOG.info('server shutdown complete')
+            info('server shutdown complete')
 
     @property
     def bound_address(self):

@@ -1,8 +1,7 @@
-import logging
 import traceback
 from unittest import TestCase
 from asyncrpc.client import Proxy, AsyncProxy, AsyncSingleInstanceProxy
-from asyncrpc.log import set_logger_level
+from asyncrpc.log import set_logger_level, LOGGER_NAME, DEBUG, setup_logger, uninstall_logger
 from asyncrpc.manager import AsyncManager
 from asyncrpc.tornadorpc import TornadoManager, TornadoHttpRpcProxy, TornadoAsyncHttpRpcProxy, asynchronous, async_call
 from tornado import gen
@@ -10,8 +9,9 @@ from cPickle import dumps, loads
 
 __author__ = 'basca'
 
-LOG = logging.getLogger('asyncrpc')
-LOG.setLevel(logging.DEBUG)
+setup_logger(name=LOGGER_NAME)
+set_logger_level(DEBUG, name=LOGGER_NAME)
+uninstall_logger()
 
 class MyClass(object):
     def __init__(self, counter=0):
@@ -61,8 +61,9 @@ def capture_exception(func):
 
 class TestManager(TestCase):
     def setUp(self):
-        set_logger_level('critical')
+        # set_logger_level('critical')
         # set_level('debug')
+        pass
 
     def _threaded_manager(self, async=False):
         class MyManager(AsyncManager):

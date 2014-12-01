@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import OrderedDict
-import logging
 from threading import Thread
 from time import sleep
 from cherrypy import engine
@@ -11,12 +10,11 @@ from tornado.httpserver import HTTPServer
 from tornado import ioloop
 from asyncrpc.wsgi import RpcRegistryMiddleware, RpcRegistryViewer, ping_middleware
 from asyncrpc.registry import Registry
+from asyncrpc.log import debug, warn, info, error
 from werkzeug.wsgi import DispatcherMiddleware
 from werkzeug.debug import DebuggedApplication
 from requests import get, post, RequestException
 
-
-LOG = logging.getLogger(__name__)
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # Base RPC Server
@@ -81,7 +79,7 @@ def server_is_online(address, method='get', log_error=True):
         return False
     except RequestException as ex:
         if log_error:
-            LOG.error('got an exception while checking if server is online: %s', ex)
+            error('got an exception while checking if server is online: %s', ex)
         return False
 
 
@@ -157,16 +155,16 @@ class CherrypyWsgiRpcServer(WsgiRpcServer):
         engine.exit()
 
     def server_forever(self, *args, **kwargs):
-        LOG.info('starting cherrypy server with a minimum of %s threads and %s max threads',
+        info('starting cherrypy server with a minimum of %s threads and %s max threads',
             self._server.numthreads, self._server.maxthreads if self._server.maxthreads else 'no')
         try:
             self._server.start()
         except Exception, e:
-            LOG.error("exception in serve_forever: %s", e)
+            error("exception in serve_forever: %s", e)
         finally:
-            LOG.info('closing the server ...')
+            info('closing the server ...')
             self.stop()
-            LOG.info('server shutdown complete')
+            info('server shutdown complete')
 
     @property
     def bound_address(self):
@@ -203,15 +201,15 @@ class TornadoWsgiRpcServer(WsgiRpcServer):
         loop.add_callback(shutdown_tornado, loop, self._server)
 
     def server_forever(self, *args, **kwargs):
-        LOG.info('starting tornado server in single-process mode')
+        info('starting tornado server in single-process mode')
         try:
             ioloop.IOLoop.instance().start()
         except Exception, e:
-            LOG.error("exception in serve_forever: %s", e)
+            error("exception in serve_forever: %s", e)
         finally:
-            LOG.info('closing the server ...')
+            info('closing the server ...')
             self.stop()
-            LOG.info('server shutdown complete')
+            info('server shutdown complete')
 
     @property
     def bound_address(self):
