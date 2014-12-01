@@ -75,6 +75,8 @@ def set_logger_level(level, name=None):
     logging._acquireLock()
     try:
         logger = logging.getLogger(name) if name else logging.root
+        if isinstance(level, basestring):
+            level = level.upper()
         logger.setLevel(level)
     finally:
         logging._releaseLock()
