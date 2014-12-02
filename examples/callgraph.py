@@ -1,6 +1,6 @@
 from asyncrpc import AsyncManager
-from pycallgraph import PyCallGraph
-from pycallgraph.output import GraphvizOutput
+# from pycallgraph import PyCallGraph
+# from pycallgraph.output import GraphvizOutput
 import string
 import random
 from pandas import DataFrame
@@ -52,17 +52,14 @@ def main():
     for i in xrange(10):
         slice = store.get_slice(range(0, i + 1), range(1, 3))
         print 'got slice'
-        print slice
+        # print slice
 
 
-# call
-# python -m cProfile -o output.pstats ./examples/callgraph.py
-# gprof2dot.py -f pstats output.pstats | dot -Tpng -o output.png
 if __name__ == '__main__':
-    graphviz = GraphvizOutput()
-    graphviz.output_file = 'callgraph_example_datastore.png'
-
-    with PyCallGraph(output=graphviz):
-        main()
+    # graphviz = GraphvizOutput()
+    # graphviz.output_file = 'callgraph_example_datastore.png'
+    #
+    # with PyCallGraph(output=graphviz):
+    main()
 
 
