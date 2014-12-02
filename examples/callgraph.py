@@ -40,24 +40,29 @@ StoreManager.register('DataStore', DataStore)
 
 
 def main():
-    graphviz = GraphvizOutput()
-    graphviz.output_file = 'callgraph_example_datastore.png'
-
     manager = StoreManager()
     manager.start()
 
-    with PyCallGraph(output=graphviz):
-        rows = 30
-        cols = 4
-        print 'creating a store with {0} rows nad {1} columns'.format(rows, cols)
-        store = manager.DataStore(rows, cols)
-        print 'store reported rows      = ', store.num_rows()
-        print 'store reported columns   = ', store.num_columns()
-        for i in xrange(10):
-            slice = store.get_slice(range(0, i + 1), range(1, 3))
-            print 'got slice'
-            print slice
+    rows = 30
+    cols = 4
+    print 'creating a store with {0} rows nad {1} columns'.format(rows, cols)
+    store = manager.DataStore(rows, cols)
+    print 'store reported rows      = ', store.num_rows()
+    print 'store reported columns   = ', store.num_columns()
+    for i in xrange(10):
+        slice = store.get_slice(range(0, i + 1), range(1, 3))
+        print 'got slice'
+        print slice
 
 
+# call
+# python -m cProfile -o output.pstats ./examples/callgraph.py
+# gprof2dot.py -f pstats output.pstats | dot -Tpng -o output.png
 if __name__ == '__main__':
-    main()
+    graphviz = GraphvizOutput()
+    graphviz.output_file = 'callgraph_example_datastore.png'
+
+    with PyCallGraph(output=graphviz):
+        main()
+
+

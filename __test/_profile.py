@@ -1,7 +1,9 @@
 import pstats
 import cProfile
-import _bench
+
+from __test import _bench
 from asyncrpc import CherrypyWsgiRpcServer
+
 
 __author__ = 'basca'
 
