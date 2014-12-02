@@ -71,7 +71,7 @@ def bench_gevent_man(async=False, workload=False, backend=None, multiprocess=Fal
     my1 = manager.MyClass(counter=10, workload=workload)
 
     # calls = 10000
-    calls = 10
+    calls = 100
     concurrent = 12
     t0 = time()
     if async:
@@ -257,7 +257,7 @@ if __name__ == '__main__':
     # pass
     # cherrypy ...
     # no workload
-    # bench_gevent_man(async=False, workload=False) # DID: 414 calls / second, total calls: 10000
+    bench_gevent_man(async=False, workload=False) # DID: 414 calls / second, total calls: 10000
     # bench_gevent_man(async=True, workload=False)  # DID: 384 calls / second, total calls: 10000
 
     # with workload
@@ -273,5 +273,5 @@ if __name__ == '__main__':
 
     # test_tornadorpc(async=False)      # DID: 153 calls / second, total calls: 10000
     # test_tornadorpc(async=True)         # DID: 207 calls / second, total calls: 10000
-    tornadorpc_server()
+    # tornadorpc_server()
     # do_multicast()
