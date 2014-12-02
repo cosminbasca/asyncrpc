@@ -162,11 +162,16 @@ class MultiCastHTTPTransport(HTTPTransport):
 class SynchronousHTTP(SingleCastHTTPTransport):
     def __init__(self, address, connection_timeout):
         super(SynchronousHTTP, self).__init__(address, connection_timeout)
-        self._post = partial(requests.post, self.url)
+        self._session = requests.Session()
+        self._request = requests.Request('POST', self.url)
+        # self._post = partial(requests.post, self.url)
 
     @retry(retry_on_exception=_if_connection_error, stop_max_attempt_number=_MAX_RETRIES)
     def __call__(self, message):
-        return self._post(data=message)
+        prepped = self._request.prepare()
+        prepped.prepare_body(message, None)
+        return self._session.send(prepped)
+        # return self._post(data=message)
 
     def content(self, response):
         return response.content
