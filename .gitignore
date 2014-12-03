@@ -4,5 +4,6 @@ __test/*
 asyncrpc.egg-info/*
 asyncrpc/test/*.pyc
 asyncrpc/*.pyc
+.idea/*
 .idea
 .DS_Store
