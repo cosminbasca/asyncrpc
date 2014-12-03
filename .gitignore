@@ -1,0 +1,8 @@
+build/*
+dist/*
+__test/*
+asyncrpc.egg-info/*
+asyncrpc/test/*.pyc
+asyncrpc/*.pyc
+.idea
+.DS_Store
