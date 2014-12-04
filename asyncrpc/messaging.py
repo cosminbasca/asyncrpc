@@ -19,46 +19,77 @@ import cPickle
 import json
 from collections import namedtuple
 import msgpack
+from warnings import warn
 
 __author__ = 'basca'
 
-__all__ = ['register', 'select', 'loads', 'dumps', 'registered_libs']
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# internals
+#
+# ----------------------------------------------------------------------------------------------------------------------
+__default = 'msgpack'
+__entrypoint = 'asyncrpc.messaging'
 
+__CURRENT = __default
+__MESSAGING_LIBS = {}
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# api
+#
+# ----------------------------------------------------------------------------------------------------------------------
 MessagingLib = namedtuple('MessagingLib', ['loads', 'dumps'])
 
-__LIBS__ = {
-    'cPickle': MessagingLib(cPickle.loads, cPickle.dumps),
-    'json': MessagingLib(json.loads, json.dumps),
-    'msgpack': MessagingLib(msgpack.loads, msgpack.dumps)
-}
-
-__CURRENT__ = 'msgpack'
-
-
 def register(lib_id, lib_loads, lib_dumps):
-    global __LIBS__
-    __LIBS__[lib_id] = MessagingLib(lib_loads, lib_dumps)
-
+    global __MESSAGING_LIBS
+    __MESSAGING_LIBS[lib_id] = MessagingLib(lib_loads, lib_dumps)
 
 def select(lib_id):
-    global __CURRENT__, __LIBS__
-    if lib_id in __LIBS__:
-        __CURRENT__ = lib_id
+    global __CURRENT, __MESSAGING_LIBS
+    if lib_id in __MESSAGING_LIBS:
+        __CURRENT = lib_id
 
 def current():
-    global __CURRENT__
-    return __CURRENT__
+    global __CURRENT
+    return __CURRENT
 
 def loads(msg):
-    global __LIBS__, __CURRENT__
-    return __LIBS__[__CURRENT__].loads(msg)
+    global __MESSAGING_LIBS, __CURRENT
+    return __MESSAGING_LIBS[__CURRENT].loads(msg)
 
 
 def dumps(obj):
-    global __LIBS__, __CURRENT__
-    return __LIBS__[__CURRENT__].dumps(obj)
+    global __MESSAGING_LIBS, __CURRENT
+    return __MESSAGING_LIBS[__CURRENT].dumps(obj)
 
 
 def registered_libs():
-    global __LIBS__
-    return __LIBS__.keys()
+    global __MESSAGING_LIBS
+    return __MESSAGING_LIBS.keys()
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# looking for external entrypoints defining messaging libs
+#
+# ----------------------------------------------------------------------------------------------------------------------
+try:
+    from pkg_resources import iter_entry_points
+except ImportError:
+    pass # pkg_resources not found ... (going with default implementations)
+else:
+    for entrypoint in iter_entry_points(__entrypoint):
+        messaging_lib = entrypoint.load()
+        if hasattr(messaging_lib, 'loads') and hasattr(messaging_lib, 'dumps'):
+            register(entrypoint.name, messaging_lib.loads, messaging_lib.dumps)
+        else:
+            warn('messaging lib registered for %s does not have any loads and dumps methods', entrypoint.name)
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# register the builtin serialization libs
+#
+# ----------------------------------------------------------------------------------------------------------------------
+register('cPickle', cPickle.loads, cPickle.dumps)
+register('json', json.loads, json.dumps)
+register('msgpack', msgpack.loads, msgpack.dumps)
