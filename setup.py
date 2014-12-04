@@ -47,9 +47,7 @@ pip_deps = [
     'docutils>=0.12',
 ]
 
-manual_deps = [
-    'msgpackutil>=0.1.15'
-]
+manual_deps = []
 
 setup(
     name=NAME,
