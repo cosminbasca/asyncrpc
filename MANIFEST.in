@@ -7,6 +7,6 @@ exclude *.prof
 exclude *.log
 exclude *.log.*
 exclude *.pdf
-LICENSE
-NOTICE
-README.md
+include LICENSE
+include NOTICE
+include README.md
