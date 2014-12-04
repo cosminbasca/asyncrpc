@@ -18,6 +18,7 @@
 import cPickle
 import json
 from collections import namedtuple
+import msgpack
 
 __author__ = 'basca'
 
@@ -28,9 +29,10 @@ MessagingLib = namedtuple('MessagingLib', ['loads', 'dumps'])
 __LIBS__ = {
     'cPickle': MessagingLib(cPickle.loads, cPickle.dumps),
     'json': MessagingLib(json.loads, json.dumps),
+    'msgpack': MessagingLib(msgpack.loads, msgpack.dumps)
 }
 
-__CURRENT__ = 'cPickle'
+__CURRENT__ = 'msgpack'
 
 
 def register(lib_id, lib_loads, lib_dumps):
