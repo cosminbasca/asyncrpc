@@ -21,6 +21,7 @@ from asyncrpc.client import Proxy, AsyncProxy, AsyncSingleInstanceProxy
 from asyncrpc.log import set_logger_level, LOGGER_NAME, DEBUG, setup_logger, uninstall_logger
 from asyncrpc.manager import AsyncManager
 from asyncrpc.tornadorpc import TornadoManager, TornadoHttpRpcProxy, TornadoAsyncHttpRpcProxy, asynchronous, async_call
+from asyncrpc.messaging import select
 from tornado import gen
 from cPickle import dumps, loads
 
@@ -29,6 +30,8 @@ __author__ = 'basca'
 setup_logger(name=LOGGER_NAME)
 set_logger_level(DEBUG, name=LOGGER_NAME)
 uninstall_logger()
+
+select('msgpack')
 
 class MyClass(object):
     def __init__(self, counter=0):
@@ -67,10 +70,12 @@ def capture_exception(func):
                 print 'Function {0} completed successfully'.format(func.__name__)
             else:
                 print 'Function {0} completed with failure!'.format(func.__name__)
+                raise AssertionError
             return rv
         except Exception, e:
             print 'Got exception {0}, while running {1}'.format(e, func.__name__)
             print traceback.format_exc()
+            raise AssertionError
 
     wrapper.__name__ = func.__name__
     return wrapper

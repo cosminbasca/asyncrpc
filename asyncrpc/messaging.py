@@ -15,10 +15,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import cPickle
-import json
+from cPickle import loads as cPickle_loads, dumps as cPickle_dumps
+from json import loads as json_loads, dumps as json_dumps
 from collections import namedtuple
-import msgpack
+from msgpack import packb, unpackb, ExtType
 from warnings import warn
 
 __author__ = 'basca'
@@ -90,6 +90,21 @@ else:
 # register the builtin serialization libs
 #
 # ----------------------------------------------------------------------------------------------------------------------
-register('cPickle', cPickle.loads, cPickle.dumps)
-register('json', json.loads, json.dumps)
-register('msgpack', msgpack.loads, msgpack.dumps)
+
+def default_cpickle(obj):
+    return ExtType(1, cPickle_dumps(obj))
+
+def ext_hook_cpickle(code, data):
+    if code == 1:
+        return cPickle_loads(data)
+    return ExtType(code, data)
+
+def msgpack_dumps(value):
+    return packb(value, default=default_cpickle)
+
+def msgpack_loads(value_bytes, use_list=False):
+    return unpackb(value_bytes, ext_hook=ext_hook_cpickle, use_list=use_list)
+
+register('cPickle', cPickle_loads, cPickle_dumps)
+register('json', json_loads, json_dumps)
+register('msgpack', msgpack_loads, msgpack_dumps)
