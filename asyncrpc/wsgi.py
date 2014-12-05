@@ -44,6 +44,10 @@ def ping_middleware(environ, start_response):
     return response(environ, start_response)
 
 
+def info_middleware(environ, start_response):
+    response = Response("AsyncRPC version {0}".format(str_version), mimetype='text/plain')
+    return response(environ, start_response)
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # WSGI RPC Registry viewer - a wsgi app
@@ -168,3 +172,29 @@ class RpcRegistryMiddleware(RpcHandler):
         response = Response(dumps((result, execution_error, )), mimetype='text/plain')
         return response(environ, start_response)
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# WSGI RPC Instance Middleware - a wsgi app
+#
+# ----------------------------------------------------------------------------------------------------------------------
+class RpcInstanceMiddleware(RpcHandler):
+    def __init__(self, instance):
+        self._instance = instance
+
+    def get_instance(self, *args, **kwargs):
+        return self._instance
+
+    def __call__(self, environ, start_response):
+        request = Request(environ)
+        try:
+            name, args, kwargs = loads(request.get_data(cache=True))
+            debug('calling function: "%s"', name)
+            result = self.rpc()(name, *args, **kwargs)
+            execution_error = None
+        except Exception, e:
+            execution_error = ErrorMessage.from_exception(e, address=request.host_url)
+            result = None
+            error('error: %s, traceback: \n%s', e, traceback.format_exc())
+
+        response = Response(dumps((result, execution_error, )), mimetype='text/plain')
+        return response(environ, start_response)

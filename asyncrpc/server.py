@@ -25,7 +25,8 @@ from cherrypy.wsgiserver import CherryPyWSGIServer
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado import ioloop
-from asyncrpc.wsgi import RpcRegistryMiddleware, RpcRegistryViewer, ping_middleware
+from asyncrpc.wsgi import RpcRegistryMiddleware, RpcRegistryViewer, ping_middleware, RpcInstanceMiddleware, \
+    info_middleware
 from asyncrpc.registry import Registry
 from asyncrpc.log import debug, warn, info, error
 from werkzeug.wsgi import DispatcherMiddleware
@@ -128,20 +129,28 @@ def wait_for_server(address, method='get', check_every=0.5, timeout=None, to_sta
 class WsgiRpcServer(RpcServer):
     __metaclass__ = ABCMeta
 
-    def __init__(self, address, types_registry, debug=True, theme=None, *args, **kwargs):
-        if not isinstance(types_registry, (dict, OrderedDict)):
-            raise ValueError('types_registry must be a dict or OrderDict')
+    def __init__(self, address, model, debug=True, theme=None, *args, **kwargs):
         super(WsgiRpcServer, self).__init__(address, *args, **kwargs)
-
-        self._registry = Registry()
-        registry_app = RpcRegistryMiddleware(types_registry, self._registry)
-        registry_viewer = RpcRegistryViewer(types_registry, self._registry, with_static=True, theme=theme)
-        if debug:
-            registry_viewer = DebuggedApplication(registry_viewer, evalex=True)
-        wsgi_app = DispatcherMiddleware(registry_viewer, {
-            '/rpc': registry_app,
-            '/ping': ping_middleware,
-        })
+        if isinstance(model, (dict, OrderedDict)):
+            types_registry = model
+            self._model = Registry()
+            registry_app = RpcRegistryMiddleware(types_registry, self._model)
+            registry_viewer = RpcRegistryViewer(types_registry, self._model, with_static=True, theme=theme)
+            if debug:
+                registry_viewer = DebuggedApplication(registry_viewer, evalex=True)
+            wsgi_app = DispatcherMiddleware(registry_viewer, {
+                '/rpc': registry_app,
+                '/ping': ping_middleware,
+            })
+        else:
+            self._model = model
+            instance_app = RpcInstanceMiddleware(self._model)
+            if debug:
+                instance_app = DebuggedApplication(instance_app, evalex=True)
+            wsgi_app = DispatcherMiddleware(info_middleware, {
+                '/rpc': instance_app,
+                '/ping': ping_middleware,
+            })
         self._init_wsgi_server(self.address, wsgi_app, *args, **kwargs)
 
     @abstractmethod
@@ -149,8 +158,8 @@ class WsgiRpcServer(RpcServer):
         pass
 
     def stop(self):
-        self._registry.clear()
-
+        if hasattr(self._model, 'clear'):
+            self._model.clear()
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -158,8 +167,8 @@ class WsgiRpcServer(RpcServer):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class CherrypyWsgiRpcServer(WsgiRpcServer):
-    def __init__(self, address, types_registry, *args, **kwargs):
-        super(CherrypyWsgiRpcServer, self).__init__(address, types_registry, *args, **kwargs)
+    def __init__(self, address, model, *args, **kwargs):
+        super(CherrypyWsgiRpcServer, self).__init__(address, model, *args, **kwargs)
         self._bound_address = None
 
     def _init_wsgi_server(self, address, wsgi_app, *args, **kwargs):
@@ -192,7 +201,6 @@ class CherrypyWsgiRpcServer(WsgiRpcServer):
             else:
                 return self._address
         return self._bound_address
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 #

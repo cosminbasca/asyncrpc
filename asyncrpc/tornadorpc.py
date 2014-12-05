@@ -24,6 +24,7 @@ from tornado.httpserver import HTTPServer
 from tornado.netutil import bind_sockets
 from tornado.process import fork_processes
 from asyncrpc.__version__ import str_version
+from asyncrpc.manager import SingleInstanceAsyncManager
 from asyncrpc.server import RpcServer, shutdown_tornado
 from asyncrpc.process import BackgroundRunner
 from asyncrpc.exceptions import RpcServerNotStartedException, handle_exception, ErrorMessage
@@ -414,29 +415,18 @@ class TornadoRpcServer(RpcServer):
         loop = IOLoop.instance()
         loop.add_callback(shutdown_tornado, loop, self._server)
 
-
-class TornadoManager(object):
-    def __init__(self, instance, address=('127.0.0.1', 0), async=False, gevent_patch=False, retries=100, **kwargs):
-        self._async = async
-        self._instance = instance
-        self._runner = BackgroundRunner(server_class=TornadoRpcServer, address=address, gevent_patch=gevent_patch,
-                                        retries=retries)
-
-    def proxy(self, slots=None, **kwargs):
-        if not self._runner.is_running:
-            raise RpcServerNotStartedException('the tornado rcp server has not been started!')
-        _Proxy = TornadoAsyncHttpRpcProxy if self._async else TornadoHttpRpcProxy
-        return _Proxy(self.bound_address, slots=slots, **kwargs)
-
-    def __del__(self):
-        self._runner.stop()
-
-    def start(self, wait=True, multiprocess=False, theme=None, **kwargs):
-        self._runner.start(wait, self._instance, multiprocess=multiprocess, theme=theme, **kwargs)
-
-    def stop(self):
-        self._runner.stop()
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# Single instance Async manager based on the Tornado web server
+#
+# ----------------------------------------------------------------------------------------------------------------------
+class TornadoManager(SingleInstanceAsyncManager):
+    @property
+    def _server_class(self):
+        return TornadoRpcServer
 
     @property
-    def bound_address(self):
-        return self._runner.bound_address
+    def _proxy_class(self):
+        if self._async:
+            return TornadoAsyncHttpRpcProxy
+        return TornadoHttpRpcProxy

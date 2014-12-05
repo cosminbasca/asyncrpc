@@ -17,9 +17,9 @@
 #
 import traceback
 from unittest import TestCase
-from asyncrpc.client import Proxy, AsyncProxy, AsyncSingleInstanceProxy
+from asyncrpc.client import Proxy, AsyncProxy, AsyncSingleInstanceProxy, SingleInstanceProxy
 from asyncrpc.log import set_logger_level, LOGGER_NAME, DEBUG, setup_logger, uninstall_logger
-from asyncrpc.manager import AsyncManager
+from asyncrpc.manager import AsyncManager, SingleInstanceAsyncManager
 from asyncrpc.tornadorpc import TornadoManager, TornadoHttpRpcProxy, TornadoAsyncHttpRpcProxy, asynchronous, async_call
 from asyncrpc.messaging import select
 from tornado import gen
@@ -315,6 +315,47 @@ class TestManager(TestCase):
         self.assertEqual(my_instance.current_counter(), 30)
         my_instance.dec(30)
         self.assertEqual(my_instance.current_counter(), 0)
+
+        del manager
+        return SUCCESS
+
+    @capture_exception
+    def test_11_singleinstance_geventmanager_blocking(self):
+        instance = MyClass(counter=10)
+        manager = SingleInstanceAsyncManager(instance, async=False)
+        manager.start()
+
+        self.assertIsInstance(manager, SingleInstanceAsyncManager)
+
+        my_instance = manager.proxy()
+        self.assertIsInstance(my_instance, SingleInstanceProxy)
+
+        self.assertEqual(my_instance.current_counter(), 10)
+        my_instance.add(20)
+        self.assertEqual(my_instance.current_counter(), 30)
+        my_instance.dec(30)
+        self.assertEqual(my_instance.current_counter(), 0)
+
+        del manager
+        return SUCCESS
+
+    @capture_exception
+    def test_12_singleinstance_geventmanager_async(self):
+        instance = MyClass(counter=10)
+        manager = SingleInstanceAsyncManager(instance, async=True)
+        manager.start()
+        self.assertIsInstance(manager, SingleInstanceAsyncManager)
+
+        my_instance = AsyncSingleInstanceProxy(manager.bound_address)
+
+        cc = my_instance.current_counter()
+        self.assertEqual(cc, 10)
+        my_instance.add(20)
+        cc = my_instance.current_counter()
+        self.assertEqual(cc, 30)
+        my_instance.dec(30)
+        cc = my_instance.current_counter()
+        self.assertEqual(cc, 0)
 
         del manager
         return SUCCESS
