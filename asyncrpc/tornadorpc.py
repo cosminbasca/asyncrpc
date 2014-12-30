@@ -29,7 +29,8 @@ from asyncrpc.server import RpcServer, shutdown_tornado
 from asyncrpc.process import BackgroundRunner
 from asyncrpc.exceptions import RpcServerNotStartedException, handle_exception, ErrorMessage
 from asyncrpc.messaging import loads, dumps
-from asyncrpc.client import RpcProxy, exposed_methods, SingleCastHTTPTransport, MultiCastHTTPTransport
+from asyncrpc.client import RpcProxy, exposed_methods, SingleCastHTTPTransport, MultiCastHTTPTransport, \
+    DEFAULT_CONNECTION_TIMEOUT
 from asyncrpc.handler import RpcHandler
 from asyncrpc.util import get_templates_dir, get_static_dir
 from asyncrpc.log import debug, info, warn, error
@@ -175,11 +176,8 @@ class MulticastAsynchronousTornadoHTTP(MultiCastHTTPTransport):
 # synchronous tornado http rpc proxy
 #
 # ----------------------------------------------------------------------------------------------------------------------
-DEFAULT_TORNADO_CONNECTION_TIMEOUT = 300
-
-
 class TornadoHttpRpcProxy(RpcProxy):
-    def __init__(self, address, slots=None, connection_timeout=DEFAULT_TORNADO_CONNECTION_TIMEOUT):
+    def __init__(self, address, slots=None, connection_timeout=DEFAULT_CONNECTION_TIMEOUT):
         super(TornadoHttpRpcProxy, self).__init__(address, slots=slots, connection_timeout=connection_timeout)
 
     def get_transport(self, address, connection_timeout):
@@ -192,7 +190,7 @@ class TornadoHttpRpcProxy(RpcProxy):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class TornadoAsyncHttpRpcProxy(RpcProxy):
-    def __init__(self, address, slots=None, connection_timeout=DEFAULT_TORNADO_CONNECTION_TIMEOUT):
+    def __init__(self, address, slots=None, connection_timeout=DEFAULT_CONNECTION_TIMEOUT):
         super(TornadoAsyncHttpRpcProxy, self).__init__(
             address, slots=slots, connection_timeout=connection_timeout)
 
@@ -209,22 +207,22 @@ class TornadoAsyncHttpRpcProxy(RpcProxy):
         raise gen.Return(result)
 
 
-def async_call(address):
+def async_call(address, connection_timeout=DEFAULT_CONNECTION_TIMEOUT):
     """
     create and perform an asynchronous HTTP RPC call to a tornado (single instance) RPC server
     :param address: a (host,port) tuple or "ip:port" string
     :return: a tornado Future of the RPC response (or an error otherwise)
     """
-    return TornadoAsyncHttpRpcProxy(address)
+    return TornadoAsyncHttpRpcProxy(address, connection_timeout=connection_timeout)
 
 
-def call(address):
+def call(address, connection_timeout=DEFAULT_CONNECTION_TIMEOUT):
     """
     create and perform a synchronous HTTP RPC call to a tornado (single instance) RCP server
     :param address: a (host,port) tuple or "ip:port" string
     :return: the actual RPC response (or an error otherwise)
     """
-    return TornadoHttpRpcProxy(address)
+    return TornadoHttpRpcProxy(address, connection_timeout=connection_timeout)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
