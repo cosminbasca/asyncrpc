@@ -106,6 +106,7 @@ class SingleCastHTTPTransport(HTTPTransport):
         super(SingleCastHTTPTransport, self).__init__(address, connection_timeout, **kwargs)
         self._host, self._port = format_address(address)
         self._url_base = 'http://{0}:{1}'.format(self._host, self._port)
+        debug('using single cast http transport for %s:%s', self._host, self._port)
 
     @property
     def address(self):
@@ -150,6 +151,7 @@ class MultiCastHTTPTransport(HTTPTransport):
         self._addresses = [format_address(addr) for addr in address]
         self._url_bases = map(lambda addr: 'http://{0}:{1}'.format(*addr), self._addresses)
         self._num_sources = len(self._addresses)
+        debug('using multi cast http transport for %s', self._addresses)
 
     @property
     def urls(self):
@@ -181,10 +183,12 @@ class SynchronousHTTP(SingleCastHTTPTransport):
         super(SynchronousHTTP, self).__init__(address, connection_timeout)
         self._session = requests.Session()
         self._request = requests.Request('POST', self.url)
+        debug('initialized as synchronous HTTP')
 
     @retry(retry_on_exception=_if_connection_error, stop_max_attempt_number=_MAX_RETRIES)
     def __call__(self, message):
         prepped = self._request.prepare()
+        debug('sending %s bytes', len(message))
         prepped.prepare_body(message, None)
         return self._session.send(prepped)
 
@@ -202,10 +206,12 @@ class AsynchronousHTTP(SingleCastHTTPTransport):
         self._post = partial(HTTPClient(
             self.host, port=self.port, connection_timeout=self.connection_timeout,
             network_timeout=self.connection_timeout, concurrency=self._concurrency).post, self.url_path)
+        debug('initialized as asynchronous HTTP')
 
     @retry(retry_on_exception=_if_connection_error, stop_max_attempt_number=_MAX_RETRIES)
     def __call__(self, message):
         try:
+            debug('sending %s bytes', len(message))
             return self._post(body=message)
         except socket.error as e:
             if isinstance(e.args, tuple):
@@ -276,6 +282,7 @@ class RpcProxy(object):
             if content is None:
                 raise HTTPRpcNoBodyException(self._address, traceback.format_exc())
 
+            debug('received %s bytes', len(content))
             response = loads(content)
             if isinstance(response, tuple) and len(response) == 2 and \
                     (isinstance(response[1], ErrorMessage) or response[1] is None):
