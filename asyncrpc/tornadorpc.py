@@ -353,7 +353,7 @@ _RESERVED_ROUTES = ('/', '/rpc', '/ping')
 
 class TornadoRpcServer(RpcServer):
     def __init__(self, address, instance, multiprocess=False, theme=None, handlers=None, debug=False,
-                 xsrf_cookies=False, *args, **kwargs):
+                 xsrf_cookies=False, num_processes=0, *args, **kwargs):
         super(TornadoRpcServer, self).__init__(address, *args, **kwargs)
         settings = {
             'template_path': get_templates_dir(),
@@ -386,12 +386,13 @@ class TornadoRpcServer(RpcServer):
         self._sockets = bind_sockets(address[1], address=address[0])
         self._bound_address = self._sockets[0].getsockname()
         self._server = None
+        self._num_processes = num_processes
 
     def server_forever(self, *args, **kwargs):
         try:
             if self._multiprocess:
                 info('starting tornado server in multi-process mode')
-                fork_processes(0)
+                fork_processes(self._num_processes)
             else:
                 info('starting tornado server in single-process mode')
             self._server = HTTPServer(self._app)

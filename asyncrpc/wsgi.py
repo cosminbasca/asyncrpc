@@ -19,6 +19,7 @@ import traceback
 from threading import RLock
 from collections import OrderedDict
 from werkzeug.wsgi import SharedDataMiddleware
+from werkzeug.wrappers import Response, Request
 from asyncrpc.commands import Command
 from asyncrpc.exceptions import CommandNotFoundException, InvalidInstanceId, InvalidTypeId, ErrorMessage
 from asyncrpc.handler import RpcHandler
@@ -26,7 +27,6 @@ from asyncrpc.__version__ import str_version
 from asyncrpc.messaging import dumps, loads
 from asyncrpc.registry import Registry
 from asyncrpc.log import debug, warn, info, error
-from werkzeug.wrappers import Response, Request
 from inspect import isclass
 from jinja2 import Environment, FileSystemLoader
 from asyncrpc.util import get_templates_dir, get_static_dir
