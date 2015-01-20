@@ -215,8 +215,8 @@ class AsynchronousHTTP(SingleCastHTTPTransport):
             return self._post(body=message)
         except socket.error as e:
             if isinstance(e.args, tuple):
-                if e[0] == errno.EPIPE:
-                    debug("connection closed, recreate")
+                if e[0] in [errno.EPIPE, errno.ECONNRESET]:
+                    debug("connection closed or reset, recreate")
                     self._post = partial(HTTPClient(
                         self.host, port=self.port, connection_timeout=self.connection_timeout,
                         network_timeout=self.connection_timeout, concurrency=self._concurrency).post, self.url_path)
