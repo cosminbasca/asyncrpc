@@ -20,13 +20,13 @@ from collections import OrderedDict
 import inspect
 import traceback
 from tornado.concurrent import Future
+from tornado.curl_httpclient import CurlError
 from tornado.httpserver import HTTPServer
 from tornado.netutil import bind_sockets
 from tornado.process import fork_processes
 from asyncrpc.__version__ import str_version
 from asyncrpc.manager import SingleInstanceAsyncManager
 from asyncrpc.server import RpcServer, shutdown_tornado
-from asyncrpc.process import BackgroundRunner
 from asyncrpc.exceptions import RpcServerNotStartedException, handle_exception, ErrorMessage
 from asyncrpc.messaging import loads, dumps
 from asyncrpc.client import RpcProxy, exposed_methods, SingleCastHTTPTransport, MultiCastHTTPTransport, \
@@ -42,11 +42,26 @@ from docutils.core import publish_parts
 
 __author__ = 'basca'
 
+_IMPL_TORNADO_CURL = "tornado.curl_httpclient.CurlAsyncHTTPClient"
 
 class TornadoConfig(object):
     def __init__(self):
         self._use_curl = False
-        self._force_instance = True
+        self._force_instance = False
+        self._max_clients = 10
+        self._max_buffer_size = None
+        self.apply()
+
+    def apply(self):
+        try:
+            if self._use_curl:
+                AsyncHTTPClient.configure(_IMPL_TORNADO_CURL, max_clients=self._max_clients)
+            else:
+                AsyncHTTPClient.configure(None, max_buffer_size=self._max_buffer_size)
+        except ImportError, err:
+            self._use_curl = False
+            AsyncHTTPClient.configure(None, max_buffer_size=self._max_buffer_size)
+            warn('could not configure Tornado Web to use cURL. Reason: %s', err)
 
     @property
     def use_curl(self):
@@ -55,14 +70,14 @@ class TornadoConfig(object):
     @use_curl.setter
     def use_curl(self, value):
         self._use_curl = value
-        if self._use_curl:
-            try:
-                AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
-            except ImportError, err:
-                self._use_curl = False
-                warn('could not configure Tornado Web to use cURL. Reason: %s', err)
-        else:
-            AsyncHTTPClient.configure("tornado.httpclient.AsyncHTTPClient")
+
+    @property
+    def max_clients(self):
+        return self._max_clients
+
+    @max_clients.setter
+    def max_clients(self, value):
+        self._max_clients = value if value > 0 else None
 
     @property
     def force_instance(self):
@@ -70,7 +85,15 @@ class TornadoConfig(object):
 
     @force_instance.setter
     def force_instance(self, value):
-        self._force_instance = value
+        self._force_instance = True if value else False
+
+    @property
+    def max_buffer_size(self):
+        return self._max_buffer_size
+
+    @max_buffer_size.setter
+    def max_buffer_size(self, value):
+        self._max_buffer_size = value if value > 0 else None
 
     @staticmethod
     def instance():
@@ -91,7 +114,7 @@ asynchronous = gen.coroutine
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class SynchronousTornadoHTTP(SingleCastHTTPTransport):
-    def __init__(self, address, connection_timeout):
+    def __init__(self, address, connection_timeout, **kwargs):
         super(SynchronousTornadoHTTP, self).__init__(address, connection_timeout)
 
     def __call__(self, message):
@@ -102,7 +125,7 @@ class SynchronousTornadoHTTP(SingleCastHTTPTransport):
                                          connect_timeout=self.connection_timeout,
                                          request_timeout=self.connection_timeout)
         except HTTPError as e:
-            error("HTTP Error: %s", e)
+            error("HTTP Error: %s, payload size (bytes): %s", e, len(message))
             handle_exception(ErrorMessage.from_exception(e, address=self.url))
         finally:
             http_client.close()
@@ -115,25 +138,33 @@ class SynchronousTornadoHTTP(SingleCastHTTPTransport):
         return response.code
 
 
+class MaxRetriesException(Exception):
+    pass
+
 class AsynchronousTornadoHTTP(SingleCastHTTPTransport):
-    def __init__(self, address, connection_timeout):
-        super(AsynchronousTornadoHTTP, self).__init__(address, connection_timeout)
-        self._force_instance = TornadoConfig.instance().force_instance
+    def __init__(self, address, connection_timeout, **kwargs):
+        super(AsynchronousTornadoHTTP, self).__init__(address, connection_timeout, **kwargs)
+        tcfg = TornadoConfig.instance()
+        self._force_instance = tcfg.force_instance
+        self._max_buffer_size = tcfg.max_buffer_size
 
     @gen.coroutine
     def __call__(self, message):
         http_client = AsyncHTTPClient(force_instance=self._force_instance)
+        debug('client = %s, max_buffer_size = %s', http_client.__class__.__name__,
+              getattr(http_client, 'max_buffer_size') if hasattr(http_client, 'max_buffer_size') else 'unsupported')
         response = ('', None)
         try:
             response = yield http_client.fetch(self.url, body=message, method='POST',
                                                connect_timeout=self.connection_timeout,
                                                request_timeout=self.connection_timeout)
         except HTTPError as e:
-            error("HTTP Error: %s", e)
+            error("HTTP Error: %s, payload size (bytes): %s", e, len(message))
             handle_exception(ErrorMessage.from_exception(e, address=self.url))
         finally:
             if self._force_instance:
                 http_client.close()
+
         raise gen.Return(response)
 
     def content(self, response):
@@ -146,11 +177,14 @@ class AsynchronousTornadoHTTP(SingleCastHTTPTransport):
 class MulticastAsynchronousTornadoHTTP(MultiCastHTTPTransport):
     def __init__(self, address, connection_timeout, **kwargs):
         super(MulticastAsynchronousTornadoHTTP, self).__init__(address, connection_timeout, **kwargs)
-        self._force_instance = TornadoConfig.instance().force_instance
+        tcfg = TornadoConfig.instance()
+        self._force_instance = tcfg.force_instance
+        self._max_buffer_size = tcfg.max_buffer_size
 
     @gen.coroutine
     def __call__(self, message):
-        clients = [( AsyncHTTPClient(force_instance=self._force_instance), url ) for url in self.urls]
+        clients = [( AsyncHTTPClient(force_instance=self._force_instance), url )
+                   for url in self.urls]
         response = ('', None)
         try:
             response = yield [
@@ -177,11 +211,12 @@ class MulticastAsynchronousTornadoHTTP(MultiCastHTTPTransport):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class TornadoHttpRpcProxy(RpcProxy):
-    def __init__(self, address, slots=None, connection_timeout=DEFAULT_CONNECTION_TIMEOUT):
-        super(TornadoHttpRpcProxy, self).__init__(address, slots=slots, connection_timeout=connection_timeout)
+    def __init__(self, address, slots=None, connection_timeout=DEFAULT_CONNECTION_TIMEOUT, transport_kwargs=None):
+        super(TornadoHttpRpcProxy, self).__init__(address, slots=slots, connection_timeout=connection_timeout,
+                                                  transport_kwargs=transport_kwargs)
 
-    def get_transport(self, address, connection_timeout):
-        return SynchronousTornadoHTTP(address, connection_timeout)
+    def get_transport(self, address, connection_timeout, **kwargs):
+        return SynchronousTornadoHTTP(address, connection_timeout, **kwargs)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -190,14 +225,14 @@ class TornadoHttpRpcProxy(RpcProxy):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 class TornadoAsyncHttpRpcProxy(RpcProxy):
-    def __init__(self, address, slots=None, connection_timeout=DEFAULT_CONNECTION_TIMEOUT):
-        super(TornadoAsyncHttpRpcProxy, self).__init__(
-            address, slots=slots, connection_timeout=connection_timeout)
+    def __init__(self, address, slots=None, connection_timeout=DEFAULT_CONNECTION_TIMEOUT, transport_kwargs=None):
+        super(TornadoAsyncHttpRpcProxy, self).__init__(address, slots=slots, connection_timeout=connection_timeout,
+                                                       transport_kwargs=transport_kwargs)
 
-    def get_transport(self, address, connection_timeout):
+    def get_transport(self, address, connection_timeout, **kwargs):
         if isinstance(address, (list, set)):
-            return MulticastAsynchronousTornadoHTTP(address, connection_timeout)
-        return AsynchronousTornadoHTTP(address, connection_timeout)
+            return MulticastAsynchronousTornadoHTTP(address, connection_timeout, **kwargs)
+        return AsynchronousTornadoHTTP(address, connection_timeout, **kwargs)
 
     @gen.coroutine
     def _rpc_call(self, name, *args, **kwargs):

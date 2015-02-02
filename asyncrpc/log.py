@@ -86,6 +86,12 @@ def uninstall_logger():
     _logger = None
 
 
+def set_logger(logger):
+    global _logger
+    if logger:
+        _logger = logger
+
+
 def set_logger_level(level, name=None):
     import logging
 
