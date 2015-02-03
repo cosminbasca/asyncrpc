@@ -20,7 +20,6 @@ from collections import OrderedDict
 import inspect
 import traceback
 from tornado.concurrent import Future
-from tornado.curl_httpclient import CurlError
 from tornado.httpserver import HTTPServer
 from tornado.netutil import bind_sockets
 from tornado.process import fork_processes
@@ -39,6 +38,7 @@ from tornado.httpclient import AsyncHTTPClient, HTTPError, HTTPClient
 from tornado import gen
 from tornado import web
 from docutils.core import publish_parts
+import cStringIO
 
 __author__ = 'basca'
 
@@ -50,6 +50,7 @@ class TornadoConfig(object):
         self._force_instance = False
         self._max_clients = 10
         self._max_buffer_size = None
+        self._use_body_streaming = False
         self.apply()
 
     def apply(self):
@@ -94,6 +95,14 @@ class TornadoConfig(object):
     @max_buffer_size.setter
     def max_buffer_size(self, value):
         self._max_buffer_size = value if value > 0 else None
+
+    @property
+    def use_body_streaming(self):
+        return self._use_body_streaming
+
+    @use_body_streaming.setter
+    def use_body_streaming(self, value):
+        self._use_body_streaming = True if value else False
 
     @staticmethod
     def instance():
@@ -292,6 +301,55 @@ class TornadoRequestHandler(web.RequestHandler, RpcHandler):
         self.write(response)
 
 
+@web.stream_request_body
+class TornadoStreamingRequestHandler(web.RequestHandler, RpcHandler):
+    def __init__(self, application, request, **kwargs):
+        super(TornadoStreamingRequestHandler, self).__init__(application, request, **kwargs)
+        if not isinstance(application, TornadoRpcApplication):
+            raise ValueError('application must be an instance of TornadoRpcApplication')
+        self._instance = application.instance
+        self._buffer = cStringIO.StringIO()
+        self._content_lenght = 0
+
+    def get_instance(self, *args, **kwargs):
+        return self._instance
+
+    # noinspection PyBroadException
+    def prepare(self):
+        try:
+            self._content_lenght = long(self.request.headers.get('Content-Length', '0'))
+            self.request.connection.set_max_body_size(self._content_lenght)
+        except Exception as e:
+            self._content_lenght = 0
+            error('got an Exception while setting up the content length of the request: %s', e)
+
+    def data_received(self, data):
+        self._buffer.write(data)
+
+    def get_body(self):
+        contents = self._buffer.getvalue()
+        if len(contents) == self._content_lenght:
+            return contents
+        raise HTTPError('Content-Lenght: {0} and actual content length: {1} do not match'.format(
+                        self._content_lenght, len(contents)))
+
+    @gen.coroutine
+    def post(self, *args, **kwargs):
+        try:
+            name, args, kwargs = loads(self.get_body())
+            debug('calling function: "%s"', name)
+            result = self.rpc()(name, *args, **kwargs)
+            if isinstance(result, Future):
+                result = yield result
+            execution_error = None
+        except Exception, e:
+            execution_error = ErrorMessage.from_exception(e, address='{0}://{1}'.format(self.request.protocol, self.request.host))
+            result = None
+            error('error: %s, traceback: \n%s', e, traceback.format_exc())
+        response = dumps((result, execution_error))
+        self.write(response)
+
+
 class PingRequestHandler(web.RequestHandler):
     def get(self, *args, **kwargs):
         self.write('pong')
@@ -405,9 +463,14 @@ class TornadoRpcServer(RpcServer):
         if not isinstance(handlers, dict):
             raise ValueError('handlers must be None or a dict instance')
 
+        if TornadoConfig.instance().use_body_streaming:
+            _TornadoRequestHandler = TornadoStreamingRequestHandler
+        else:
+            _TornadoRequestHandler = TornadoRequestHandler
+
         app_handlers = [
             web.url(r"/", InstanceViewerHandler),
-            web.url(r"/rpc", TornadoRequestHandler),
+            web.url(r"/rpc", _TornadoRequestHandler),
             web.url(r"/ping", PingRequestHandler),
         ]
         for route, handler in handlers.iteritems():
