@@ -308,7 +308,7 @@ class TornadoStreamingRequestHandler(web.RequestHandler, RpcHandler):
         if not isinstance(application, TornadoRpcApplication):
             raise ValueError('application must be an instance of TornadoRpcApplication')
         self._instance = application.instance
-        self._buffer = cStringIO.StringIO()
+        self._buffer = None
         self._content_lenght = 0
 
     def get_instance(self, *args, **kwargs):
@@ -319,7 +319,10 @@ class TornadoStreamingRequestHandler(web.RequestHandler, RpcHandler):
         try:
             self._content_lenght = long(self.request.headers.get('Content-Length', '0'))
             self.request.connection.set_max_body_size(self._content_lenght)
+            self._buffer = cStringIO.StringIO()
         except Exception as e:
+            self._buffer.close()
+            self._buffer = None
             self._content_lenght = 0
             error('got an Exception while setting up the content length of the request: %s', e)
 
@@ -327,11 +330,16 @@ class TornadoStreamingRequestHandler(web.RequestHandler, RpcHandler):
         self._buffer.write(data)
 
     def get_body(self):
-        contents = self._buffer.getvalue()
-        if len(contents) == self._content_lenght:
-            return contents
-        raise HTTPError('Content-Lenght: {0} and actual content length: {1} do not match'.format(
-                        self._content_lenght, len(contents)))
+        try:
+            contents = self._buffer.getvalue()
+            if len(contents) == self._content_lenght:
+                return contents
+            raise HTTPError('Content-Lenght: {0} and actual content length: {1} do not match'.format(
+                            self._content_lenght, len(contents)))
+        finally:
+            self._buffer.close()
+            self._buffer = None
+
 
     @gen.coroutine
     def post(self, *args, **kwargs):
